@@ -1,0 +1,549 @@
+{
+  "schema": "stasis-compat-rwa-cypress-raw-v1",
+  "protocol": "stasis-compat-bench-v1",
+  "lane": "unchanged-rwa-cypress-baseline",
+  "createdAt": "2026-08-25T08:48:57.115Z",
+  "finishedAt": "2026-08-25T08:49:20.014Z",
+  "valid": true,
+  "violations": [],
+  "source": {
+    "preflight": {
+      "valid": true,
+      "violations": [],
+      "root": "rwa-publication-root",
+      "revision": "28ca4d03e4c68d366ccdbb25d43e1f37b3c67a4d",
+      "tree": "04c8874fbdcfd56a4d6fb74e7810304622fe787f",
+      "detached": true,
+      "authSpec": {
+        "path": "cypress/tests/ui/auth.spec.ts",
+        "blobOid": "9554bac0826cb996c5bb4cab3c46d3ad81e2603c",
+        "blobSha256": "1bdea574f3b9dd6c608522ddf698a72d2295963bb8e400ae27966d1fa011366d",
+        "worktreeSha256": "b5e2150c626b7c8e9849f70b25f143759a7fafaba1421e804bb94471fe748966"
+      },
+      "seed": {
+        "path": "data/database-seed.json",
+        "blobOid": "9a785bdf968bfdc33d5ae8493ed544121254f4cf",
+        "blobSha256": "694f9f9e955211cc6037a1d58eb020671375491ea670a3fcf6183a81a34da715",
+        "worktreeSha256": "c2449435bbf44bcef412a178fb51b8561d3c2d7ba9fc55b10d0b8a09ea66c3a1"
+      },
+      "generatedRuntimeFiles": {
+        "valid": true,
+        "files": [
+          {
+            "path": "src/aws-exports.js",
+            "sourcePath": "scripts/mock-aws-exports.js",
+            "bytes": 597,
+            "sha256": "9964e06bade1826faf2676923983890049f5174a1409b73948033b4500930185",
+            "sourceBytes": 597,
+            "sourceSha256": "9964e06bade1826faf2676923983890049f5174a1409b73948033b4500930185",
+            "exactSourceCopy": true
+          },
+          {
+            "path": "aws-exports-es5.js",
+            "sourcePath": "scripts/mock-aws-exports-es5.js",
+            "bytes": 604,
+            "sha256": "9fb4c3d1a163d4a2c132d67ea56683368b8f6317cbc0485bfbd5b0c59700395e",
+            "sourceBytes": 604,
+            "sourceSha256": "9fb4c3d1a163d4a2c132d67ea56683368b8f6317cbc0485bfbd5b0c59700395e",
+            "exactSourceCopy": true
+          }
+        ]
+      },
+      "runtimeCache": {
+        "path": "node_modules/.cache",
+        "regularFileCount": 0
+      },
+      "localEnvironmentFiles": {
+        "pattern": ".env*.local",
+        "matchedPaths": []
+      },
+      "ambientOverrides": {
+        "presentNames": []
+      },
+      "trackedStatusEntries": [],
+      "runtimeDatabase": {
+        "path": "data/database.json",
+        "blobOid": "9a785bdf968bfdc33d5ae8493ed544121254f4cf",
+        "blobSha256": "694f9f9e955211cc6037a1d58eb020671375491ea670a3fcf6183a81a34da715",
+        "worktreeSha256": "c2449435bbf44bcef412a178fb51b8561d3c2d7ba9fc55b10d0b8a09ea66c3a1",
+        "newlineOnlyDifference": false,
+        "allowedRuntimeMutation": false
+      }
+    },
+    "postflight": {
+      "valid": true,
+      "violations": [],
+      "root": "rwa-publication-root",
+      "revision": "28ca4d03e4c68d366ccdbb25d43e1f37b3c67a4d",
+      "tree": "04c8874fbdcfd56a4d6fb74e7810304622fe787f",
+      "detached": true,
+      "authSpec": {
+        "path": "cypress/tests/ui/auth.spec.ts",
+        "blobOid": "9554bac0826cb996c5bb4cab3c46d3ad81e2603c",
+        "blobSha256": "1bdea574f3b9dd6c608522ddf698a72d2295963bb8e400ae27966d1fa011366d",
+        "worktreeSha256": "b5e2150c626b7c8e9849f70b25f143759a7fafaba1421e804bb94471fe748966"
+      },
+      "seed": {
+        "path": "data/database-seed.json",
+        "blobOid": "9a785bdf968bfdc33d5ae8493ed544121254f4cf",
+        "blobSha256": "694f9f9e955211cc6037a1d58eb020671375491ea670a3fcf6183a81a34da715",
+        "worktreeSha256": "c2449435bbf44bcef412a178fb51b8561d3c2d7ba9fc55b10d0b8a09ea66c3a1"
+      },
+      "generatedRuntimeFiles": {
+        "valid": true,
+        "files": [
+          {
+            "path": "src/aws-exports.js",
+            "sourcePath": "scripts/mock-aws-exports.js",
+            "bytes": 597,
+            "sha256": "9964e06bade1826faf2676923983890049f5174a1409b73948033b4500930185",
+            "sourceBytes": 597,
+            "sourceSha256": "9964e06bade1826faf2676923983890049f5174a1409b73948033b4500930185",
+            "exactSourceCopy": true
+          },
+          {
+            "path": "aws-exports-es5.js",
+            "sourcePath": "scripts/mock-aws-exports-es5.js",
+            "bytes": 604,
+            "sha256": "9fb4c3d1a163d4a2c132d67ea56683368b8f6317cbc0485bfbd5b0c59700395e",
+            "sourceBytes": 604,
+            "sourceSha256": "9fb4c3d1a163d4a2c132d67ea56683368b8f6317cbc0485bfbd5b0c59700395e",
+            "exactSourceCopy": true
+          }
+        ]
+      },
+      "runtimeCache": {
+        "path": "node_modules/.cache",
+        "regularFileCount": 0
+      },
+      "localEnvironmentFiles": {
+        "pattern": ".env*.local",
+        "matchedPaths": []
+      },
+      "ambientOverrides": {
+        "presentNames": []
+      },
+      "trackedStatusEntries": [
+        " M data/database.json"
+      ],
+      "runtimeDatabase": {
+        "path": "data/database.json",
+        "blobOid": "9a785bdf968bfdc33d5ae8493ed544121254f4cf",
+        "blobSha256": "694f9f9e955211cc6037a1d58eb020671375491ea670a3fcf6183a81a34da715",
+        "worktreeSha256": "ce499607bd4d1851353aca0e79b95fd737aa15755fd12d0e10b02af71dd48920",
+        "newlineOnlyDifference": true,
+        "allowedRuntimeMutation": true
+      }
+    }
+  },
+  "runtime": {
+    "node": "v22.20.0",
+    "configuredRetries": {
+      "runMode": 2
+    },
+    "primaryRetryOverride": {
+      "runMode": 0,
+      "openMode": 0
+    },
+    "externalServers": [
+      {
+        "name": "frontend",
+        "url": "http://localhost:3000/",
+        "status": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "bodyBytes": 1986,
+        "bodySha256": "ac35f7a0c820e107e30fba1fda385af1f0356a3b235aea25c008ac4d5d838f0a",
+        "listener": {
+          "port": 3000,
+          "processId": 61376,
+          "processName": "node.exe",
+          "nodeVersion": "v22.20.0",
+          "executableBytes": 85588976,
+          "executableSha256": "fdddbf4581e046b8102815d56208d6a248950bb554570b81519a8a5dacfee95d",
+          "scriptRole": "scripts/testServer.ts",
+          "launcherProcessId": 20896,
+          "launcherMatchesFrozenHost": true,
+          "commandMatchesPinnedRole": true
+        },
+        "servedBuildTree": {
+          "sha256": "769186804dfdda106af44894a8f9d065fe840db5835a1c515debff3e9c469a09",
+          "fileCount": 10,
+          "totalBytes": 12961036
+        },
+        "generatedRuntimeFiles": {
+          "valid": true,
+          "files": [
+            {
+              "path": "src/aws-exports.js",
+              "sourcePath": "scripts/mock-aws-exports.js",
+              "bytes": 597,
+              "sha256": "9964e06bade1826faf2676923983890049f5174a1409b73948033b4500930185",
+              "sourceBytes": 597,
+              "sourceSha256": "9964e06bade1826faf2676923983890049f5174a1409b73948033b4500930185",
+              "exactSourceCopy": true
+            },
+            {
+              "path": "aws-exports-es5.js",
+              "sourcePath": "scripts/mock-aws-exports-es5.js",
+              "bytes": 604,
+              "sha256": "9fb4c3d1a163d4a2c132d67ea56683368b8f6317cbc0485bfbd5b0c59700395e",
+              "sourceBytes": 604,
+              "sourceSha256": "9fb4c3d1a163d4a2c132d67ea56683368b8f6317cbc0485bfbd5b0c59700395e",
+              "exactSourceCopy": true
+            }
+          ]
+        },
+        "runtimeCache": {
+          "path": "node_modules/.cache",
+          "regularFileCount": 0
+        },
+        "localEnvironmentFiles": {
+          "pattern": ".env*.local",
+          "matchedPaths": []
+        },
+        "ambientOverrides": {
+          "presentNames": []
+        }
+      },
+      {
+        "name": "backend",
+        "url": "http://localhost:3001/",
+        "status": 200,
+        "contentType": "text/html; charset=utf-8",
+        "bodyBytes": 31,
+        "bodySha256": "d6b1c376168804954c90cc66eb240ce7859e5276ddae40e0fcb07a9bfceff412",
+        "listener": {
+          "port": 3001,
+          "processId": 58012,
+          "processName": "node.exe",
+          "nodeVersion": "v22.20.0",
+          "executableBytes": 85588976,
+          "executableSha256": "fdddbf4581e046b8102815d56208d6a248950bb554570b81519a8a5dacfee95d",
+          "scriptRole": "backend/app.ts",
+          "launcherProcessId": 20896,
+          "launcherMatchesFrozenHost": true,
+          "commandMatchesPinnedRole": true
+        }
+      }
+    ]
+  },
+  "invocation": {
+    "browser": "electron",
+    "config": {
+      "retries": {
+        "runMode": 0,
+        "openMode": 0
+      }
+    },
+    "configFile": "rwa-publication-root/cypress.config.ts",
+    "headless": true,
+    "project": "rwa-publication-root",
+    "quiet": true,
+    "record": false,
+    "spec": "rwa-publication-root/cypress/tests/ui/auth.spec.ts",
+    "testingType": "e2e"
+  },
+  "cypress": {
+    "validation": {
+      "valid": true,
+      "violations": [],
+      "cases": [
+        {
+          "id": "auth-01-unauthenticated-redirect",
+          "ordinal": 1,
+          "title": [
+            "User Sign-up and Login",
+            "should redirect unauthenticated user to signin page"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 677,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        },
+        {
+          "id": "auth-02-login-home-redirect",
+          "ordinal": 2,
+          "title": [
+            "User Sign-up and Login",
+            "should redirect to the home page after login"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 1558,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        },
+        {
+          "id": "auth-03-remember-user-thirty-days",
+          "ordinal": 3,
+          "title": [
+            "User Sign-up and Login",
+            "should remember a user for 30 days after login"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 833,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        },
+        {
+          "id": "auth-04-signup-login-onboard-logout",
+          "ordinal": 4,
+          "title": [
+            "User Sign-up and Login",
+            "should allow a visitor to sign-up, login, and logout"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 3261,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        },
+        {
+          "id": "auth-05-login-validation-errors",
+          "ordinal": 5,
+          "title": [
+            "User Sign-up and Login",
+            "should display login errors"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 535,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        },
+        {
+          "id": "auth-06-signup-validation-errors",
+          "ordinal": 6,
+          "title": [
+            "User Sign-up and Login",
+            "should display signup errors"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 1652,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        },
+        {
+          "id": "auth-07-invalid-user",
+          "ordinal": 7,
+          "title": [
+            "User Sign-up and Login",
+            "should error for an invalid user"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 804,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        },
+        {
+          "id": "auth-08-invalid-password-existing-user",
+          "ordinal": 8,
+          "title": [
+            "User Sign-up and Login",
+            "should error for an invalid password for existing user"
+          ],
+          "state": "passed",
+          "durationMilliseconds": 636,
+          "attempts": [
+            {
+              "state": "passed"
+            }
+          ],
+          "displayError": null
+        }
+      ]
+    },
+    "executionError": null,
+    "projectionPolicy": "Only canonical scalar browser/runtime identity, fixed app/API endpoints, retry/viewport/test-isolation config, numeric totals/stats, the frozen spec/title, allowlisted states, and error presence are retained; all opaque values and unknown field names are omitted.",
+    "omittedFields": {
+      "topLevel": 1,
+      "config": 67,
+      "run": 4,
+      "spec": 3,
+      "test": 0,
+      "attempt": 0
+    },
+    "result": {
+      "browserName": "electron",
+      "browserPath": "",
+      "browserVersion": "138.0.7204.251",
+      "cypressVersion": "15.17.0",
+      "osName": "win32",
+      "endedTestsAt": "2026-08-25T08:49:19.149Z",
+      "startedTestsAt": "2026-08-25T08:49:09.162Z",
+      "totalDuration": 9987,
+      "totalFailed": 0,
+      "totalPassed": 8,
+      "totalPending": 0,
+      "totalSkipped": 0,
+      "totalSuites": 1,
+      "totalTests": 8,
+      "config": {
+        "baseUrl": "http://localhost:3000",
+        "resolvedNodeVersion": "22.20.0",
+        "apiUrl": "http://localhost:3001",
+        "retries": {
+          "openMode": 0,
+          "runMode": 0
+        },
+        "testIsolation": true,
+        "viewportHeight": 1000,
+        "viewportWidth": 1280
+      },
+      "runs": [
+        {
+          "error": null,
+          "stats": {
+            "tests": 8,
+            "passes": 8,
+            "failures": 0,
+            "pending": 0,
+            "skipped": 0
+          },
+          "spec": {
+            "relative": "cypress/tests/ui/auth.spec.ts"
+          },
+          "tests": [
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 677,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should redirect unauthenticated user to signin page"
+              ]
+            },
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 1558,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should redirect to the home page after login"
+              ]
+            },
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 833,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should remember a user for 30 days after login"
+              ]
+            },
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 3261,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should allow a visitor to sign-up, login, and logout"
+              ]
+            },
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 535,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should display login errors"
+              ]
+            },
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 1652,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should display signup errors"
+              ]
+            },
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 804,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should error for an invalid user"
+              ]
+            },
+            {
+              "attempts": [
+                {
+                  "state": "passed"
+                }
+              ],
+              "displayError": null,
+              "duration": 636,
+              "state": "passed",
+              "title": [
+                "User Sign-up and Login",
+                "should error for an invalid password for existing user"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

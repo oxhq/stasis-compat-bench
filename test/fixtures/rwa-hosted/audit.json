@@ -1,0 +1,175 @@
+{
+  "schema": "stasis-rwa-hosted-census-audit-v1",
+  "generatedAt": "2026-08-26T14:55:40.7413706Z",
+  "formalProof": false,
+  "claimBoundary": "exploratory blocker-census reproduction against an exact hosted executable; not a sealed paired Cypress compatibility or release proof",
+  "hostedProducer": {
+    "runId": 32976176019,
+    "runAttempt": 1,
+    "revision": "cd471fb2f515e1f7227581fb8930e04bd6414767"
+  },
+  "candidate": {
+    "archivePath": "retained-inputs/stasis-0.3.0-windows-x86_64-ci.zip",
+    "archiveBytes": 37118681,
+    "archiveSha256": "0ec4d715f37cae4c9abef7f0d5bfed9b60b938abaffb2f30425a80cf76031f86",
+    "executablePath": "retained-inputs/stasis-0.3.0-windows-x86_64-ci/stasis.exe",
+    "executableBytes": 87192064,
+    "executableSha256": "bd6715f5cc30ec66ea2d3b9c0889698ecea54373a3c3ab2c1893c934573916d1",
+    "sourceTxtRevision": "cd471fb2f515e1f7227581fb8930e04bd6414767",
+    "expectedHashEnvironmentMatch": true
+  },
+  "sdk": {
+    "importedPath": "sdk-dist-used/index.js",
+    "reportedLabel": "@oxhq/stasis@0.3.0-local-dist-uncommitted",
+    "sourceRevision": "cd471fb2f515e1f7227581fb8930e04bd6414767",
+    "sourceRepositoryTree": "32e9a5632dae7d6fbff72c79a93f4274a7bc3099",
+    "sourceSubtreeOid": "267dc0ffee43b2fd1a9f28fe5edee1cd9e1c6f9b",
+    "sourceStatusEntries": [],
+    "distCopyPath": "sdk-dist-used",
+    "distTreeSha256": "7e4572fccb271804c33a9b95b9b582414d476fa76046a47f2eec1db98f62ecf4",
+    "distFileCount": 52,
+    "distTotalBytes": 857325,
+    "indexJsSha256": "a0d0aecea313d02f576bb562dcd80a4c6be4e749c732237ed6d107b0f1209a80",
+    "rebuild": {
+      "node": "v22.20.0",
+      "typescript": "5.9.3",
+      "path": "sdk-rebuild-check",
+      "treeSha256": "f7538c8b6d086f37aa64fc8e3db57578f8810d401f7273647a60f04a6fb347d2",
+      "fileCount": 52,
+      "totalBytes": 858053,
+      "runtimeJsInventory": 13,
+      "runtimeJsHashMismatches": 0
+    },
+    "provenanceCaveat": "The source-tree runtime manifest is an intentional fail-closed alpha placeholder; this run supplied the explicit hosted executable, so managed resolution was bypassed. The raw result does not itself record the SDK tree hash."
+  },
+  "node": {
+    "version": "v22.20.0",
+    "bytes": 85588976,
+    "sha256": "fdddbf4581e046b8102815d56208d6a248950bb554570b81519a8a5dacfee95d"
+  },
+  "harness": {
+    "root": "reviewer-harness",
+    "head": "11af865c10a110579563c6afe0f5201223f538d5",
+    "headTree": "a248c22bb9bd392433183d1a88f0c3316b7d5adf",
+    "trackedClean": false,
+    "exploratoryDocumentUntracked": true,
+    "materialFiles": {
+      "src/rwa/cases.mjs": "dac07a0a411fd3696c41c425e65e3cf149e834a82fb778db6d87c527ed4c5332",
+      "src/rwa/compare-lib.mjs": "6a6198feb4c904ab482276a70cfe0d96d7bed60c8d6418c97366134c3917d62b",
+      "src/rwa/stasis-lane.mjs": "5c6909fe5f6212c6dca58177812a9a0f6f36748991ea8b3e4ff0f37152a9ac7a",
+      "src/shared/io.mjs": "c30dce6b89b109e9d1639e0bde6265e6b2863bc6715072a57fcc36412d967809",
+      "test/rwa-cases.test.mjs": "ef1fe9adc7d86073ab3c7cc34f42f41c73180d6b6bcc9610106ec0c17b7a4f71",
+      "test/rwa-compare.test.mjs": "6dc8ee014f32953f391c3cbdbfb6383f69ad0d296983c334b92299a57a88ada6",
+      "test/rwa-stasis.test.mjs": "aacbbbe3a009b46d341cae0b68efb087ea45d28e401a4d9f344b76cb6f8956e4",
+      "EXPLORATORY-RWA-V2.md": "ad7376d1935ce95c313596cb93f2a5ffe0fae5451731fbfd1a29dd8a7d6f1385"
+    },
+    "testRun": {
+      "nodeTestCount": 61,
+      "passed": 61,
+      "failed": 0
+    }
+  },
+  "rwa": {
+    "root": "upstream-checkouts/cypress-realworld-app-28ca4d0",
+    "revision": "28ca4d03e4c68d366ccdbb25d43e1f37b3c67a4d",
+    "tree": "04c8874fbdcfd56a4d6fb74e7810304622fe787f",
+    "authSpecBlobOid": "9554bac0826cb996c5bb4cab3c46d3ad81e2603c",
+    "authSpecBlobSha256": "1bdea574f3b9dd6c608522ddf698a72d2295963bb8e400ae27966d1fa011366d",
+    "authSpecWorktreeSha256": "b5e2150c626b7c8e9849f70b25f143759a7fafaba1421e804bb94471fe748966",
+    "nodeModulesTree": {
+      "sha256": "44a4e04f3e98cbb195ad64d7ec701b215b46963fa1aca03b1a33f06882f9944e",
+      "fileCount": 122620,
+      "totalBytes": 589323096
+    },
+    "tsNodeTreeSha256": "4f3b74021e24f701e1e2bf91d00311c955167dbd22818dc569991fe903db3a47",
+    "cypressPackageTreeSha256": "f4929d43bf3ec26924a90ed25ca5ae10f3d25431aec76c680352711ffceb7303",
+    "buildTree": {
+      "sha256": "769186804dfdda106af44894a8f9d065fe840db5835a1c515debff3e9c469a09",
+      "fileCount": 10,
+      "totalBytes": 12961036
+    },
+    "preRunStatusEntries": [],
+    "postRestoreStatusEntries": [],
+    "runtimeDatabaseRestoredSha256": "c2449435bbf44bcef412a178fb51b8561d3c2d7ba9fc55b10d0b8a09ea66c3a1",
+    "portsAfterRun": []
+  },
+  "execution": {
+    "startedAt": "2026-08-26T14:50:09.099Z",
+    "completedAt": "2026-08-26T14:50:11.857Z",
+    "runnerExitCode": 1,
+    "runnerExitMeaning": "The direct exploratory entrypoint exits nonzero whenever fewer than all eight cases pass; no retry followed.",
+    "rules": {
+      "retries": 0,
+      "fallback": false,
+      "sleeps": false,
+      "domPolling": false,
+      "businessApiSubstitution": false,
+      "processPerCase": 1,
+      "seedBeforeEveryCase": true
+    },
+    "server": {
+      "frontendPid": 56688,
+      "backendPid": 52652,
+      "hostPid": 4776,
+      "exactPinnedArgumentsVerified": true,
+      "frontendHttpStatus": 200,
+      "backendHttpStatus": 200
+    }
+  },
+  "evidence": {
+    "rawPath": "rwa/stasis-raw.json",
+    "rawBytes": 69131,
+    "rawSha256": "1e83bee47e8518b979107e6000384400e69e74f37184950daa09ea6cc5c43c5f",
+    "runnerStdoutSha256": "404e7c785057ee0cdb224a4c2d731f65fbc1a921a5fa1733913e124c5475ea91",
+    "runnerStderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "serverStdoutSha256": "4d05119bb38311c60928ab32a9e57e38bd80b80978e48def9613909ade36d63e",
+    "serverStderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validator": {
+      "valid": true,
+      "violations": []
+    },
+    "normalizedCaseCheckpointOracleMatchToLocal7104d214Run": true,
+    "priorLocalRawSha256": "b06489addb94c2a3629ddac31e9d024955b66ebf7679dbdd377fc7072edc4e87"
+  },
+  "census": {
+    "denominator": 8,
+    "exactEquivalent": 0,
+    "semanticOracleDifference": 5,
+    "typedUnsupported": 3,
+    "engineBug": 0,
+    "terminals": [
+      {
+        "id": "auth-02-login-home-redirect",
+        "phase": "settle",
+        "typedSurface": "storage",
+        "code": "unsupported_persistent_cookie"
+      },
+      {
+        "id": "auth-03-remember-user-thirty-days",
+        "phase": "settle",
+        "typedSurface": "storage",
+        "code": "unsupported_persistent_cookie"
+      },
+      {
+        "id": "auth-04-signup-login-onboard-logout",
+        "phase": "settle",
+        "actionIndex": 11,
+        "typedSurface": "controlled_profile",
+        "code": "unsupported_rendering",
+        "outcome": "unsupported_work",
+        "unsupportedWorkCount": 1
+      }
+    ]
+  },
+  "auth04Subtype": {
+    "provenFromThisRun": false,
+    "narrowestProven": "one controlled-profile unsupported_rendering work item at settle immediately after POST /users and signup-submit activation",
+    "whyNotImageLoad": "The exploratory sanitizer retains only unsupportedWorkCount and a hash of the top-level failure code. Current source can project image_load, font_load, animation, canvas, render-blocking, and inactive or throttled rendering into unsupported_rendering. Older diagnostics observed image_load on an earlier signup-route binary, but do not cryptographically identify this exact hosted action-11 work item."
+  },
+  "proofLimits": [
+    "No same-run Cypress baseline was executed.",
+    "The exploratory harness is dirty and uncommitted; this audit records its material file hashes after the fact.",
+    "The raw schema does not embed harness, SDK-dist, RWA preflight, server, build-tree, dependency-tree, or postflight identity; audit.json supplies independently observed context.",
+    "The exact executable is a hosted CI artifact from run 32976176019, but this local corpus execution is not itself hosted CI or a signed release consumer proof."
+  ]
+}
