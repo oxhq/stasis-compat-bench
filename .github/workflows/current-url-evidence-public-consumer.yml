@@ -72,7 +72,12 @@ jobs:
           New-Item -ItemType Directory -Path $consumerRoot,$assetsRoot,$npmCache | Out-Null
           New-Item -ItemType File -Path $emptyNpmrc | Out-Null
 
-          $curl = (Get-Command curl -CommandType Application -ErrorAction Stop).Source
+          $curl = Get-Command curl -CommandType Application -ErrorAction Stop |
+            Select-Object -First 1 -ExpandProperty Source
+          if ([string]::IsNullOrWhiteSpace($curl) -or
+              -not (Test-Path -LiteralPath $curl -PathType Leaf)) {
+            throw "A single concrete curl executable is required; got: $curl"
+          }
           $releaseApi = "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/tags/$env:EVIDENCE_TAG"
           & $curl --fail --location --silent --show-error --retry 0 `
             --header 'Accept: application/vnd.github+json' `
