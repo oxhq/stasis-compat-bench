@@ -1,0 +1,182 @@
+name: Verify immutable current-URL evidence release
+
+on:
+  push:
+    branches:
+      - verify/stasis-v0.3.3-current-url-evidence
+
+permissions: {}
+
+jobs:
+  anonymous-public-consumer:
+    name: anonymous-${{ matrix.id }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: windows-x86_64
+            os: windows-2022
+            arch: X64
+          - id: ubuntu-22.04-x86_64
+            os: ubuntu-22.04
+            arch: X64
+          - id: macos-15-aarch64
+            os: macos-15
+            arch: ARM64
+    env:
+      CONSUMER_ID: ${{ matrix.id }}
+      EXPECTED_ARCH: ${{ matrix.arch }}
+      EVIDENCE_TAG: stasis-v0.3.3-current-url-evidence
+      EVIDENCE_REVISION: 34d1cd8f8237e65162ad1a4ed507211e13e7fbf7
+      ARCHIVE_NAME: stasis-compat-bench-v0.3.3-current-url-evidence.tar
+      ARCHIVE_BYTES: "2126848"
+      ARCHIVE_SHA256: 906da3c75036c421f079edb8ca4db0621230fb256ae57fb064b8bcb3aaec9965
+      REPORT_BYTES: "12657"
+      REPORT_SHA256: 68ebafa22dd0719f118a84979252ccb0628a3be6cd4c9d19e3e1fbc6b5eeec58
+      CHECKSUMS_BYTES: "194"
+      CHECKSUMS_SHA256: 175fbcfafb127bbe86062cc5b99b8d05b6309d528030b8d7b8e0e83681c76361
+    steps:
+      - name: Use the frozen Node runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 22.20.0
+          token: ""
+
+      - name: Verify anonymous public source and release bytes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          if ($env:GITHUB_RUN_ATTEMPT -ne '1') {
+            throw "Only first-attempt evidence is authoritative; got attempt $env:GITHUB_RUN_ATTEMPT"
+          }
+          if ($env:RUNNER_ARCH -ne $env:EXPECTED_ARCH) {
+            throw "Unexpected runner architecture: $env:RUNNER_ARCH"
+          }
+
+          Remove-Item Env:GH_TOKEN,Env:GITHUB_TOKEN,Env:NODE_AUTH_TOKEN,Env:NPM_TOKEN -ErrorAction SilentlyContinue
+          $env:GIT_TERMINAL_PROMPT = '0'
+
+          $consumerRoot = Join-Path $env:RUNNER_TEMP "stasis-public-consumer-$env:CONSUMER_ID"
+          $sourceRoot = Join-Path $consumerRoot 'source'
+          $assetsRoot = Join-Path $consumerRoot 'assets'
+          $extractionRoot = Join-Path $consumerRoot 'extraction'
+          $npmCache = Join-Path $consumerRoot 'npm-cache'
+          $emptyNpmrc = Join-Path $consumerRoot 'empty.npmrc'
+          $releaseMetadataPath = Join-Path $consumerRoot 'release.json'
+          if (Test-Path -LiteralPath $consumerRoot) {
+            throw "Fresh consumer root required: $consumerRoot"
+          }
+          New-Item -ItemType Directory -Path $consumerRoot,$assetsRoot,$npmCache | Out-Null
+          New-Item -ItemType File -Path $emptyNpmrc | Out-Null
+
+          $curl = (Get-Command curl -CommandType Application -ErrorAction Stop).Source
+          $releaseApi = "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/tags/$env:EVIDENCE_TAG"
+          & $curl --fail --location --silent --show-error --retry 0 `
+            --header 'Accept: application/vnd.github+json' `
+            --header 'X-GitHub-Api-Version: 2022-11-28' `
+            --output $releaseMetadataPath $releaseApi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $release = Get-Content -LiteralPath $releaseMetadataPath -Raw | ConvertFrom-Json -Depth 50
+          if ($release.tag_name -ne $env:EVIDENCE_TAG -or
+              $release.name -ne 'Stasis v0.3.3 current-URL compatibility evidence' -or
+              $release.draft -ne $false -or
+              $release.prerelease -ne $false -or
+              $release.immutable -ne $true) {
+            throw 'Public release metadata does not match the immutable contract'
+          }
+
+          $expected = [ordered]@{
+            $env:ARCHIVE_NAME = @([int64]$env:ARCHIVE_BYTES, $env:ARCHIVE_SHA256)
+            'report.md' = @([int64]$env:REPORT_BYTES, $env:REPORT_SHA256)
+            'SHA256SUMS.txt' = @([int64]$env:CHECKSUMS_BYTES, $env:CHECKSUMS_SHA256)
+          }
+          $releaseAssetNames = @($release.assets | ForEach-Object { $_.name } | Sort-Object)
+          $expectedAssetNames = @($expected.Keys | Sort-Object)
+          if (($releaseAssetNames -join "`n") -ne ($expectedAssetNames -join "`n")) {
+            throw 'Public release asset inventory differs from the exact three-asset contract'
+          }
+          foreach ($asset in $release.assets) {
+            $contract = $expected[$asset.name]
+            if ([int64]$asset.size -ne $contract[0] -or
+                $asset.digest -ne "sha256:$($contract[1])") {
+              throw "Public release API identity mismatch: $($asset.name)"
+            }
+          }
+
+          & git -c credential.helper= -c core.autocrlf=false -c http.extraHeader= clone `
+            --depth 1 --branch $env:EVIDENCE_TAG --single-branch `
+            https://github.com/oxhq/stasis-compat-bench.git $sourceRoot
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $headRevision = (& git -C $sourceRoot rev-parse HEAD).Trim()
+          if ($headRevision -ne $env:EVIDENCE_REVISION) {
+            throw "Public tag revision mismatch: $headRevision"
+          }
+
+          $releaseBase = "https://github.com/oxhq/stasis-compat-bench/releases/download/$env:EVIDENCE_TAG"
+          foreach ($name in $expected.Keys) {
+            & $curl --fail --location --silent --show-error --retry 0 `
+              --output (Join-Path $assetsRoot $name) "$releaseBase/$name"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          $downloaded = @(Get-ChildItem -LiteralPath $assetsRoot -File)
+          if ($downloaded.Count -ne 3) {
+            throw "Expected exactly three downloaded assets; got $($downloaded.Count)"
+          }
+          foreach ($name in $expected.Keys) {
+            $path = Join-Path $assetsRoot $name
+            $item = Get-Item -LiteralPath $path
+            $sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($item.Length -ne $expected[$name][0] -or $sha256 -ne $expected[$name][1]) {
+              throw "Downloaded public asset identity mismatch: $name"
+            }
+          }
+
+          $nodeVersion = (& node --version).Trim()
+          $npmVersion = (& npm --version).Trim()
+          if ($nodeVersion -ne 'v22.20.0' -or $npmVersion -ne '10.9.3') {
+            throw "Unexpected Node/npm runtime: $nodeVersion / $npmVersion"
+          }
+          $env:NPM_CONFIG_USERCONFIG = $emptyNpmrc
+          $env:NPM_CONFIG_CACHE = $npmCache
+          Push-Location $sourceRoot
+          try {
+            & npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $verificationLines = & node 'src/publication/cli.mjs' archive-verify $assetsRoot $extractionRoot 2>&1
+            $verificationExit = $LASTEXITCODE
+          } finally {
+            Pop-Location
+          }
+          $verificationText = ($verificationLines | ForEach-Object { "$_" }) -join "`n"
+          Write-Output $verificationText
+          if ($verificationExit -ne 0) { exit $verificationExit }
+          $verification = $verificationText | ConvertFrom-Json -Depth 100
+          if ($verification.schema -ne 'stasis-compat-publication-release-verification-v2' -or
+              $verification.status -ne 'passed' -or
+              $verification.harnessRevision -ne $env:EVIDENCE_REVISION -or
+              $verification.release.tag -ne $env:EVIDENCE_TAG -or
+              $verification.archive.name -ne $env:ARCHIVE_NAME -or
+              $verification.evidence.fileCount -ne 516) {
+            throw 'Archive verifier output does not match the successor release contract'
+          }
+
+          [ordered]@{
+            schema = 'stasis-current-url-anonymous-consumer-v1'
+            status = 'passed'
+            consumer = $env:CONSUMER_ID
+            runnerOs = $env:RUNNER_OS
+            runnerArch = $env:RUNNER_ARCH
+            runnerImage = $env:ImageOS
+            runnerImageVersion = $env:ImageVersion
+            runId = $env:GITHUB_RUN_ID
+            runAttempt = [int]$env:GITHUB_RUN_ATTEMPT
+            harnessRevision = $headRevision
+            releaseId = [int64]$release.id
+            releaseImmutable = [bool]$release.immutable
+            assetCount = $downloaded.Count
+            evidenceFileCount = [int]$verification.evidence.fileCount
+          } | ConvertTo-Json -Depth 10
