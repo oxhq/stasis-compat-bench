@@ -140,8 +140,25 @@ jobs:
             }
           }
 
-          $nodeVersion = (& node --version).Trim()
-          $npmVersion = (& npm --version).Trim()
+          $nodeExecutable = Get-Command node -CommandType Application -ErrorAction Stop |
+            Select-Object -First 1 -ExpandProperty Source
+          if ([string]::IsNullOrWhiteSpace($nodeExecutable) -or
+              -not (Test-Path -LiteralPath $nodeExecutable -PathType Leaf)) {
+            throw "A single concrete Node executable is required; got: $nodeExecutable"
+          }
+          $nodeDirectory = Split-Path -Parent $nodeExecutable
+          $npmCliCandidates = @(
+            (Join-Path $nodeDirectory 'node_modules/npm/bin/npm-cli.js'),
+            (Join-Path (Split-Path -Parent $nodeDirectory) 'lib/node_modules/npm/bin/npm-cli.js')
+          )
+          $npmCli = $npmCliCandidates |
+            Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
+            Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($npmCli)) {
+            throw "The pinned Node distribution npm CLI was not found: $($npmCliCandidates -join ', ')"
+          }
+          $nodeVersion = (& $nodeExecutable --version).Trim()
+          $npmVersion = (& $nodeExecutable $npmCli --version).Trim()
           if ($nodeVersion -ne 'v22.20.0' -or $npmVersion -ne '10.9.3') {
             throw "Unexpected Node/npm runtime: $nodeVersion / $npmVersion"
           }
@@ -149,9 +166,9 @@ jobs:
           $env:NPM_CONFIG_CACHE = $npmCache
           Push-Location $sourceRoot
           try {
-            & npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
+            & $nodeExecutable $npmCli ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            $verificationLines = & node 'src/publication/cli.mjs' archive-verify $assetsRoot $extractionRoot 2>&1
+            $verificationLines = & $nodeExecutable 'src/publication/cli.mjs' archive-verify $assetsRoot $extractionRoot 2>&1
             $verificationExit = $LASTEXITCODE
           } finally {
             Pop-Location
