@@ -1,0 +1,201 @@
+{
+  "schema": "stasis-public-fixture-path-projection-receipt-v1",
+  "sourceRevision": "cbdea4ae0c4c3c28a83a8f7bc1529a1889e0e407",
+  "normalizationToken": "<machine-local-value>",
+  "jsonProjections": [
+    {
+      "kind": "canonical-json-pointer-projection-v1",
+      "path": "test/fixtures/deterministic-v03/stasis-post-0.3-census-v1/deterministic/playwright-raw.json",
+      "allowedJsonPointers": [
+        "/versions/chromiumExecutable"
+      ],
+      "source": {
+        "bytes": 9381,
+        "sha256": "ec0f6c71992a8eeea3655e1800b640ed48e95e862f9a7498849a365ecd93a9e5"
+      },
+      "projected": {
+        "bytes": 9334,
+        "sha256": "1622627885aa3153ad1d8e4cd637eeed19aa5e722edc7d80aacbc72ab550fe38"
+      },
+      "normalized": {
+        "algorithm": "sha256-canonical-json-pointer-redaction-v1",
+        "sourceSha256": "ad2cbb8d4115fa2abca8acfa5ab2774141f4329c147cf5a65c1226f6dafb629d",
+        "projectedSha256": "ad2cbb8d4115fa2abca8acfa5ab2774141f4329c147cf5a65c1226f6dafb629d"
+      }
+    },
+    {
+      "kind": "canonical-json-pointer-projection-v1",
+      "path": "test/fixtures/deterministic-v03/stasis-post-0.3-census-v1/deterministic/stasis-raw.json",
+      "allowedJsonPointers": [
+        "/versions/executablePath"
+      ],
+      "source": {
+        "bytes": 9480,
+        "sha256": "92bd3db4c9ab4ca749a878b4d7830f109e5bc051e7ceb09ed958237e44da22b4"
+      },
+      "projected": {
+        "bytes": 9448,
+        "sha256": "43ea58350709e228d04a2492e90927bce198ec9bc7987fb1eb7b958bb0906d54"
+      },
+      "normalized": {
+        "algorithm": "sha256-canonical-json-pointer-redaction-v1",
+        "sourceSha256": "a50e2433de18b508a1283c17c58d915c1407b19604cb035f5d742ac8b2468767",
+        "projectedSha256": "a50e2433de18b508a1283c17c58d915c1407b19604cb035f5d742ac8b2468767"
+      }
+    },
+    {
+      "kind": "canonical-json-pointer-projection-v1",
+      "path": "test/fixtures/rwa-hosted/rwa/stasis-raw.json",
+      "allowedJsonPointers": [
+        "/versions/executablePath"
+      ],
+      "source": {
+        "bytes": 69173,
+        "sha256": "b3f03b603d426601ec8831e592b98dbda79452bf871b7d40547d02e757163f29"
+      },
+      "projected": {
+        "bytes": 69131,
+        "sha256": "1e83bee47e8518b979107e6000384400e69e74f37184950daa09ea6cc5c43c5f"
+      },
+      "normalized": {
+        "algorithm": "sha256-canonical-json-pointer-redaction-v1",
+        "sourceSha256": "95f0de31c7a2aabf7bca25d4b6262f2db1e45d844b1151aaf8d08a10787ffa71",
+        "projectedSha256": "95f0de31c7a2aabf7bca25d4b6262f2db1e45d844b1151aaf8d08a10787ffa71"
+      }
+    },
+    {
+      "kind": "canonical-json-pointer-projection-v1",
+      "path": "test/fixtures/rwa-hosted/audit.json",
+      "allowedJsonPointers": [
+        "/candidate/archivePath",
+        "/candidate/executablePath",
+        "/evidence/rawBytes",
+        "/evidence/rawSha256",
+        "/evidence/runnerStdoutSha256",
+        "/harness/root",
+        "/rwa/root",
+        "/sdk/importedPath"
+      ],
+      "source": {
+        "bytes": 8231,
+        "sha256": "ec5638397110ac2348c3d2ef20b19331e1106652bbdde75238863eaddf4422ad"
+      },
+      "projected": {
+        "bytes": 8089,
+        "sha256": "fe63518d6b8e543a6f365dce20a76fa275d3c97bc7d0a84c6ed9d94a829a94f9"
+      },
+      "normalized": {
+        "algorithm": "sha256-canonical-json-pointer-redaction-v1",
+        "sourceSha256": "103cbe2e601358051f4ba66e8b561404b27cf14d825190c92dbd44605b45823f",
+        "projectedSha256": "103cbe2e601358051f4ba66e8b561404b27cf14d825190c92dbd44605b45823f"
+      }
+    }
+  ],
+  "logProjections": [
+    {
+      "kind": "single-line-path-projection-v1",
+      "path": "test/fixtures/rwa-hosted/runner.stdout.log",
+      "projectedLine": "rwa/stasis-raw.json",
+      "source": {
+        "bytes": 102,
+        "sha256": "51f7a33f5278e73c8778ccfb10dd7ba6b5ee3fa05abba6ef05bb481bba4b2128"
+      },
+      "projected": {
+        "bytes": 20,
+        "sha256": "404e7c785057ee0cdb224a4c2d731f65fbc1a921a5fa1733913e124c5475ea91"
+      },
+      "normalized": {
+        "algorithm": "sha256-single-line-redaction-v1",
+        "sourceSha256": "aad25c00128cde9d06260317bca14e331a07ce047b8e781334f23833599de3c8",
+        "projectedSha256": "aad25c00128cde9d06260317bca14e331a07ce047b8e781334f23833599de3c8"
+      }
+    }
+  ],
+  "artifactIndexes": [
+    {
+      "kind": "artifact-index-reference-rebind-v1",
+      "path": "test/fixtures/deterministic-v03/artifact-index.json",
+      "changedEntries": [
+        {
+          "artifactPath": "stasis-post-0.3-census-v1/deterministic/playwright-raw.json",
+          "projectPath": "test/fixtures/deterministic-v03/stasis-post-0.3-census-v1/deterministic/playwright-raw.json"
+        },
+        {
+          "artifactPath": "stasis-post-0.3-census-v1/deterministic/stasis-raw.json",
+          "projectPath": "test/fixtures/deterministic-v03/stasis-post-0.3-census-v1/deterministic/stasis-raw.json"
+        }
+      ],
+      "source": {
+        "bytes": 1502,
+        "sha256": "166fd9876d8e43fd4bf26c27fdc82db8f794a306a6fc14b570e8d25e68a9fdf7"
+      },
+      "projected": {
+        "bytes": 1502,
+        "sha256": "3eeb21118b93889cd75495e85d177fbb1395c6fb9f0988e32a32ad33e74287d2"
+      },
+      "normalized": {
+        "algorithm": "sha256-canonical-index-reference-redaction-v1",
+        "sourceSha256": "b3d0c32f9cd9d9019380238efb361683932ba9aea3d7b942a1c9a695a94c9bc7",
+        "projectedSha256": "b3d0c32f9cd9d9019380238efb361683932ba9aea3d7b942a1c9a695a94c9bc7"
+      }
+    },
+    {
+      "kind": "artifact-index-reference-rebind-v1",
+      "path": "test/fixtures/rwa-hosted/artifact-index.json",
+      "changedEntries": [
+        {
+          "artifactPath": "rwa/stasis-raw.json",
+          "projectPath": "test/fixtures/rwa-hosted/rwa/stasis-raw.json"
+        },
+        {
+          "artifactPath": "audit.json",
+          "projectPath": "test/fixtures/rwa-hosted/audit.json"
+        },
+        {
+          "artifactPath": "runner.stdout.log",
+          "projectPath": "test/fixtures/rwa-hosted/runner.stdout.log"
+        }
+      ],
+      "source": {
+        "bytes": 2238,
+        "sha256": "7cfd68c355e8a6a71c4b91cc7462f372fcf70034f753bd4cb509148bebbc59b7"
+      },
+      "projected": {
+        "bytes": 2237,
+        "sha256": "470233284fe59e80b33dbc156dc1cefaa6858f6e4ad13cd8426a69edab2b4a4d"
+      },
+      "normalized": {
+        "algorithm": "sha256-canonical-index-reference-redaction-v1",
+        "sourceSha256": "db1386862a6d8cc84a5381df16c5e56febc97e49573b70631e3ed7d81616a8ab",
+        "projectedSha256": "db1386862a6d8cc84a5381df16c5e56febc97e49573b70631e3ed7d81616a8ab"
+      }
+    }
+  ],
+  "decisionBinding": {
+    "kind": "decision-artifact-index-rebind-v1",
+    "path": "src/wild/decision.mjs",
+    "bindings": [
+      {
+        "constant": "deterministicArtifactIndexSha256",
+        "indexPath": "test/fixtures/deterministic-v03/artifact-index.json"
+      },
+      {
+        "constant": "rwaArtifactIndexSha256",
+        "indexPath": "test/fixtures/rwa-hosted/artifact-index.json"
+      }
+    ],
+    "source": {
+      "bytes": 30488,
+      "sha256": "27e872e813fd1c86a2c8aed8cac86b1ffc145ad62c75ace6112b85846931b626"
+    },
+    "projected": {
+      "bytes": 30488,
+      "sha256": "e1e5bc0251afe95cc09ddf4f7301af765dff4d460ad7ea20fc6cd63d78c02e9c"
+    },
+    "normalized": {
+      "algorithm": "sha256-decision-index-binding-redaction-v1",
+      "sourceSha256": "f264f8bab8836a1080aeb690d454c9368adabcced10e22bee48b11ed14b87b09",
+      "projectedSha256": "f264f8bab8836a1080aeb690d454c9368adabcced10e22bee48b11ed14b87b09"
+    }
+  }
+}

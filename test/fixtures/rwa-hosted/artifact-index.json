@@ -1,0 +1,74 @@
+{
+  "schema": "stasis-rwa-hosted-census-artifact-index-v1",
+  "boundary": "exploratory-hosted-executable-blocker-census-not-sealed-paired-proof",
+  "candidateRevision": "cd471fb2f515e1f7227581fb8930e04bd6414767",
+  "candidateExecutableSha256": "bd6715f5cc30ec66ea2d3b9c0889698ecea54373a3c3ab2c1893c934573916d1",
+  "files": [
+    {
+      "path": "rwa/stasis-raw.json",
+      "bytes": 69131,
+      "sha256": "1e83bee47e8518b979107e6000384400e69e74f37184950daa09ea6cc5c43c5f"
+    },
+    {
+      "path": "audit.json",
+      "bytes": 8089,
+      "sha256": "fe63518d6b8e543a6f365dce20a76fa275d3c97bc7d0a84c6ed9d94a829a94f9"
+    },
+    {
+      "path": "runner.stdout.log",
+      "bytes": 20,
+      "sha256": "404e7c785057ee0cdb224a4c2d731f65fbc1a921a5fa1733913e124c5475ea91"
+    },
+    {
+      "path": "runner.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "server-host.stdout.log",
+      "bytes": 1197,
+      "sha256": "4d05119bb38311c60928ab32a9e57e38bd80b80978e48def9613909ade36d63e"
+    },
+    {
+      "path": "server-host.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "harness-tests.stdout.log",
+      "bytes": 13172,
+      "sha256": "c8e42a4fea6c33678b7952b00ae66d76dd44828b42d2a4e03ef5fa50bff42b55"
+    },
+    {
+      "path": "harness-tests.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "directories": [
+    {
+      "path": "sdk-dist-used",
+      "fileCount": 52,
+      "totalBytes": 857325,
+      "sha256": "7e4572fccb271804c33a9b95b9b582414d476fa76046a47f2eec1db98f62ecf4"
+    },
+    {
+      "path": "sdk-rebuild-check",
+      "fileCount": 52,
+      "totalBytes": 858053,
+      "sha256": "f7538c8b6d086f37aa64fc8e3db57578f8810d401f7273647a60f04a6fb347d2"
+    }
+  ],
+  "validation": {
+    "candidateEnvelopeValid": true,
+    "violations": [],
+    "normalizedCaseCheckpointOracleMatchToPriorLocalExactRun": true
+  },
+  "summary": {
+    "denominator": 8,
+    "exactEquivalent": 0,
+    "semanticOracleDifference": 5,
+    "typedUnsupported": 3,
+    "engineBug": 0
+  }
+}
