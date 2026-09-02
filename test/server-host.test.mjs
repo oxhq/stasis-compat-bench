@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   buildRwaServerArguments,
   buildRwaServerEnvironment,
+  normalizeRwaServerChildSignal,
   rwaServerRoles,
 } from "../src/rwa/server-host.mjs";
 
@@ -39,19 +40,47 @@ test("the sealed server environment removes ambient runtime overrides", () => {
     SEED_DEFAULT_USER_PASSWORD: "wrong",
     SYSTEMROOT: "C:\\Windows",
     VITE_BACKEND_PORT: "3999",
+  }, {
+    preloadPath: "E:\\harness\\src\\rwa\\server-ipc-preload.cjs",
+    roleName: "frontend",
+    rolePort: 3000,
   });
   assert.equal(environment.NODE_ENV, "test");
   assert.equal(environment.GITHUB_TOKEN, undefined);
   assert.equal(environment.OPENAI_API_KEY, undefined);
-  assert.equal(environment.NODE_OPTIONS, undefined);
   assert.equal(environment.NYC_CONFIG_OVERRIDE, undefined);
   assert.equal(environment.PAGINATION_PAGE_SIZE, undefined);
   assert.equal(environment.RWA_ROOT, undefined);
   assert.equal(environment.SEED_DEFAULT_USER_PASSWORD, undefined);
   assert.equal(environment.VITE_BACKEND_PORT, undefined);
   assert.equal(environment.SystemRoot, "C:\\Windows");
+  assert.equal(environment.NODE_OPTIONS, "--require=E:\\harness\\src\\rwa\\server-ipc-preload.cjs");
+  assert.equal(environment.STASIS_COMPAT_RWA_SERVER_ROLE, "frontend");
+  assert.equal(environment.STASIS_COMPAT_RWA_SERVER_PORT, "3000");
   assert.deepEqual(environment.Path.split(path.delimiter).slice(0, 2), [
     path.join(root, "node_modules", ".bin"),
     path.dirname(process.execPath),
   ]);
+});
+
+test("child IPC signals are accepted only for exact role and port payloads", () => {
+  assert.deepEqual(normalizeRwaServerChildSignal({
+    type: "rwa-server-ready",
+    role: "frontend",
+    port: 3000,
+  }), {
+    type: "rwa-server-ready",
+    role: "frontend",
+    port: 3000,
+  });
+  assert.equal(normalizeRwaServerChildSignal({
+    type: "unexpected",
+    role: "frontend",
+    port: 3000,
+  }), null);
+  assert.equal(normalizeRwaServerChildSignal({
+    type: "rwa-server-ready",
+    role: "",
+    port: "3000",
+  }), null);
 });
