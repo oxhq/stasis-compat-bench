@@ -421,3 +421,34 @@ test("pool close failure overrides success with bounded fail-stop evidence", asy
   assert.deepEqual(result.priorTerminal, { success: true });
   assert.equal(JSON.stringify(result).includes(secret), false);
 });
+
+test("performance callers can disable the asymmetric inner wall clock", async () => {
+  const events = [];
+  const sdk = {
+    createStasisSessionPool() {
+      return {
+        async close() {
+          events.push("close");
+        },
+      };
+    },
+    async crawlWithStasis() {
+      events.push("crawl");
+      return { pages: [], scheduledUrls: [] };
+    },
+  };
+
+  const result = await runStasisV03Case({
+    sdk,
+    start: "http://stasis-compat.test/",
+    pageLimit: 1,
+    depthLimit: 0,
+    executablePath: "/verified/stasis",
+    recordWallTime: false,
+  });
+
+  assert.deepEqual(events, ["crawl", "close"]);
+  assert.equal(result.success, true);
+  assert.equal(result.cleanup.status, "passed");
+  assert.equal(Object.hasOwn(result, "wallTimeMs"), false);
+});

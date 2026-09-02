@@ -66,6 +66,7 @@ export const crawlPerformanceRules = deepFreeze({
     maxRequestRetries: 0,
     freshQueuePoolBrowserAndProcessesPerObservation: true,
     harnessSleeps: false,
+    laneInternalTiming: false,
   },
   warmupsPerLane: 1,
   pairedSamples: pairCount,
@@ -300,6 +301,7 @@ export function createStasisPerformanceRunner({ sdk, sdkVersion, executablePath 
       start: job.crawl.start,
       pageLimit: job.crawl.pageLimit,
       depthLimit: job.crawl.depthLimit,
+      recordWallTime: false,
     });
     const { wallTimeMs: _nonAuthoritativeInnerTiming, ...withoutInnerTiming } = result;
     return withoutInnerTiming;

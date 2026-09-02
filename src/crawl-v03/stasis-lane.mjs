@@ -126,8 +126,9 @@ export async function runStasisV03Case({
   executablePath,
   profile = candidateV03.profile,
   networkOptions = stasisNetwork(),
+  recordWallTime = true,
 }) {
-  const startedAt = process.hrtime.bigint();
+  const startedAt = recordWallTime ? process.hrtime.bigint() : null;
   const pool = sdk.createStasisSessionPool({
     maxProcesses: concurrency,
     maxQueue: pageLimit,
@@ -176,13 +177,13 @@ export async function runStasisV03Case({
       priorTerminal: terminal.success
         ? { success: true }
         : { success: false, error: terminal.error },
-      wallTimeMs: monotonicMilliseconds(startedAt),
+      ...(recordWallTime ? { wallTimeMs: monotonicMilliseconds(startedAt) } : {}),
     };
   }
 
   return {
     ...terminal,
     cleanup: { status: "passed", phase: "pool_close" },
-    wallTimeMs: monotonicMilliseconds(startedAt),
+    ...(recordWallTime ? { wallTimeMs: monotonicMilliseconds(startedAt) } : {}),
   };
 }
