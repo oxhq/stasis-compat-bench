@@ -102,6 +102,23 @@ test("RWA hosted wrapper rejects schema, raw, host, continuity, and privacy drif
       },
     },
     {
+      label: "both-invalid checkout continuity",
+      expected: /startup phase is not valid/u,
+      mutate: (value) => {
+        value.sealedRuntime.startup.checkout.valid = false;
+        value.sealedRuntime.startup.checkout.violations = ["drift"];
+        value.sealedRuntime.postflight.checkout.valid = false;
+        value.sealedRuntime.postflight.checkout.violations = ["drift"];
+      },
+    },
+    {
+      label: "checkout bytes drift behind a true flag",
+      expected: /sealed runtime continuity/u,
+      mutate: (value) => {
+        value.sealedRuntime.postflight.checkout.revision = "f".repeat(40);
+      },
+    },
+    {
       label: "credential-like addition",
       expected: /sensitive key/u,
       mutate: (value) => { value.identities.token = "private-value"; },
@@ -417,8 +434,14 @@ function rwaArtifactStub(raw) {
     },
     identities: { runner: "sealed-test-runner" },
     sealedRuntime: {
-      startup: { status: "passed" },
-      postflight: { status: "passed" },
+      startup: {
+        checkout: { valid: true, violations: [], revision: "6".repeat(40) },
+        servers: [{ name: "frontend" }, { name: "backend" }],
+      },
+      postflight: {
+        checkout: { valid: true, violations: [], revision: "6".repeat(40) },
+        servers: [{ name: "frontend" }, { name: "backend" }],
+      },
       continuity: {
         immutableCheckoutIdentity: true,
         sameFrozenServerHostProcesses: true,

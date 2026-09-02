@@ -111,10 +111,20 @@ export function assertRwaPerformanceArtifact(
     ],
     "RWA performance artifact continuity",
   );
+  assertSealedRwaPhase(value.sealedRuntime.startup, "startup");
+  assertSealedRwaPhase(value.sealedRuntime.postflight, "postflight");
   if (
     value.sealedRuntime.continuity.immutableCheckoutIdentity !== true ||
     value.sealedRuntime.continuity.sameFrozenServerHostProcesses !== true ||
-    value.sealedRuntime.continuity.shutdownAcknowledged !== true
+    value.sealedRuntime.continuity.shutdownAcknowledged !== true ||
+    !isDeepStrictEqual(
+      value.sealedRuntime.startup.checkout,
+      value.sealedRuntime.postflight.checkout,
+    ) ||
+    !isDeepStrictEqual(
+      value.sealedRuntime.startup.servers,
+      value.sealedRuntime.postflight.servers,
+    )
   ) {
     throw new TypeError("RWA performance artifact did not retain sealed runtime continuity");
   }
@@ -241,6 +251,24 @@ function isCanonicalIsoInstant(value) {
   if (typeof value !== "string") return false;
   const parsed = new Date(value);
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString() === value;
+}
+
+function assertSealedRwaPhase(value, label) {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    value.checkout === null ||
+    typeof value.checkout !== "object" ||
+    Array.isArray(value.checkout) ||
+    value.checkout.valid !== true ||
+    !Array.isArray(value.checkout.violations) ||
+    value.checkout.violations.length !== 0 ||
+    !Array.isArray(value.servers) ||
+    value.servers.length !== 2
+  ) {
+    throw new TypeError(`RWA performance artifact ${label} phase is not valid`);
+  }
 }
 
 function exactKeys(value, expected, label) {

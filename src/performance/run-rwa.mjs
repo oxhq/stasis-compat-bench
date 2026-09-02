@@ -272,7 +272,7 @@ export function projectCypressLaneResult(value, { upstreamRoot, host } = {}) {
         stateEvidence: {
           attemptOrdinal: attempts.length,
           beforeEachSeedHookLineIdentity: "cypress/tests/ui/auth.spec.ts:7-18",
-          beforeEachSeedHookSource: cypressBeforeEachSeedHookSource,
+          beforeEachSeedHookSpecBlobOid: rwaAuthSource.specBlobOid,
           beforeEachSeedHookSourceSha256: cypressBeforeEachSeedHookSourceSha256,
           engineInstanceOrdinal: 1,
           seedHookOrdinal: expectedCase.ordinal,
@@ -477,10 +477,14 @@ export function createRwaPerformanceArtifact({
         : {
             checkout: projectCheckoutForArtifact(postflight.checkout),
             servers: projectServersForArtifact(postflight.servers),
-          },
+      },
       continuity: {
         immutableCheckoutIdentity: startup !== null &&
           postflight !== null &&
+          startup.checkout.valid === true &&
+          postflight.checkout.valid === true &&
+          startup.checkout.violations.length === 0 &&
+          postflight.checkout.violations.length === 0 &&
           sameJson(
             projectCheckoutForArtifact(startup.checkout),
             projectCheckoutForArtifact(postflight.checkout),
@@ -905,20 +909,6 @@ function waitForChildExit(child, timeoutMs) {
   });
 }
 
-const cypressBeforeEachSeedHookSource = [
-  "  beforeEach(function () {",
-  '    cy.task("db:seed");',
-  "",
-  '    cy.intercept("POST", "/users").as("signup");',
-  '    cy.intercept("POST", apiGraphQL, (req) => {',
-  "      const { body } = req;",
-  "",
-  '      if (body.hasOwnProperty("operationName") && body.operationName === "CreateBankAccount") {',
-  '        req.alias = "gqlCreateBankAccountMutation";',
-  "      }",
-  "    });",
-  "  });",
-].join("\n");
 const cypressBeforeEachSeedHookSourceSha256 =
   "970d46adadf8ef6acdf4c5544a7fae7a1d5ec525ce0549217a5ceb41414c1953";
 

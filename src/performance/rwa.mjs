@@ -1159,7 +1159,7 @@ function assertCaseStateEvidence(value, expectedRunner, expectedCase, item, case
     exactKeys(value, [
       "attemptOrdinal",
       "beforeEachSeedHookLineIdentity",
-      "beforeEachSeedHookSource",
+      "beforeEachSeedHookSpecBlobOid",
       "beforeEachSeedHookSourceSha256",
       "engineInstanceOrdinal",
       "seedHookOrdinal",
@@ -1168,9 +1168,9 @@ function assertCaseStateEvidence(value, expectedRunner, expectedCase, item, case
     if (
       value.attemptOrdinal !== item.attemptCount ||
       value.beforeEachSeedHookLineIdentity !== cypressBeforeEachSeedHookLineIdentity ||
-      value.beforeEachSeedHookSource !== cypressBeforeEachSeedHookSource ||
+      value.beforeEachSeedHookSpecBlobOid !== rwaAuthSource.specBlobOid ||
       value.beforeEachSeedHookSourceSha256 !== cypressBeforeEachSeedHookSourceSha256 ||
-      createHash("sha256").update(value.beforeEachSeedHookSource, "utf8").digest("hex") !==
+      createHash("sha256").update(cypressBeforeEachSeedHookSource, "utf8").digest("hex") !==
         value.beforeEachSeedHookSourceSha256 ||
       value.engineInstanceOrdinal !== 1 ||
       value.seedHookOrdinal !== expectedCase.ordinal ||

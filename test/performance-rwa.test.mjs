@@ -12,22 +12,8 @@ import {
   rwaPerformanceSemanticDifferenceDisclosure,
   rwaPerformanceTrack,
 } from "../src/performance/rwa.mjs";
-import { rwaAuthCases } from "../src/rwa/cases.mjs";
+import { rwaAuthCases, rwaAuthSource } from "../src/rwa/cases.mjs";
 
-const cypressBeforeEachSeedHookSource = [
-  "  beforeEach(function () {",
-  '    cy.task("db:seed");',
-  "",
-  '    cy.intercept("POST", "/users").as("signup");',
-  '    cy.intercept("POST", apiGraphQL, (req) => {',
-  "      const { body } = req;",
-  "",
-  '      if (body.hasOwnProperty("operationName") && body.operationName === "CreateBankAccount") {',
-  '        req.alias = "gqlCreateBankAccountMutation";',
-  "      }",
-  "    });",
-  "  });",
-].join("\n");
 const cypressBeforeEachSeedHookSourceSha256 =
   "970d46adadf8ef6acdf4c5544a7fae7a1d5ec525ce0549217a5ceb41414c1953";
 
@@ -183,7 +169,7 @@ test("lane-result contract binds host instance digests and runner-specific repla
   );
 
   const wrongHook = laneResult("cypress");
-  wrongHook.cases[0].stateEvidence.beforeEachSeedHookSource = "beforeEach(function () {})";
+  wrongHook.cases[0].stateEvidence.beforeEachSeedHookSpecBlobOid = "0".repeat(40);
   assert.throws(
     () => assertRwaPerformanceLaneResult(wrongHook, "cypress", host.identityDigest, host.instanceDigest),
     /state evidence/u,
@@ -522,7 +508,7 @@ function caseStateEvidence(runner, item) {
     return {
       attemptOrdinal: 1,
       beforeEachSeedHookLineIdentity: "cypress/tests/ui/auth.spec.ts:7-18",
-      beforeEachSeedHookSource: cypressBeforeEachSeedHookSource,
+      beforeEachSeedHookSpecBlobOid: rwaAuthSource.specBlobOid,
       beforeEachSeedHookSourceSha256: cypressBeforeEachSeedHookSourceSha256,
       engineInstanceOrdinal: 1,
       seedHookOrdinal: item.ordinal,
