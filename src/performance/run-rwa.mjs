@@ -31,7 +31,7 @@ import {
 import {
   buildRwaServerEnvironment,
 } from "../rwa/server-host.mjs";
-import { runStasisRwaProof } from "../rwa/stasis-lane.mjs";
+import { prepareStasisRwaProofRunner } from "../rwa/stasis-lane.mjs";
 import {
   assertFreshSealedArtifactRoot,
   repositoryRoot,
@@ -42,7 +42,10 @@ import { rwaAuthCases, rwaAuthSource } from "../rwa/cases.mjs";
 
 const expectedNodePlatform = "win32";
 const expectedNodeArch = "x64";
-const serverHostReadyTimeoutMs = 30_000;
+// Match the unchanged RWA project's own 120-second CI server-start budget.
+// This is an event-driven watchdog outside every benchmark timing boundary.
+const serverHostReadyTimeoutMs = 120_000;
+const serverHostStopTimeoutMs = 30_000;
 const serverHostScriptPath = fileURLToPath(new URL("../rwa/server-host.mjs", import.meta.url));
 const serverPreloadPath = fileURLToPath(new URL("../rwa/server-ipc-preload.cjs", import.meta.url));
 const nodeVersionPattern = /^v22\.20\.0$/u;
@@ -80,6 +83,18 @@ export async function runSealedRwaPerformance({
     if (cypress === null || typeof cypress !== "object" || typeof cypress.run !== "function") {
       throw new TypeError("The pinned checkout did not provide the Cypress module API");
     }
+    const runPreparedStasisLane = await prepareStasisRwaProofRunner(
+      postSupportExecutablePath(candidate),
+      {
+        launchRuntime: candidate.sdk.launch,
+        expectedExecutableSha256: candidate.identity.windows.executable.sha256,
+        expectedNodeVersion: postSupportNodeVersion,
+        hashExecutable: hashFile,
+        profile: postSupportProfile,
+        runner: "stasis-v0.3.3",
+        sdkLabel: `@oxhq/stasis@${postSupportVersion}`,
+      },
+    );
 
     const hostFacts = await collectHostFacts({
       environment,
@@ -133,15 +148,7 @@ export async function runSealedRwaPerformance({
       },
       runCypressLane: async () => cypress.run(buildCypressRunOptions(upstreamRoot)),
       projectCypressResult: async (value) => projectCypressLaneResult(value, { upstreamRoot, host: hostFacts.host }),
-      runStasisLane: async () => runStasisRwaProof(postSupportExecutablePath(candidate), {
-        launchRuntime: candidate.sdk.launch,
-        expectedExecutableSha256: candidate.identity.windows.executable.sha256,
-        expectedNodeVersion: postSupportNodeVersion,
-        hashExecutable: hashFile,
-        profile: postSupportProfile,
-        runner: "stasis-v0.3.3",
-        sdkLabel: `@oxhq/stasis@${postSupportVersion}`,
-      }),
+      runStasisLane: runPreparedStasisLane,
       projectStasisResult: async (value) => projectStasisLaneResult(value, { host: hostFacts.host, candidate }),
       writeRaw: async (raw) => {
         const artifact = createRwaPerformanceArtifact({
@@ -186,7 +193,7 @@ export function waitForRwaHostReady(child, timeoutMs = serverHostReadyTimeoutMs)
   return waitForRwaHostLifecycle(child, "rwa-host-ready", timeoutMs);
 }
 
-export async function requestRwaHostStop(child, timeoutMs = serverHostReadyTimeoutMs) {
+export async function requestRwaHostStop(child, timeoutMs = serverHostStopTimeoutMs) {
   if (child.exitCode !== null || child.killed === true) {
     return { stopped: true, status: child.exitCode ?? 0 };
   }

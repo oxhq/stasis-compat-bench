@@ -158,6 +158,16 @@ export const rwaSettlePolicy = Object.freeze({
 });
 
 export async function runStasisRwaProof(executablePath, options = {}) {
+  const runPreparedProof = await prepareStasisRwaProofRunner(executablePath, options);
+  return runPreparedProof();
+}
+
+/**
+ * Performs executable/runtime identity work once, before a caller enters any
+ * benchmark timing boundary. Every invocation of the returned runner still
+ * creates fresh native processes and executes the complete eight-case proof.
+ */
+export async function prepareStasisRwaProofRunner(executablePath, options = {}) {
   if (typeof executablePath !== "string" || executablePath.length === 0) {
     throw new TypeError("A frozen STASIS_EXECUTABLE is required");
   }
@@ -173,7 +183,6 @@ export async function runStasisRwaProof(executablePath, options = {}) {
   const selectedProfile = options.profile;
   const runner = options.runner ?? "stasis-controlled-web-session-v1";
   const sdkLabel = options.sdkLabel ?? "@oxhq/stasis@0.2.1";
-  const startedAt = new Date().toISOString();
   const dependencies = {
     fetchImpl: options.fetchImpl ?? globalThis.fetch,
     launchRuntime: options.launchRuntime ?? launch,
@@ -184,87 +193,90 @@ export async function runStasisRwaProof(executablePath, options = {}) {
     selectedProfile,
   };
 
-  let cases;
-  if (executableSha256 !== expectedExecutableSha256 || nodeVersion !== expectedRuntimeNodeVersion) {
-    const executableMismatch = executableSha256 !== expectedExecutableSha256;
-    cases = rwaAuthCases.map((definition) =>
-      nonExecutedOutcome(definition, {
-        classification: "BENCHMARK_INVALID",
-        typedSurface: executableMismatch ? "candidate_identity" : "node_runtime",
-        phase: executableMismatch ? "candidate-identity" : "runtime-identity",
-        error: executableMismatch
-          ? {
-              name: "CandidateIdentityError",
-              code: "stasis_executable_hash_mismatch",
-              message: `expected ${expectedExecutableSha256}, got ${executableSha256}`,
-              fatal: false,
-              stateEffect: "none",
-            }
-          : {
-              name: "RuntimeIdentityError",
-              code: "node_runtime_mismatch",
-              message: `expected ${expectedRuntimeNodeVersion}, got ${nodeVersion}`,
-              fatal: false,
-              stateEffect: "none",
-            },
-      }),
-    );
-  } else {
-    cases = [];
-    for (const definition of rwaAuthCases) {
-      cases.push(await runOneCase(definition, dependencies));
+  return async function runPreparedStasisRwaProof() {
+    const startedAt = new Date().toISOString();
+    let cases;
+    if (executableSha256 !== expectedExecutableSha256 || nodeVersion !== expectedRuntimeNodeVersion) {
+      const executableMismatch = executableSha256 !== expectedExecutableSha256;
+      cases = rwaAuthCases.map((definition) =>
+        nonExecutedOutcome(definition, {
+          classification: "BENCHMARK_INVALID",
+          typedSurface: executableMismatch ? "candidate_identity" : "node_runtime",
+          phase: executableMismatch ? "candidate-identity" : "runtime-identity",
+          error: executableMismatch
+            ? {
+                name: "CandidateIdentityError",
+                code: "stasis_executable_hash_mismatch",
+                message: `expected ${expectedExecutableSha256}, got ${executableSha256}`,
+                fatal: false,
+                stateEffect: "none",
+              }
+            : {
+                name: "RuntimeIdentityError",
+                code: "node_runtime_mismatch",
+                message: `expected ${expectedRuntimeNodeVersion}, got ${nodeVersion}`,
+                fatal: false,
+                stateEffect: "none",
+              },
+        }),
+      );
+    } else {
+      cases = [];
+      for (const definition of rwaAuthCases) {
+        cases.push(await runOneCase(definition, dependencies));
+      }
     }
-  }
 
-  const classifications = Object.fromEntries(
-    [...new Set(cases.map(({ classification }) => classification))]
-      .sort()
-      .map((classification) => [classification, cases.filter((entry) => entry.classification === classification).length]),
-  );
-  const passed = cases.filter(({ classification }) => passingClassifications.has(classification)).length;
+    const classifications = Object.fromEntries(
+      [...new Set(cases.map(({ classification }) => classification))]
+        .sort()
+        .map((classification) => [classification, cases.filter((entry) => entry.classification === classification).length]),
+    );
+    const passed = cases.filter(({ classification }) => passingClassifications.has(classification)).length;
 
-  return {
-    schema: "stasis-compat-rwa-stasis-raw-v1",
-    protocol: "stasis-compat-bench-v1",
-    track: "rwa-auth",
-    runner,
-    startedAt,
-    completedAt: new Date().toISOString(),
-    source: rwaAuthSource,
-    versions: {
-      sdk: sdkLabel,
-      node: nodeVersion,
-      expectedNode: expectedRuntimeNodeVersion,
-      nodeIdentityMatches: nodeVersion === expectedRuntimeNodeVersion,
-      executablePath,
-      executableSha256,
-      expectedExecutableSha256,
-      candidateIdentityMatches: executableSha256 === expectedExecutableSha256,
-    },
-    endpoints: {
-      appOrigin,
-      apiOrigin,
-      seed: `${apiOrigin}/testData/seed`,
-    },
-    rules: {
-      retries: 0,
-      fallback: false,
-      sleeps: false,
-      domPolling: false,
-      businessApiSubstitution: false,
-      processPerCase: 1,
-      seedBeforeEveryCase: true,
-    },
-    denominator: rwaAuthCases.length,
-    cases,
-    sharedBlocker: sharedBlocker(cases),
-    summary: {
-      complete: cases.length === rwaAuthCases.length,
-      classified: cases.length,
-      passed,
-      failedOrUnsupported: cases.length - passed,
-      classifications,
-    },
+    return {
+      schema: "stasis-compat-rwa-stasis-raw-v1",
+      protocol: "stasis-compat-bench-v1",
+      track: "rwa-auth",
+      runner,
+      startedAt,
+      completedAt: new Date().toISOString(),
+      source: rwaAuthSource,
+      versions: {
+        sdk: sdkLabel,
+        node: nodeVersion,
+        expectedNode: expectedRuntimeNodeVersion,
+        nodeIdentityMatches: nodeVersion === expectedRuntimeNodeVersion,
+        executablePath,
+        executableSha256,
+        expectedExecutableSha256,
+        candidateIdentityMatches: executableSha256 === expectedExecutableSha256,
+      },
+      endpoints: {
+        appOrigin,
+        apiOrigin,
+        seed: `${apiOrigin}/testData/seed`,
+      },
+      rules: {
+        retries: 0,
+        fallback: false,
+        sleeps: false,
+        domPolling: false,
+        businessApiSubstitution: false,
+        processPerCase: 1,
+        seedBeforeEveryCase: true,
+      },
+      denominator: rwaAuthCases.length,
+      cases,
+      sharedBlocker: sharedBlocker(cases),
+      summary: {
+        complete: cases.length === rwaAuthCases.length,
+        classified: cases.length,
+        passed,
+        failedOrUnsupported: cases.length - passed,
+        classifications,
+      },
+    };
   };
 }
 

@@ -6,6 +6,7 @@ import {
   evaluateRwaOracles,
   expectedNodeVersion,
   expectedStasisExecutableSha256,
+  prepareStasisRwaProofRunner,
   projectRwaUnsupportedWork,
   readCompleteAudit,
   rwaUnsupportedWorkRetentionLimit,
@@ -808,6 +809,33 @@ test("candidate identity drift is classified for the full denominator before exe
   assert.equal(invoked, false);
   assert.deepEqual(result.cases.map(({ classification }) => classification), Array(8).fill("BENCHMARK_INVALID"));
   assert.equal(result.sharedBlocker.code, "stasis_executable_hash_mismatch");
+});
+
+test("prepared performance runner hashes identity once outside repeated full proofs", async () => {
+  let hashCalls = 0;
+  let invoked = false;
+  const runPreparedProof = await prepareStasisRwaProofRunner(fakeExecutable, {
+    hashExecutable: async () => {
+      hashCalls += 1;
+      return "0".repeat(64);
+    },
+    nodeVersion: expectedNodeVersion,
+    fetchImpl: async () => {
+      invoked = true;
+      throw new Error("must not fetch");
+    },
+    launchRuntime: async () => {
+      invoked = true;
+      throw new Error("must not launch");
+    },
+  });
+
+  const first = await runPreparedProof();
+  const second = await runPreparedProof();
+  assert.equal(hashCalls, 1);
+  assert.equal(invoked, false);
+  assert.deepEqual(first.cases.map(({ classification }) => classification), Array(8).fill("BENCHMARK_INVALID"));
+  assert.deepEqual(second.cases.map(({ classification }) => classification), Array(8).fill("BENCHMARK_INVALID"));
 });
 
 test("the adapter executes all public mappings and binds v2 settle paths without hidden state", async () => {
