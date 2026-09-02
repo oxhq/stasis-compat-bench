@@ -57,8 +57,8 @@ export function buildCombinedPerformanceEvidence({ rwaRaw, crawlRaw }) {
       track: validatedRwa.track,
       host: structuredClone(validatedRwa.host),
       hostBinding: {
-        field: "identityDigest",
-        digest: validatedRwa.host.identityDigest,
+        field: "instanceDigest",
+        digest: validatedRwa.host.instanceDigest,
       },
       workload: {
         denominatorKind: "application_intents",
@@ -81,8 +81,8 @@ export function buildCombinedPerformanceEvidence({ rwaRaw, crawlRaw }) {
       track: validatedCrawl.track,
       host: structuredClone(validatedCrawl.identity.host),
       hostBinding: {
-        field: "hostClassDigest",
-        digest: validatedCrawl.identity.host.hostClassDigest,
+        field: "bootInstanceDigest",
+        digest: validatedCrawl.identity.host.bootInstanceDigest,
       },
       workload: {
         denominatorKind: "pages",
@@ -125,7 +125,7 @@ ${evidence.claimBoundary.interpretation}
 - Raw schema: \`${evidence.rwa.rawSchema}\`
 - Track: \`${evidence.rwa.track}\`
 - Host: \`${evidence.rwa.host.platform}/${evidence.rwa.host.arch}\` on \`${evidence.rwa.host.imageOs}\` \`${evidence.rwa.host.imageVersion}\`
-- Host identity digest: \`${evidence.rwa.hostBinding.digest}\`
+- Host instance digest: \`${evidence.rwa.hostBinding.digest}\`
 - Workload: ${evidence.rwa.workload.denominatorCount} complete application intents across ${evidence.rwa.workload.timedPairs} exact AB/BA pairs
 - Boundary: ${evidence.rwa.workload.interpretation}
 - Cypress median / IQR: ${evidence.rwa.statistics.cypress.medianMilliseconds} ms / ${evidence.rwa.statistics.cypress.iqrMilliseconds} ms
@@ -142,7 +142,7 @@ ${renderPairRows(evidence.rwa.pairs)}
 - Raw schema: \`${evidence.crawl.rawSchema}\`
 - Track: \`${evidence.crawl.track}\`
 - Host: \`${evidence.crawl.host.platform}/${evidence.crawl.host.arch}\` on \`${evidence.crawl.host.imageOs}\` \`${evidence.crawl.host.imageVersion}\`
-- Host class digest: \`${evidence.crawl.hostBinding.digest}\`
+- Host boot-instance digest: \`${evidence.crawl.hostBinding.digest}\`
 - Workload: ${evidence.crawl.workload.denominatorCount} complete frozen pages across ${evidence.crawl.workload.timedPairs} exact AB/BA pairs
 - Boundary: ${evidence.crawl.workload.interpretation}
 - Crawlee median / IQR: ${evidence.crawl.statistics.crawlee.medianMilliseconds} ms / ${evidence.crawl.statistics.crawlee.iqrMilliseconds} ms
@@ -189,7 +189,7 @@ function assertCombinedPerformanceEvidenceShape(value) {
     label: "RWA",
     baselineRunner: "cypress",
     baselineLabel: "cypress",
-    hostBindingField: "identityDigest",
+    hostBindingField: "instanceDigest",
     hostKeys: [
       "arch",
       "cpuModel",
@@ -209,7 +209,7 @@ function assertCombinedPerformanceEvidenceShape(value) {
     label: "crawl",
     baselineRunner: "crawlee",
     baselineLabel: "crawlee",
-    hostBindingField: "hostClassDigest",
+    hostBindingField: "bootInstanceDigest",
     hostKeys: [
       "arch",
       "bootInstanceDigest",
