@@ -613,29 +613,7 @@ async function stopRwaServerHostNow(child, timeoutMs = 5_000) {
 }
 
 function projectAuthorityRawForArtifact(raw) {
-  return {
-    schema: raw.schema,
-    protocol: raw.protocol,
-    track: raw.track,
-    sourceIdentity: {
-      repository: raw.source.repository,
-      revision: raw.source.revision,
-      specBlobOid: raw.source.specBlobOid,
-      specBlobSha256: raw.source.specBlobSha256,
-      specWorktreeSha256: raw.source.windowsCrlfWorktreeSha256,
-      worktreeLineEndings: raw.source.worktreeLineEndings,
-      describeTitle: raw.source.describeTitle,
-      denominator: raw.source.denominator,
-      order: raw.source.order,
-    },
-    host: structuredClone(raw.host),
-    plan: structuredClone(raw.plan),
-    semanticDifferenceDisclosure: structuredClone(raw.semanticDifferenceDisclosure),
-    serverLifecycle: structuredClone(raw.serverLifecycle),
-    warmups: structuredClone(raw.warmups),
-    samples: structuredClone(raw.samples),
-    authority: structuredClone(raw.authority),
-  };
+  return structuredClone(raw);
 }
 
 function projectCheckoutForArtifact(value) {

@@ -17,6 +17,7 @@ import {
   postSupportRevision,
   postSupportVersion,
 } from "../src/post-support/candidate-identity.mjs";
+import { assertPostSupportArtifactPrivacy } from "../src/post-support/artifact-privacy.mjs";
 import { rwaAuthCases, rwaAuthSource } from "../src/rwa/cases.mjs";
 import { rwaBaselineExpected } from "../src/rwa/run-cypress.mjs";
 import { repositoryRoot } from "../src/shared/io.mjs";
@@ -353,4 +354,6 @@ test("the sealed artifact omits local paths and listener PIDs while binding exac
   assert.equal(artifact.provenance.workflowSource.revision, "2".repeat(40));
   assert.equal(artifact.host.classDigest, host.identityDigest);
   assert.equal(artifact.host.machineInstanceSaltedDigest, host.instanceDigest);
+  assert.deepEqual(artifact.authorityRaw, raw);
+  assert.equal(assertPostSupportArtifactPrivacy(artifact), artifact);
 });
