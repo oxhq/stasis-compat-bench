@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 
 import {
@@ -26,14 +28,20 @@ import { canonicalHttpUrl, serializeError } from "../shared/io.mjs";
 export const crawlPerformanceSchema = "stasis-v0.3.3-performance-crawl-raw-v1";
 export const crawlPerformanceProtocol = "stasis-v0.3.3-performance-crawl-v1";
 export const crawlPerformanceTrack = "deterministic-crawl-20-page";
+export const crawlPerformanceRawArtifactPath = "performance/crawl-raw.json";
 
 const stasisVersion = "0.3.3";
 const stasisRevision = "48c5a718a9ddd63f496e45307e1484974ccf8587";
 const stasisProfile = "controlled-web-session-v2";
+const stasisReleaseTag = "v0.3.3";
+const stasisPackageQualificationRunId = "33506181780";
+const stasisPackageQualificationRunAttempt = "1";
+const stasisRuntimeManifestSha256 = "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4";
 const nodeVersion = "v22.20.0";
 const crawleeVersion = "3.18.1";
 const playwrightVersion = "1.62.1";
 const sha256Pattern = /^[a-f0-9]{64}$/u;
+const gitShaPattern = /^[a-f0-9]{40}$/u;
 const canonicalUnsignedIntegerPattern = /^(?:0|[1-9][0-9]*)$/u;
 const laneNames = Object.freeze(["crawlee", "stasis"]);
 const pairCount = 10;
@@ -123,6 +131,22 @@ const frozenPrimaryOracle = deepFreeze([
   oraclePage("/state/ready/leaf", "/state/ready/leaf", 2),
   oraclePage("/leaf/navigation", "/leaf/navigation", 2),
 ]);
+
+const corpusModuleRelativePath = "src/crawl/corpus.mjs";
+const corpusModuleSource = readFileSync(
+  fileURLToPath(new URL("../crawl/corpus.mjs", import.meta.url)),
+);
+
+export const crawlPerformanceCorpusIdentity = deepFreeze({
+  schema: "stasis-v0.3.3-performance-crawl-corpus-v1",
+  sourceModule: corpusModuleRelativePath,
+  sourceSha256: sha256Bytes(corpusModuleSource),
+  scheduledUrlsSha256: sha256Json(expectedPrimaryScheduledUrls),
+  negativeControlsSha256: sha256Json(
+    negativeControls.map(({ id, start, expectedSurface }) => ({ id, start, expectedSurface })),
+  ),
+  primaryOracleSha256: sha256Json(frozenPrimaryOracle),
+});
 
 /**
  * Executes the preregistered crawl performance authority. Runners and the
@@ -282,6 +306,13 @@ export function createStasisPerformanceRunner({ sdk, sdkVersion, executablePath 
   };
 }
 
+export function createCrawlPerformanceIdentity(value) {
+  return deepFreeze(cloneAndAssertIdentity({
+    ...structuredClone(value),
+    corpus: value?.corpus ?? crawlPerformanceCorpusIdentity,
+  }));
+}
+
 export function computeCrawlPerformanceHostIdentityDigest(value) {
   const facts = projectHostFacts(value);
   return createHash("sha256").update(JSON.stringify(facts), "utf8").digest("hex");
@@ -291,7 +322,8 @@ export function createCrawlPerformanceHostIdentity(value) {
   const facts = projectHostFacts(value);
   return deepFreeze({
     ...facts,
-    identityDigest: computeCrawlPerformanceHostIdentityDigest(facts),
+    bootInstanceDigest: assertBootInstanceDigest(value?.bootInstanceDigest),
+    hostClassDigest: computeCrawlPerformanceHostIdentityDigest(facts),
   });
 }
 
@@ -304,15 +336,39 @@ export function assertCrawlPerformanceHostIdentity(value) {
     "imageVersion",
     "cpuModel",
     "logicalCpuCount",
-    "identityDigest",
+    "bootInstanceDigest",
+    "hostClassDigest",
   ])) {
     throw new TypeError("Invalid privacy-safe Ubuntu host identity");
   }
   if (
-    !sha256Pattern.test(value.identityDigest ?? "") ||
-    value.identityDigest !== computeCrawlPerformanceHostIdentityDigest(value)
+    !sha256Pattern.test(value.hostClassDigest ?? "") ||
+    value.hostClassDigest !== computeCrawlPerformanceHostIdentityDigest(value) ||
+    !sha256Pattern.test(value.bootInstanceDigest ?? "")
   ) {
     throw new TypeError("Invalid privacy-safe Ubuntu host identity digest");
+  }
+  return value;
+}
+
+export function createCrawlPerformanceGithubProvenance(value) {
+  return deepFreeze(projectGithubProvenance(value));
+}
+
+export function assertCrawlPerformanceGithubProvenance(value) {
+  if (!hasExactKeys(value, [
+    "provider",
+    "repository",
+    "workflow",
+    "job",
+    "runId",
+    "runAttempt",
+    "workflowSourceSha",
+    "workflowSourceRef",
+    "harnessCheckoutRevision",
+    "harnessCheckoutTree",
+  ]) || !isDeepStrictEqual(projectGithubProvenance(value), value)) {
+    throw new TypeError("Invalid GitHub Actions crawl performance provenance");
   }
   return value;
 }
@@ -728,7 +784,7 @@ function cloneAndAssertIdentity(identity) {
   const host = projectHostFacts(value?.host);
   const expectedDigest = computeCrawlPerformanceHostIdentityDigest(host);
   if (
-    !hasExactKeys(value, ["host", "crawlee", "stasis"]) ||
+    !hasExactKeys(value, ["host", "provenance", "corpus", "crawlee", "stasis"]) ||
     !hasExactKeys(value?.host, [
       "platform",
       "arch",
@@ -737,7 +793,28 @@ function cloneAndAssertIdentity(identity) {
       "imageVersion",
       "cpuModel",
       "logicalCpuCount",
-      "identityDigest",
+      "bootInstanceDigest",
+      "hostClassDigest",
+    ]) ||
+    !hasExactKeys(value?.provenance, [
+      "provider",
+      "repository",
+      "workflow",
+      "job",
+      "runId",
+      "runAttempt",
+      "workflowSourceSha",
+      "workflowSourceRef",
+      "harnessCheckoutRevision",
+      "harnessCheckoutTree",
+    ]) ||
+    !hasExactKeys(value?.corpus, [
+      "schema",
+      "sourceModule",
+      "sourceSha256",
+      "scheduledUrlsSha256",
+      "negativeControlsSha256",
+      "primaryOracleSha256",
     ]) ||
     !hasExactKeys(value?.crawlee, [
       "runner",
@@ -746,8 +823,9 @@ function cloneAndAssertIdentity(identity) {
       "playwrightVersion",
       "browser",
       "chromiumVersion",
+      "chromiumExecutableBytes",
       "chromiumExecutableSha256",
-      "hostIdentityDigest",
+      "hostClassDigest",
     ]) ||
     !hasExactKeys(value?.stasis, [
       "runner",
@@ -756,20 +834,28 @@ function cloneAndAssertIdentity(identity) {
       "sdkVersion",
       "revision",
       "profile",
+      "releaseTag",
+      "packageQualificationRunId",
+      "packageQualificationRunAttempt",
       "sdkArchiveSha256",
       "executableSha256",
-      "hostIdentityDigest",
+      "runtimeManifestSha256",
+      "hostClassDigest",
     ]) ||
     assertCrawlPerformanceHostIdentity(value?.host) !== value.host ||
-    value.host.identityDigest !== expectedDigest ||
-    value?.crawlee?.hostIdentityDigest !== expectedDigest ||
-    value?.stasis?.hostIdentityDigest !== expectedDigest ||
+    assertCrawlPerformanceGithubProvenance(value?.provenance) !== value.provenance ||
+    !isDeepStrictEqual(value?.corpus, crawlPerformanceCorpusIdentity) ||
+    value.host.hostClassDigest !== expectedDigest ||
+    value?.crawlee?.hostClassDigest !== expectedDigest ||
+    value?.stasis?.hostClassDigest !== expectedDigest ||
     value?.crawlee?.runner !== "crawlee-playwrightcrawler" ||
     value?.crawlee?.nodeVersion !== nodeVersion ||
     value?.crawlee?.crawleeVersion !== crawleeVersion ||
     value?.crawlee?.playwrightVersion !== playwrightVersion ||
     value?.crawlee?.browser !== "chromium" ||
-    !nonempty(value?.crawlee?.chromiumVersion) ||
+    !safeHostString(value?.crawlee?.chromiumVersion) ||
+    !Number.isSafeInteger(value?.crawlee?.chromiumExecutableBytes) ||
+    value?.crawlee?.chromiumExecutableBytes < 1 ||
     !sha256Pattern.test(value?.crawlee?.chromiumExecutableSha256 ?? "") ||
     value?.stasis?.runner !== "stasis-reference-crawler-v0.3.3" ||
     value?.stasis?.nodeVersion !== nodeVersion ||
@@ -777,8 +863,12 @@ function cloneAndAssertIdentity(identity) {
     value?.stasis?.sdkVersion !== stasisVersion ||
     value?.stasis?.revision !== stasisRevision ||
     value?.stasis?.profile !== stasisProfile ||
+    value?.stasis?.releaseTag !== stasisReleaseTag ||
+    value?.stasis?.packageQualificationRunId !== stasisPackageQualificationRunId ||
+    value?.stasis?.packageQualificationRunAttempt !== stasisPackageQualificationRunAttempt ||
     !sha256Pattern.test(value?.stasis?.sdkArchiveSha256 ?? "") ||
-    !sha256Pattern.test(value?.stasis?.executableSha256 ?? "")
+    !sha256Pattern.test(value?.stasis?.executableSha256 ?? "") ||
+    value?.stasis?.runtimeManifestSha256 !== stasisRuntimeManifestSha256
   ) {
     throw new TypeError("Invalid Ubuntu crawl performance identity");
   }
@@ -807,6 +897,37 @@ function projectHostFacts(value) {
     facts.logicalCpuCount < 1
   ) {
     throw new TypeError("Invalid privacy-safe Ubuntu host facts");
+  }
+  return facts;
+}
+
+function projectGithubProvenance(value) {
+  const facts = {
+    provider: value?.provider,
+    repository: value?.repository,
+    workflow: value?.workflow,
+    job: value?.job,
+    runId: value?.runId,
+    runAttempt: value?.runAttempt,
+    workflowSourceSha: value?.workflowSourceSha,
+    workflowSourceRef: value?.workflowSourceRef,
+    harnessCheckoutRevision: value?.harnessCheckoutRevision,
+    harnessCheckoutTree: value?.harnessCheckoutTree,
+  };
+  if (
+    facts.provider !== "github-actions" ||
+    !safeHostString(facts.repository) ||
+    !/^[^/\s]+\/[^/\s]+$/u.test(facts.repository) ||
+    !safeHostString(facts.workflow) ||
+    !safeHostString(facts.job) ||
+    !canonicalPositiveInteger(facts.runId) ||
+    !canonicalPositiveInteger(facts.runAttempt) ||
+    !gitShaPattern.test(facts.workflowSourceSha ?? "") ||
+    !safeHostString(facts.workflowSourceRef) ||
+    !gitShaPattern.test(facts.harnessCheckoutRevision ?? "") ||
+    !gitShaPattern.test(facts.harnessCheckoutTree ?? "")
+  ) {
+    throw new TypeError("Invalid GitHub Actions crawl performance provenance");
   }
   return facts;
 }
@@ -966,6 +1087,17 @@ function nonempty(value) {
   return typeof value === "string" && value.length > 0;
 }
 
+function canonicalPositiveInteger(value) {
+  return typeof value === "string" && /^[1-9][0-9]*$/u.test(value);
+}
+
+function assertBootInstanceDigest(value) {
+  if (!sha256Pattern.test(value ?? "")) {
+    throw new TypeError("Invalid privacy-safe Ubuntu boot-instance digest");
+  }
+  return value;
+}
+
 function safeHostString(value) {
   return nonempty(value) && value.length <= 256 && !/[\u0000-\u001f\u007f]/u.test(value);
 }
@@ -981,4 +1113,12 @@ function deepFreeze(value) {
     if (child !== null && typeof child === "object" && !Object.isFrozen(child)) deepFreeze(child);
   }
   return value;
+}
+
+function sha256Bytes(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function sha256Json(value) {
+  return sha256Bytes(Buffer.from(JSON.stringify(value), "utf8"));
 }

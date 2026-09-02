@@ -5,7 +5,9 @@ import test from "node:test";
 import {
   assertAuthoritativeLinuxPerformanceCandidate,
   createLinuxPerformanceCandidateSpec,
+  linuxPerformanceCandidateEnvironmentNames,
   linuxPerformanceCandidateIdentity,
+  loadLinuxPerformanceCandidateSpec,
   linuxPerformanceExecutablePath,
   verifyLinuxPerformanceCandidate,
 } from "../src/performance/linux-candidate.mjs";
@@ -122,6 +124,19 @@ test("Linux candidate verification binds release, executable, and SDK identities
     () => assertAuthoritativeLinuxPerformanceCandidate(verified),
     /default verification/u,
   );
+});
+
+test("Linux candidate spec reads the exact environment variable contract", () => {
+  const paths = candidatePaths();
+  const spec = loadLinuxPerformanceCandidateSpec({
+    [linuxPerformanceCandidateEnvironmentNames.archive]: paths.archive,
+    [linuxPerformanceCandidateEnvironmentNames.executable]: paths.executable,
+    [linuxPerformanceCandidateEnvironmentNames.proof]: paths.proof,
+    [linuxPerformanceCandidateEnvironmentNames.runtimeManifest]: paths.runtimeManifest,
+    [linuxPerformanceCandidateEnvironmentNames.sdkArchive]: paths.sdkArchive,
+    [linuxPerformanceCandidateEnvironmentNames.sdkPackageRoot]: paths.sdkPackageRoot,
+  });
+  assert.deepEqual(spec.identity, linuxPerformanceCandidateIdentity);
 });
 
 test("Linux candidate verification fails before SDK import on a wrong binary", async () => {

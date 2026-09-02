@@ -76,6 +76,7 @@ const authoritativeCandidates = new WeakSet();
 const defaultDependencies = Object.freeze({});
 
 export const linuxPerformanceCandidateIdentity = exactIdentity;
+export const linuxPerformanceCandidateEnvironmentNames = environmentNames;
 
 export function loadLinuxPerformanceCandidateSpec(environment = process.env) {
   return createLinuxPerformanceCandidateSpec(Object.fromEntries(

@@ -3,7 +3,9 @@ import test from "node:test";
 
 import {
   assertCrawlPerformanceRaw,
+  crawlPerformanceCorpusIdentity,
   computeCrawlPerformanceHostIdentityDigest,
+  createCrawlPerformanceGithubProvenance,
   createCrawlPerformanceHostIdentity,
   createStasisPerformanceRunner,
   crawlPerformanceProtocol,
@@ -26,11 +28,25 @@ function identity() {
     imageVersion: "20260824.1.0",
     cpuModel: "Example Hosted CPU",
     logicalCpuCount: 4,
+    bootInstanceDigest: "d".repeat(64),
   };
   const retainedHost = createCrawlPerformanceHostIdentity(host);
   const identityDigest = computeCrawlPerformanceHostIdentityDigest(retainedHost);
   return {
     host: structuredClone(retainedHost),
+    provenance: createCrawlPerformanceGithubProvenance({
+      provider: "github-actions",
+      repository: "oxhq/stasis",
+      workflow: "performance",
+      job: "crawl-benchmark",
+      runId: "33599999999",
+      runAttempt: "1",
+      workflowSourceSha: "e".repeat(40),
+      workflowSourceRef: "refs/heads/post-v033-performance-evidence",
+      harnessCheckoutRevision: "f".repeat(40),
+      harnessCheckoutTree: "1".repeat(40),
+    }),
+    corpus: structuredClone(crawlPerformanceCorpusIdentity),
     crawlee: {
       runner: "crawlee-playwrightcrawler",
       nodeVersion: "v22.20.0",
@@ -38,8 +54,9 @@ function identity() {
       playwrightVersion: "1.62.1",
       browser: "chromium",
       chromiumVersion: "151.0.7922.34",
+      chromiumExecutableBytes: 123_456_789,
       chromiumExecutableSha256: "a".repeat(64),
-      hostIdentityDigest: identityDigest,
+      hostClassDigest: identityDigest,
     },
     stasis: {
       runner: "stasis-reference-crawler-v0.3.3",
@@ -48,9 +65,13 @@ function identity() {
       sdkVersion: "0.3.3",
       revision: "48c5a718a9ddd63f496e45307e1484974ccf8587",
       profile: "controlled-web-session-v2",
+      releaseTag: "v0.3.3",
+      packageQualificationRunId: "33506181780",
+      packageQualificationRunAttempt: "1",
       sdkArchiveSha256: "b".repeat(64),
       executableSha256: "c".repeat(64),
-      hostIdentityDigest: identityDigest,
+      runtimeManifestSha256: "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4",
+      hostClassDigest: identityDigest,
     },
   };
 }
@@ -305,8 +326,12 @@ test("raw schema rejects host, order, timing, and authority mutations", async ()
     now: incrementalClock(),
   });
   const mutations = [
-    (value) => { value.identity.host.hostname = "must-not-be-retained"; },
-    (value) => { value.identity.crawlee.hostIdentityDigest = "0".repeat(64); },
+    (value) => { value.identity.host.hostClassDigest = "0".repeat(64); },
+    (value) => { value.identity.provenance.runId = "01"; },
+    (value) => { value.identity.provenance.harnessCheckoutTree = "0".repeat(39); },
+    (value) => { value.identity.corpus.sourceSha256 = "0".repeat(64); },
+    (value) => { value.identity.crawlee.hostClassDigest = "0".repeat(64); },
+    (value) => { value.identity.crawlee.chromiumExecutableBytes = 0; },
     (value) => { value.pairs[1].order = "AB"; },
     (value) => { value.pairs[0].observations[0].elapsedNs = "01"; },
     (value) => { value.authority.completedPairs = 9; },
