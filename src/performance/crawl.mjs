@@ -442,10 +442,24 @@ async function runCrawleeObservation(job, launcher) {
         ],
         async requestHandler({ page, request, response }) {
           const depth = Number(request.userData.depth ?? 0);
-          await page.locator('#status[data-state="complete"]').waitFor({
-            state: "attached",
-            timeout: 15_000,
-          });
+          await page.evaluate(() => new Promise((resolve) => {
+            const ready = () =>
+              document.querySelector('#status[data-state="complete"]') !== null;
+            if (ready()) {
+              resolve();
+              return;
+            }
+            const observer = new MutationObserver(() => {
+              if (!ready()) return;
+              observer.disconnect();
+              resolve();
+            });
+            observer.observe(document.documentElement, {
+              attributes: true,
+              childList: true,
+              subtree: true,
+            });
+          }));
           const finalUrl = canonicalHttpUrl(page.url());
           const rawLinks = await page.locator("a[href]").evaluateAll((anchors) =>
             anchors.map((anchor) => anchor.href),
