@@ -55,6 +55,7 @@ const projectedErrorCodes = new Set([
   "host_field_invalid",
   "host_identity_digest_invalid",
   "host_identity_digest_mismatch",
+  "host_instance_digest_invalid",
   "host_platform_invalid",
   "invalid_result",
   "lane_case_attempt_invalid",
@@ -62,13 +63,16 @@ const projectedErrorCodes = new Set([
   "lane_case_order_invalid",
   "lane_case_outcome_inconsistent",
   "lane_case_oracles_invalid",
+  "lane_case_state_evidence_invalid",
   "lane_case_pass_without_execution",
   "lane_cases_invalid",
   "lane_classification_invalid",
   "lane_count_invalid",
   "lane_counts_inconsistent",
   "lane_denominator_invalid",
+  "lane_framework_waiting_invalid",
   "lane_host_mismatch",
+  "lane_host_instance_mismatch",
   "lane_identity_mismatch",
   "lane_result_not_snapshotable",
   "lane_state_attestation_invalid",
@@ -78,6 +82,7 @@ const projectedErrorCodes = new Set([
   "raw_identity_invalid",
   "record_failure_invalid",
   "record_gate_invalid",
+  "record_host_mismatch",
   "record_payload_invalid",
   "record_status_invalid",
   "retrycount_not_zero",
@@ -127,6 +132,26 @@ const activeDifferenceIds = new Set(
 const activeSemanticDifferenceDefinitions = Object.fromEntries(
   Object.entries(rwaAuthSemanticDifferences).filter(([id]) => activeDifferenceIds.has(id)),
 );
+const cypressFrameworkNativeWaiting = "cypress-command-and-assertion-retry";
+const noFrameworkNativeWaiting = "none";
+const cypressTestIsolation = "upstream-cypress-test-isolation";
+const cypressBeforeEachSeedHookLineIdentity = "cypress/tests/ui/auth.spec.ts:7-18";
+const cypressBeforeEachSeedHookSource = [
+  "  beforeEach(function () {",
+  '    cy.task("db:seed");',
+  "",
+  '    cy.intercept("POST", "/users").as("signup");',
+  '    cy.intercept("POST", apiGraphQL, (req) => {',
+  "      const { body } = req;",
+  "",
+  '      if (body.hasOwnProperty("operationName") && body.operationName === "CreateBankAccount") {',
+  '        req.alias = "gqlCreateBankAccountMutation";',
+  "      }",
+  "    });",
+  "  });",
+].join("\n");
+const cypressBeforeEachSeedHookSourceSha256 =
+  "970d46adadf8ef6acdf4c5544a7fae7a1d5ec525ce0549217a5ceb41414c1953";
 
 export const rwaPerformanceSemanticDifferenceDisclosure = deepFreeze({
   exactEquivalenceClaimed: false,
@@ -194,8 +219,10 @@ export const rwaPerformancePlan = deepFreeze({
 
 export function createRwaPerformanceHostIdentity(fields) {
   const projection = projectHostFields(fields);
+  const instanceDigest = assertHostInstanceDigest(fields?.instanceDigest);
   return deepFreeze({
     ...projection,
+    instanceDigest,
     identityDigest: digestHostFields(projection),
   });
 }
@@ -211,11 +238,13 @@ export function assertRwaPerformanceHostIdentity(value) {
     "identityDigest",
     "imageOs",
     "imageVersion",
+    "instanceDigest",
     "logicalCpuCount",
     "platform",
     "runnerOs",
   ], "RWA performance host identity");
   const projected = projectHostFields(value);
+  assertHostInstanceDigest(value.instanceDigest);
   if (!sha256Pattern.test(value.identityDigest ?? "")) {
     invalid("host_identity_digest_invalid", "RWA performance host identity digest is invalid");
   }
@@ -225,7 +254,12 @@ export function assertRwaPerformanceHostIdentity(value) {
   return value;
 }
 
-export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHostDigest) {
+export function assertRwaPerformanceLaneResult(
+  value,
+  expectedRunner,
+  expectedHostDigest,
+  expectedHostInstanceDigest,
+) {
   if (!runners.includes(expectedRunner)) {
     invalid("runner_unknown", `Unknown RWA performance runner ${String(expectedRunner)}`);
   }
@@ -236,8 +270,10 @@ export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHo
     "droppedFailureCount",
     "engineStartupCount",
     "engineStartupIncluded",
+    "frameworkNativeWaiting",
     "freshState",
     "hostIdentityDigest",
+    "hostInstanceDigest",
     "retryCount",
     "runner",
     "schema",
@@ -256,6 +292,12 @@ export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHo
   }
   if (!sha256Pattern.test(expectedHostDigest ?? "") || value.hostIdentityDigest !== expectedHostDigest) {
     invalid("lane_host_mismatch", "RWA performance lane did not attest the preflight host");
+  }
+  if (
+    !sha256Pattern.test(expectedHostInstanceDigest ?? "") ||
+    value.hostInstanceDigest !== expectedHostInstanceDigest
+  ) {
+    invalid("lane_host_instance_mismatch", "RWA performance lane did not attest the preflight host instance");
   }
   if (value.engineStartupIncluded !== true) {
     invalid("engine_startup_not_included", "The full-lane callback must include engine startup");
@@ -278,6 +320,16 @@ export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHo
   if (typeof value.freshState !== "boolean" || typeof value.seedBeforeEveryIntent !== "boolean") {
     invalid("lane_state_attestation_invalid", "RWA performance lane state attestations must be boolean");
   }
+  if (
+    value.frameworkNativeWaiting !== (
+      expectedRunner === cypressRunner ? cypressFrameworkNativeWaiting : noFrameworkNativeWaiting
+    )
+  ) {
+    invalid(
+      "lane_framework_waiting_invalid",
+      "RWA performance lane framework-native waiting disclosure is invalid",
+    );
+  }
   if (value.selectedIntentCount !== rwaAuthCases.length) {
     invalid("lane_denominator_invalid", "RWA performance lane must retain all eight selected intents");
   }
@@ -287,6 +339,7 @@ export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHo
 
   let seededIntentCount = 0;
   let completedIntentCount = 0;
+  const stasisEngineOrdinals = new Set();
   for (let index = 0; index < rwaAuthCases.length; index += 1) {
     const expected = rwaAuthCases[index];
     const item = value.cases[index];
@@ -301,6 +354,7 @@ export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHo
       "ordinal",
       "seeded",
       "semanticDifferenceIds",
+      "stateEvidence",
     ], `RWA performance case ${index + 1}`);
     if (item.id !== expected.id || item.ordinal !== expected.ordinal) {
       invalid("lane_case_order_invalid", "RWA performance lane changed the frozen case identity or order");
@@ -368,6 +422,14 @@ export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHo
     if (passes && (!item.seeded || !item.intentCompleted || item.attemptCount !== 1)) {
       invalid("lane_case_pass_without_execution", "A passing case must attest seed and intent completion");
     }
+    const engineInstanceOrdinal = assertCaseStateEvidence(
+      item.stateEvidence,
+      expectedRunner,
+      expected,
+      item,
+      index + 1,
+    );
+    if (expectedRunner === stasisRunner) stasisEngineOrdinals.add(engineInstanceOrdinal);
     if (item.seeded) seededIntentCount += 1;
     if (item.intentCompleted) completedIntentCount += 1;
   }
@@ -376,6 +438,18 @@ export function assertRwaPerformanceLaneResult(value, expectedRunner, expectedHo
     value.completedIntentCount !== completedIntentCount
   ) {
     invalid("lane_counts_inconsistent", "RWA performance lane counts do not match its case records");
+  }
+  if (
+    expectedRunner === stasisRunner &&
+    !isDeepStrictEqual(
+      [...stasisEngineOrdinals].sort((left, right) => left - right),
+      rwaAuthCases.map(({ ordinal }) => ordinal),
+    )
+  ) {
+    invalid(
+      "lane_case_state_evidence_invalid",
+      "RWA performance Stasis lanes must retain unique engine ordinals 1..8",
+    );
   }
   return value;
 }
@@ -387,6 +461,8 @@ export async function runRwaPerformanceAuthority({
   stopRwaServers,
   runCypressLane,
   runStasisLane,
+  projectCypressResult = passthroughResult,
+  projectStasisResult = passthroughResult,
   writeRaw = async () => undefined,
 } = {}) {
   for (const [name, dependency] of Object.entries({
@@ -396,6 +472,8 @@ export async function runRwaPerformanceAuthority({
     stopRwaServers,
     runCypressLane,
     runStasisLane,
+    projectCypressResult,
+    projectStasisResult,
     writeRaw,
   })) {
     if (typeof dependency !== "function") {
@@ -438,6 +516,10 @@ export async function runRwaPerformanceAuthority({
     [cypressRunner]: runCypressLane,
     [stasisRunner]: runStasisLane,
   };
+  const projectLane = {
+    [cypressRunner]: projectCypressResult,
+    [stasisRunner]: projectStasisResult,
+  };
   const warmups = [];
   const samples = [];
   let unsafeToContinue = false;
@@ -447,7 +529,7 @@ export async function runRwaPerformanceAuthority({
   try {
     for (let index = 0; index < runners.length; index += 1) {
       const runner = runners[index];
-      const record = await runUntimedLane(runLane[runner], {
+      const record = await runUntimedLane(runLane[runner], projectLane[runner], {
         phase: "warmup",
         sequence: index + 1,
         warmupIndex: 1,
@@ -466,16 +548,21 @@ export async function runRwaPerformanceAuthority({
       outer: for (const pair of pairSchedule) {
         for (let position = 0; position < pair.runners.length; position += 1) {
           const runner = pair.runners[position];
-          const record = await runTimedLane(runLane[runner], monotonicNow, {
-            phase: "timed",
-            sequence: samples.length + 1,
-            pairIndex: pair.pairIndex,
-            pairOrder: pair.order,
-            position: position + 1,
-            runner,
-            host,
-            serverContext,
-          });
+          const record = await runTimedLane(
+            runLane[runner],
+            projectLane[runner],
+            monotonicNow,
+            {
+              phase: "timed",
+              sequence: samples.length + 1,
+              pairIndex: pair.pairIndex,
+              pairOrder: pair.order,
+              position: position + 1,
+              runner,
+              host,
+              serverContext,
+            },
+          );
           samples.push(record);
           if (unsafeRecordStatuses.has(record.status)) {
             unsafeToContinue = true;
@@ -525,11 +612,19 @@ export async function runRwaPerformanceAuthority({
   await writeRaw(raw);
   return raw;
 
-  async function runUntimedLane(callback, context) {
+  async function runUntimedLane(callback, projector, context) {
     try {
-      const result = snapshotLaneResult(await callback(callbackContext(context)));
-      assertRwaPerformanceLaneResult(result, context.runner, host.identityDigest);
+      const callbackValue = await callback(callbackContext(context));
+      const result = snapshotLaneResult(await projector(callbackValue, callbackContext(context)));
+      assertRwaPerformanceLaneResult(
+        result,
+        context.runner,
+        host.identityDigest,
+        host.instanceDigest,
+      );
       return {
+        hostIdentityDigest: host.identityDigest,
+        hostInstanceDigest: host.instanceDigest,
         sequence: context.sequence,
         warmupIndex: context.warmupIndex,
         runner: context.runner,
@@ -540,6 +635,8 @@ export async function runRwaPerformanceAuthority({
     } catch (error) {
       const status = error instanceof LaneResultContractError ? "invalid_result" : "runner_error";
       return {
+        hostIdentityDigest: host.identityDigest,
+        hostInstanceDigest: host.instanceDigest,
         sequence: context.sequence,
         warmupIndex: context.warmupIndex,
         runner: context.runner,
@@ -550,12 +647,12 @@ export async function runRwaPerformanceAuthority({
     }
   }
 
-  async function runTimedLane(callback, clock, context) {
+  async function runTimedLane(callback, projector, clock, context) {
     let start;
     try {
       start = readMonotonicClock(clock);
     } catch (error) {
-      return clockFailureRecord(context, {
+      return clockFailureRecord(context, projector, {
         startNs: null,
         endNs: null,
         durationNs: null,
@@ -572,14 +669,14 @@ export async function runRwaPerformanceAuthority({
     try {
       end = readMonotonicClock(clock);
     } catch (error) {
-      return clockFailureRecord(context, {
+      return clockFailureRecord(context, projector, {
         startNs: start.toString(),
         endNs: null,
         durationNs: null,
       }, projectFixedError(error, "clock_end_invalid"), candidate, callbackError);
     }
     if (end <= start) {
-      return clockFailureRecord(context, {
+      return clockFailureRecord(context, projector, {
         startNs: start.toString(),
         endNs: end.toString(),
         durationNs: null,
@@ -592,6 +689,8 @@ export async function runRwaPerformanceAuthority({
     };
     if (callbackError !== null) {
       return {
+        hostIdentityDigest: host.identityDigest,
+        hostInstanceDigest: host.instanceDigest,
         sequence: context.sequence,
         pairIndex: context.pairIndex,
         pairOrder: context.pairOrder,
@@ -604,9 +703,16 @@ export async function runRwaPerformanceAuthority({
       };
     }
     try {
-      const result = snapshotLaneResult(candidate);
-      assertRwaPerformanceLaneResult(result, context.runner, host.identityDigest);
+      const result = snapshotLaneResult(await projector(candidate, callbackContext(context)));
+      assertRwaPerformanceLaneResult(
+        result,
+        context.runner,
+        host.identityDigest,
+        host.instanceDigest,
+      );
       return {
+        hostIdentityDigest: host.identityDigest,
+        hostInstanceDigest: host.instanceDigest,
         sequence: context.sequence,
         pairIndex: context.pairIndex,
         pairOrder: context.pairOrder,
@@ -619,6 +725,8 @@ export async function runRwaPerformanceAuthority({
       };
     } catch (error) {
       return {
+        hostIdentityDigest: host.identityDigest,
+        hostInstanceDigest: host.instanceDigest,
         sequence: context.sequence,
         pairIndex: context.pairIndex,
         pairOrder: context.pairOrder,
@@ -632,17 +740,31 @@ export async function runRwaPerformanceAuthority({
     }
   }
 
-  function clockFailureRecord(context, timing, error, candidate = null, callbackError = null) {
+  async function clockFailureRecord(
+    context,
+    projector,
+    timing,
+    error,
+    candidate = null,
+    callbackError = null,
+  ) {
     let result = null;
     if (callbackError === null && candidate !== null) {
       try {
-        result = snapshotLaneResult(candidate);
-        assertRwaPerformanceLaneResult(result, context.runner, host.identityDigest);
+        result = snapshotLaneResult(await projector(candidate, callbackContext(context)));
+        assertRwaPerformanceLaneResult(
+          result,
+          context.runner,
+          host.identityDigest,
+          host.instanceDigest,
+        );
       } catch {
         result = null;
       }
     }
     return {
+      hostIdentityDigest: host.identityDigest,
+      hostInstanceDigest: host.instanceDigest,
       sequence: context.sequence,
       pairIndex: context.pairIndex,
       pairOrder: context.pairOrder,
@@ -654,6 +776,10 @@ export async function runRwaPerformanceAuthority({
       error,
     };
   }
+}
+
+function passthroughResult(value) {
+  return value;
 }
 
 export function assertRwaPerformanceRaw(value) {
@@ -685,8 +811,8 @@ export function assertRwaPerformanceRaw(value) {
   }
   assertRwaPerformanceHostIdentity(value.host);
   assertServerLifecycle(value.serverLifecycle);
-  assertWarmups(value.warmups, value.host.identityDigest);
-  assertSamples(value.samples, value.host.identityDigest);
+  assertWarmups(value.warmups, value.host.identityDigest, value.host.instanceDigest);
+  assertSamples(value.samples, value.host.identityDigest, value.host.instanceDigest);
   const expectedAuthority = deriveAuthority(value.warmups, value.samples, value.serverLifecycle);
   if (!isDeepStrictEqual(value.authority, expectedAuthority)) {
     invalid("authority_summary_invalid", "RWA performance authority summary does not replay from raw samples");
@@ -744,13 +870,15 @@ function assertServerLifecycle(value) {
   if (value.error !== null) assertProjectedError(value.error);
 }
 
-function assertWarmups(value, hostDigest) {
+function assertWarmups(value, hostDigest, hostInstanceDigest) {
   if (!Array.isArray(value) || value.length > runners.length) {
     invalid("warmups_invalid", "RWA performance warmups are invalid");
   }
   value.forEach((record, index) => {
     exactKeys(record, [
       "error",
+      "hostIdentityDigest",
+      "hostInstanceDigest",
       "result",
       "runner",
       "sequence",
@@ -764,11 +892,11 @@ function assertWarmups(value, hostDigest) {
     ) {
       invalid("warmup_order_invalid", "RWA performance warmups changed order or multiplicity");
     }
-    assertExecutionRecord(record, hostDigest);
+    assertExecutionRecord(record, hostDigest, hostInstanceDigest);
   });
 }
 
-function assertSamples(value, hostDigest) {
+function assertSamples(value, hostDigest, hostInstanceDigest) {
   if (!Array.isArray(value) || value.length > pairSchedule.length * 2) {
     invalid("samples_invalid", "RWA performance timed samples are invalid");
   }
@@ -784,6 +912,8 @@ function assertSamples(value, hostDigest) {
   value.forEach((record, index) => {
     exactKeys(record, [
       "error",
+      "hostIdentityDigest",
+      "hostInstanceDigest",
       "pairIndex",
       "pairOrder",
       "position",
@@ -813,7 +943,7 @@ function assertSamples(value, hostDigest) {
       );
     }
     if (timing.end !== null) priorEnd = timing.end;
-    assertExecutionRecord(record, hostDigest);
+    assertExecutionRecord(record, hostDigest, hostInstanceDigest);
   });
 }
 
@@ -867,7 +997,15 @@ function assertPartialTiming(value, error) {
   return { start, end };
 }
 
-function assertExecutionRecord(record, hostDigest) {
+function assertExecutionRecord(record, hostDigest, hostInstanceDigest) {
+  if (
+    !sha256Pattern.test(record.hostIdentityDigest ?? "") ||
+    record.hostIdentityDigest !== hostDigest ||
+    !sha256Pattern.test(record.hostInstanceDigest ?? "") ||
+    record.hostInstanceDigest !== hostInstanceDigest
+  ) {
+    invalid("record_host_mismatch", "RWA performance execution record host digests are invalid");
+  }
   if (!["passed", "failed", ...unsafeRecordStatuses].includes(record.status)) {
     invalid("record_status_invalid", "RWA performance execution status is invalid");
   }
@@ -875,7 +1013,12 @@ function assertExecutionRecord(record, hostDigest) {
     if (record.error !== null || record.result === null) {
       invalid("record_payload_invalid", "RWA performance result record is inconsistent");
     }
-    assertRwaPerformanceLaneResult(record.result, record.runner, hostDigest);
+    assertRwaPerformanceLaneResult(
+      record.result,
+      record.runner,
+      hostDigest,
+      hostInstanceDigest,
+    );
     const expectedStatus = isEightOfEight(record.result) ? "passed" : "failed";
     if (record.status !== expectedStatus) {
       invalid("record_gate_invalid", "RWA performance record status does not match eight-of-eight");
@@ -889,7 +1032,12 @@ function assertExecutionRecord(record, hostDigest) {
     invalid("record_failure_invalid", "RWA performance runner failure retained an invalid result");
   }
   if (record.status === "clock_error" && record.result !== null) {
-    assertRwaPerformanceLaneResult(record.result, record.runner, hostDigest);
+    assertRwaPerformanceLaneResult(
+      record.result,
+      record.runner,
+      hostDigest,
+      hostInstanceDigest,
+    );
   }
   assertProjectedError(record.error);
 }
@@ -995,8 +1143,86 @@ function projectHostFields(value) {
   return fields;
 }
 
+function assertHostInstanceDigest(value) {
+  if (!sha256Pattern.test(value ?? "")) {
+    invalid("host_instance_digest_invalid", "RWA performance host instance digest is invalid");
+  }
+  return value;
+}
+
 function digestHostFields(fields) {
   return createHash("sha256").update(JSON.stringify(fields), "utf8").digest("hex");
+}
+
+function assertCaseStateEvidence(value, expectedRunner, expectedCase, item, caseIndex) {
+  if (expectedRunner === cypressRunner) {
+    exactKeys(value, [
+      "attemptOrdinal",
+      "beforeEachSeedHookLineIdentity",
+      "beforeEachSeedHookSource",
+      "beforeEachSeedHookSourceSha256",
+      "engineInstanceOrdinal",
+      "seedHookOrdinal",
+      "testIsolation",
+    ], `RWA performance case ${caseIndex} state evidence`);
+    if (
+      value.attemptOrdinal !== item.attemptCount ||
+      value.beforeEachSeedHookLineIdentity !== cypressBeforeEachSeedHookLineIdentity ||
+      value.beforeEachSeedHookSource !== cypressBeforeEachSeedHookSource ||
+      value.beforeEachSeedHookSourceSha256 !== cypressBeforeEachSeedHookSourceSha256 ||
+      createHash("sha256").update(value.beforeEachSeedHookSource, "utf8").digest("hex") !==
+        value.beforeEachSeedHookSourceSha256 ||
+      value.engineInstanceOrdinal !== 1 ||
+      value.seedHookOrdinal !== expectedCase.ordinal ||
+      value.testIsolation !== cypressTestIsolation
+    ) {
+      invalid(
+        "lane_case_state_evidence_invalid",
+        `RWA performance case ${caseIndex} Cypress state evidence is invalid`,
+      );
+    }
+    return value.engineInstanceOrdinal;
+  }
+  exactKeys(value, [
+    "cleanupCheckpointPhase",
+    "cleanupCheckpointSequence",
+    "cleanupCheckpointStatus",
+    "engineInstanceOrdinal",
+    "runtimeLaunchCheckpointPhase",
+    "runtimeLaunchCheckpointSequence",
+    "runtimeLaunchCheckpointStatus",
+    "runtimeLaunchFreshProcess",
+    "seedCheckpointPhase",
+    "seedCheckpointSequence",
+    "seedCheckpointStatus",
+    "seedOrdinal",
+  ], `RWA performance case ${caseIndex} state evidence`);
+  if (
+    value.cleanupCheckpointPhase !== "cleanup" ||
+    value.cleanupCheckpointStatus !== "passed" ||
+    value.engineInstanceOrdinal !== expectedCase.ordinal ||
+    value.runtimeLaunchCheckpointPhase !== "runtime-launch" ||
+    value.runtimeLaunchCheckpointStatus !== "passed" ||
+    value.runtimeLaunchFreshProcess !== true ||
+    value.seedCheckpointPhase !== "seed" ||
+    value.seedCheckpointStatus !== "passed" ||
+    value.seedOrdinal !== expectedCase.ordinal ||
+    !isPositiveSafeInteger(value.seedCheckpointSequence) ||
+    !isPositiveSafeInteger(value.runtimeLaunchCheckpointSequence) ||
+    !isPositiveSafeInteger(value.cleanupCheckpointSequence) ||
+    value.seedCheckpointSequence >= value.runtimeLaunchCheckpointSequence ||
+    value.runtimeLaunchCheckpointSequence >= value.cleanupCheckpointSequence
+  ) {
+    invalid(
+      "lane_case_state_evidence_invalid",
+      `RWA performance case ${caseIndex} Stasis state evidence is invalid`,
+    );
+  }
+  return value.engineInstanceOrdinal;
+}
+
+function isPositiveSafeInteger(value) {
+  return Number.isSafeInteger(value) && value > 0;
 }
 
 function projectError(error, fallbackCode) {

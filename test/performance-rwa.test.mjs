@@ -14,6 +14,23 @@ import {
 } from "../src/performance/rwa.mjs";
 import { rwaAuthCases } from "../src/rwa/cases.mjs";
 
+const cypressBeforeEachSeedHookSource = [
+  "  beforeEach(function () {",
+  '    cy.task("db:seed");',
+  "",
+  '    cy.intercept("POST", "/users").as("signup");',
+  '    cy.intercept("POST", apiGraphQL, (req) => {',
+  "      const { body } = req;",
+  "",
+  '      if (body.hasOwnProperty("operationName") && body.operationName === "CreateBankAccount") {',
+  '        req.alias = "gqlCreateBankAccountMutation";',
+  "      }",
+  "    });",
+  "  });",
+].join("\n");
+const cypressBeforeEachSeedHookSourceSha256 =
+  "970d46adadf8ef6acdf4c5544a7fae7a1d5ec525ce0549217a5ceb41414c1953";
+
 const host = createRwaPerformanceHostIdentity({
   platform: "win32",
   arch: "x64",
@@ -22,6 +39,7 @@ const host = createRwaPerformanceHostIdentity({
   imageVersion: "20260824.1",
   cpuModel: "Test CPU",
   logicalCpuCount: 8,
+  instanceDigest: "4".repeat(64),
 });
 
 test("RWA performance orchestration keeps the exact AB/BA lanes inside one external clock boundary", async () => {
@@ -36,7 +54,7 @@ test("RWA performance orchestration keeps the exact AB/BA lanes inside one exter
       events.push(`${label}:oracles:${item.ordinal}`);
     }
     events.push(`${label}:cleanup`);
-    return laneResult(runner);
+    return { runner };
   };
 
   const raw = await runRwaPerformanceAuthority({
@@ -58,6 +76,14 @@ test("RWA performance orchestration keeps the exact AB/BA lanes inside one exter
     },
     runCypressLane: lane("cypress"),
     runStasisLane: lane("stasis-v0.3.3"),
+    projectCypressResult: async (value, context) => {
+      events.push(`${invocationLabel(context)}:project`);
+      return laneResult(value.runner);
+    },
+    projectStasisResult: async (value, context) => {
+      events.push(`${invocationLabel(context)}:project`);
+      return laneResult(value.runner);
+    },
     writeRaw: async (value) => {
       events.push("raw:write");
       assert.equal(value.authority.valid, true);
@@ -83,13 +109,18 @@ test("RWA performance orchestration keeps the exact AB/BA lanes inside one exter
 
   const expectedEvents = ["preflight", "servers:start"];
   expectedEvents.push(...laneEvents("warmup:1:cypress"));
+  expectedEvents.push("warmup:1:cypress:project");
   expectedEvents.push(...laneEvents("warmup:1:stasis-v0.3.3"));
+  expectedEvents.push("warmup:1:stasis-v0.3.3:project");
   for (const sample of expectedTimedSchedule()) {
     expectedEvents.push("clock");
     expectedEvents.push(...laneEvents(
       `timed:${sample.pairIndex}:${sample.pairOrder}:${sample.position}:${sample.runner}`,
     ));
     expectedEvents.push("clock");
+    expectedEvents.push(
+      `timed:${sample.pairIndex}:${sample.pairOrder}:${sample.position}:${sample.runner}:project`,
+    );
   }
   expectedEvents.push("servers:stop", "raw:write");
   assert.deepEqual(events, expectedEvents);
@@ -97,19 +128,21 @@ test("RWA performance orchestration keeps the exact AB/BA lanes inside one exter
   assert.equal(events.indexOf("clock") > events.lastIndexOf("warmup:1:stasis-v0.3.3:cleanup"), true);
   assert.equal(events.lastIndexOf("clock") < events.indexOf("servers:stop"), true);
   assert.equal(events.lastIndexOf("clock") < events.indexOf("raw:write"), true);
+  assert.equal(events.indexOf("timed:1:AB:1:cypress:project") > events.indexOf("timed:1:AB:1:cypress:cleanup"), true);
+  assert.equal(events.indexOf("timed:1:AB:1:cypress:project") > events.indexOf("clock", events.indexOf("timed:1:AB:1:cypress:cleanup")), true);
 });
 
 test("lane-result contract rejects missing or false cleanup attestation", async () => {
   const missing = laneResult("cypress");
   delete missing.cleanupComplete;
   assert.throws(
-    () => assertRwaPerformanceLaneResult(missing, "cypress", host.identityDigest),
+    () => assertRwaPerformanceLaneResult(missing, "cypress", host.identityDigest, host.instanceDigest),
     /unexpected or missing fields/u,
   );
 
   const incomplete = laneResult("cypress", { cleanupComplete: false });
   assert.throws(
-    () => assertRwaPerformanceLaneResult(incomplete, "cypress", host.identityDigest),
+    () => assertRwaPerformanceLaneResult(incomplete, "cypress", host.identityDigest, host.instanceDigest),
     /resolve only after cleanup completes/u,
   );
 
@@ -135,6 +168,39 @@ test("lane-result contract rejects missing or false cleanup attestation", async 
   assert.equal(raw.samples.length, 0);
   assert.deepEqual(events, ["servers:stop", "raw:write"]);
   assert.ok(raw.authority.reasonCodes.includes("runner_contract_or_cleanup_failure"));
+});
+
+test("lane-result contract binds host instance digests and runner-specific replay evidence", () => {
+  const cypress = laneResult("cypress");
+  assert.doesNotThrow(() =>
+    assertRwaPerformanceLaneResult(cypress, "cypress", host.identityDigest, host.instanceDigest),
+  );
+
+  const wrongInstance = laneResult("cypress", { hostInstanceDigest: "7".repeat(64) });
+  assert.throws(
+    () => assertRwaPerformanceLaneResult(wrongInstance, "cypress", host.identityDigest, host.instanceDigest),
+    /host instance/u,
+  );
+
+  const wrongHook = laneResult("cypress");
+  wrongHook.cases[0].stateEvidence.beforeEachSeedHookSource = "beforeEach(function () {})";
+  assert.throws(
+    () => assertRwaPerformanceLaneResult(wrongHook, "cypress", host.identityDigest, host.instanceDigest),
+    /state evidence/u,
+  );
+
+  const hiddenWaits = laneResult("cypress", { frameworkNativeWaiting: "none" });
+  assert.throws(
+    () => assertRwaPerformanceLaneResult(hiddenWaits, "cypress", host.identityDigest, host.instanceDigest),
+    /framework-native waiting/u,
+  );
+
+  const stasis = laneResult("stasis-v0.3.3");
+  stasis.cases[7].stateEvidence.engineInstanceOrdinal = 7;
+  assert.throws(
+    () => assertRwaPerformanceLaneResult(stasis, "stasis-v0.3.3", host.identityDigest, host.instanceDigest),
+    /Stasis state evidence is invalid/u,
+  );
 });
 
 test("one retained Stasis behavioral failure invalidates all ten pairs without retry or sample dropping", async () => {
@@ -254,8 +320,9 @@ test("clock failures retain the attempted slot, invalidate authority, and never 
       stopRwaServers: async () => undefined,
       runCypressLane: async (context) => {
         if (context.phase === "timed") timedCalls += 1;
-        return laneResult("cypress");
+        return { runner: "cypress" };
       },
+      projectCypressResult: async (value) => laneResult(value.runner),
       runStasisLane: async () => laneResult("stasis-v0.3.3"),
     });
     assert.equal(raw.samples.length, 1, scenario.label);
@@ -263,6 +330,11 @@ test("clock failures retain the attempted slot, invalidate authority, and never 
     assert.equal(raw.samples[0].error.code, scenario.expectedCode, scenario.label);
     assert.deepEqual(raw.samples[0].timing, scenario.expectedTiming, scenario.label);
     assert.equal(timedCalls, scenario.expectedTimedCalls, scenario.label);
+    assert.equal(
+      raw.samples[0].result === null,
+      scenario.expectedTimedCalls === 0,
+      `${scenario.label}: completed callbacks retain their projected correctness result`,
+    );
     assert.equal(raw.authority.valid, false, scenario.label);
     assert.ok(raw.authority.reasonCodes.includes("clock_failure"), scenario.label);
   }
@@ -348,6 +420,12 @@ test("raw schema replays host, schedule, timing, authority, and semantic disclos
     ["host digest drift", (value) => {
       value.host.imageVersion = "changed";
     }],
+    ["host instance drift", (value) => {
+      value.host.instanceDigest = "5".repeat(64);
+    }],
+    ["record host instance drift", (value) => {
+      value.samples[0].hostInstanceDigest = "6".repeat(64);
+    }],
     ["pair-order drift", (value) => {
       value.samples[2].pairOrder = "AB";
     }],
@@ -372,6 +450,12 @@ test("raw schema replays host, schedule, timing, authority, and semantic disclos
     ["oracle identity drift", (value) => {
       value.samples[0].result.cases[0].oracles[0].id = "substituted-oracle";
     }],
+    ["cypress hook evidence drift", (value) => {
+      value.samples[0].result.cases[0].stateEvidence.beforeEachSeedHookSourceSha256 = "0".repeat(64);
+    }],
+    ["stasis engine ordinal drift", (value) => {
+      value.samples[1].result.cases[7].stateEvidence.engineInstanceOrdinal = 7;
+    }],
   ];
   for (const [label, mutate] of mutations) {
     const candidate = structuredClone(raw);
@@ -386,7 +470,11 @@ function laneResult(runner, overrides = {}) {
     schema: rwaPerformanceLaneResultSchema,
     runner,
     track: rwaPerformanceTrack,
+    frameworkNativeWaiting: runner === "cypress"
+      ? "cypress-command-and-assertion-retry"
+      : "none",
     hostIdentityDigest: host.identityDigest,
+    hostInstanceDigest: host.instanceDigest,
     engineStartupIncluded: true,
     engineStartupCount: runner === "cypress" ? 1 : 8,
     cleanupComplete: true,
@@ -420,11 +508,40 @@ function caseResult(runner, item, overrides = {}) {
     })),
     allOraclesPassed,
     behaviorallySupported: true,
+    stateEvidence: caseStateEvidence(runner, item),
     semanticDifferenceIds: runner === "cypress"
       ? []
       : [...rwaPerformanceSemanticDifferenceDisclosure.cases.find(({ id }) => id === item.id)
         .semanticDifferenceIds],
     ...overrides,
+  };
+}
+
+function caseStateEvidence(runner, item) {
+  if (runner === "cypress") {
+    return {
+      attemptOrdinal: 1,
+      beforeEachSeedHookLineIdentity: "cypress/tests/ui/auth.spec.ts:7-18",
+      beforeEachSeedHookSource: cypressBeforeEachSeedHookSource,
+      beforeEachSeedHookSourceSha256: cypressBeforeEachSeedHookSourceSha256,
+      engineInstanceOrdinal: 1,
+      seedHookOrdinal: item.ordinal,
+      testIsolation: "upstream-cypress-test-isolation",
+    };
+  }
+  return {
+    cleanupCheckpointPhase: "cleanup",
+    cleanupCheckpointSequence: 4,
+    cleanupCheckpointStatus: "passed",
+    engineInstanceOrdinal: item.ordinal,
+    runtimeLaunchCheckpointPhase: "runtime-launch",
+    runtimeLaunchCheckpointSequence: 3,
+    runtimeLaunchCheckpointStatus: "passed",
+    runtimeLaunchFreshProcess: true,
+    seedCheckpointPhase: "seed",
+    seedCheckpointSequence: 2,
+    seedCheckpointStatus: "passed",
+    seedOrdinal: item.ordinal,
   };
 }
 

@@ -67,32 +67,32 @@ export async function runSealedRwaPerformance({
   const upstreamRoot = path.resolve(
     environment.RWA_ROOT ?? path.join("inputs", "cypress-realworld-app-28ca4d0"),
   );
-  const [candidate, nodeExecutable, initialCheckout] = await Promise.all([
-    verifyCandidate(loadPostSupportCandidateSpec(environment)),
-    inspectPinnedNodeExecutable(hashFile),
-    inspectCheckout(upstreamRoot),
-  ]);
-  if (!initialCheckout.valid) {
-    throw new Error(`RWA checkout preflight failed: ${initialCheckout.violations.join("; ")}`);
-  }
-  const cypress = await loadCypress(upstreamRoot);
-  if (cypress === null || typeof cypress !== "object" || typeof cypress.run !== "function") {
-    throw new TypeError("The pinned checkout did not provide the Cypress module API");
-  }
-
-  const hostFacts = await collectHostFacts({
-    environment,
-    nodeExecutable,
-    randomBytesImpl,
-  });
-  const lifecycleEvidence = {
-    startup: null,
-    postflight: null,
-    shutdownSignal: null,
-  };
-  await assertFreshSealedArtifactRoot();
-
+  const candidate = await verifyCandidate(loadPostSupportCandidateSpec(environment));
   try {
+    const [nodeExecutable, initialCheckout] = await Promise.all([
+      inspectPinnedNodeExecutable(hashFile),
+      inspectCheckout(upstreamRoot),
+    ]);
+    if (!initialCheckout.valid) {
+      throw new Error(`RWA checkout preflight failed: ${initialCheckout.violations.join("; ")}`);
+    }
+    const cypress = await loadCypress(upstreamRoot);
+    if (cypress === null || typeof cypress !== "object" || typeof cypress.run !== "function") {
+      throw new TypeError("The pinned checkout did not provide the Cypress module API");
+    }
+
+    const hostFacts = await collectHostFacts({
+      environment,
+      nodeExecutable,
+      randomBytesImpl,
+    });
+    const lifecycleEvidence = {
+      startup: null,
+      postflight: null,
+      shutdownSignal: null,
+    };
+    await assertFreshSealedArtifactRoot();
+
     const raw = await runRwaPerformanceAuthority({
       preflight: async () => ({
         sameHostVerified: true,
