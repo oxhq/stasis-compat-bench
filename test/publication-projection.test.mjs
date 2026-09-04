@@ -61,6 +61,8 @@ test("public projection freezes every corpus and protocol byte", async () => {
     "protocol/stasis-post-0.3-census-v1-erratum-3.md",
     "protocol/stasis-post-0.3-census-v1-erratum-4.md",
     "protocol/stasis-post-0.3-census-v1.md",
+    "protocol/stasis-v0.3.3-performance-crawl-v1.md",
+    "protocol/stasis-v0.3.3-performance-rwa-v1.md",
   ];
   assert.deepEqual(manifest.unchangedInputs.map((entry) => entry.path), expectedPaths);
   for (const entry of manifest.unchangedInputs) {
