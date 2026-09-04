@@ -1,0 +1,103 @@
+{
+  "schema": "stasis-post-support-cookie-minimizers-v1",
+  "claimBoundary": "local positive causal proof; not corpus, hosted CI, release, or publication proof",
+  "candidate": {
+    "schema": "stasis-post-support-candidate-identity-v1",
+    "repository": "oxhq/stasis",
+    "revision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+    "version": "0.3.3",
+    "profile": "controlled-web-session-v2",
+    "hostedSdkPackageTrain": {
+      "source": "github_actions_package_workflow",
+      "id": 33506181780,
+      "attempt": 1
+    },
+    "windows": {
+      "source": "github_actions_package_workflow_ci_only_bundle",
+      "zip": {
+        "sha256": "5e95ed4123ee2b03d579313bae637cb35e3050114377072c603b0b5cbd1d217b",
+        "bytes": 37188148
+      },
+      "executable": {
+        "sha256": "e12230ec8659775353af50fed0d98fbaad0c2888143baf37667c90d469e738d9",
+        "bytes": 87334400
+      }
+    },
+    "sdk": {
+      "source": "hosted_package_train",
+      "archive": {
+        "sha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+        "bytes": 181292
+      },
+      "proof": {
+        "sha256": "ec6df3f07f3a27f16bf9fb91b5c2b09daf796bd8f2aed455f6879598f06b9ba4",
+        "bytes": 10695
+      },
+      "tree": {
+        "sha256": "20f52ace92961030f8dc5d2743d941eb3445a86949097b194ec97312f5eface8",
+        "fileCount": 55,
+        "totalBytes": 896631
+      }
+    }
+  },
+  "rules": {
+    "appCodeChanges": false,
+    "retries": 0,
+    "sleeps": false,
+    "polling": false,
+    "stateTransfer": "memory_only",
+    "persistedEvidence": "booleans_counts_and_typed_properties_only"
+  },
+  "scenarios": [
+    {
+      "id": "persistent-cookie-fresh-process-restore",
+      "status": "passed",
+      "processCount": 2,
+      "cookiePersistence": "max_age",
+      "evidence": {
+        "seedRequestCount": 1,
+        "persistentCookieCount": 1,
+        "nonNullExpiryCount": 1,
+        "restoredRequestCount": 1,
+        "restoredCredentialPresent": true,
+        "stateArtifactTransferredInMemory": true
+      }
+    },
+    {
+      "id": "same-site-lax-cross-site-subresource",
+      "status": "passed",
+      "processCount": 3,
+      "sameSitePolicy": "lax",
+      "evidence": {
+        "localhostResolutionNonempty": true,
+        "localhostResolutionOnlyExactLoopback": true,
+        "localhostResolutionValidatedBeforeRequests": true,
+        "dualLoopbackListenerCount": 2,
+        "resourceListenersSharePort": true,
+        "resourceIpv6Only": true,
+        "seedRequestCount": 1,
+        "seedHostHeaderMatchCount": 1,
+        "seedCredentialCount": 0,
+        "seedCookiePairCount": 0,
+        "laxCookieCount": 1,
+        "canonicalCookieDomainObserved": true,
+        "sameSiteProbeRequestCount": 1,
+        "sameSiteHostHeaderMatchCount": 1,
+        "sameSiteCredentialCount": 1,
+        "sameSiteCookiePairCount": 1,
+        "sameSiteCredentialPresent": true,
+        "topLevelRequestCount": 1,
+        "topLevelHostHeaderMatchCount": 1,
+        "topLevelCredentialCount": 0,
+        "topLevelCookiePairCount": 0,
+        "crossSiteSubresourceRequestCount": 1,
+        "crossSiteHostHeaderMatchCount": 1,
+        "crossSiteCredentialCount": 0,
+        "crossSiteCookiePairCount": 0,
+        "crossSiteCredentialPresent": false,
+        "invalidHostRequestCount": 0,
+        "stateArtifactTransferredInMemory": true
+      }
+    }
+  ]
+}

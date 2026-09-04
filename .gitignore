@@ -1,0 +1,17 @@
+node_modules/
+.crawlee/
+playwright-report/
+test-results/
+artifacts/work/
+artifacts/runs/
+/candidate/*.tgz
+/candidate/*.zip
+/candidate/oxhq-stasis-0.3.0/
+/candidate/stasis-0.3.0-windows-x86_64-ci/
+/candidate/oxhq-stasis-0.3.1/
+/candidate/stasis-0.3.1-windows-x86_64-ci/
+/candidate/oxhq-stasis-0.3.2/
+/candidate/stasis-0.3.2-windows-x86_64-ci/
+/candidate/oxhq-stasis-0.3.3/
+/candidate/stasis-0.3.3-windows-x86_64-ci/
+/inputs/
