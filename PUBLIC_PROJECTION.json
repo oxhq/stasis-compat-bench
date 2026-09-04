@@ -4,9 +4,9 @@
   "projectedTree": {
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
-    "fileCount": 320,
-    "totalBytes": 5668606,
-    "sha256": "14a2f75f7a3c042ecaeb52d300f03d13636604f3489bed1f92e5d1cd8e91af5b",
+    "fileCount": 329,
+    "totalBytes": 5865226,
+    "sha256": "f09e05d0d973024bfe6edb8492e70f7a49ba54359abd7ae84f32556a095b165b",
     "files": [
       {
         "bytes": 19,
@@ -69,9 +69,9 @@
         "sha256": "d17fe6f8f7c67b4bfeed0b5f413f513c9c4d94bde1a6bf78115ef1b70591cf8a"
       },
       {
-        "bytes": 3292,
+        "bytes": 3767,
         "path": "package.json",
-        "sha256": "c4fc375b152c35505bb20f6e9cae876a15ba8fe57e6f94d22f27b9a8563e7f05"
+        "sha256": "1007a64fe5a44369443ba9dc6c2c5422a4c4b01e67e17d4a2a816a1a6c5d5ad6"
       },
       {
         "bytes": 12491,
@@ -239,6 +239,16 @@
         "sha256": "49725e698071e17a8f348038c1a3daf722f3fd690bb8c651cfd0bb1ea2a261fc"
       },
       {
+        "bytes": 13833,
+        "path": "src/performance/crawl-phase-diagnostic-verification-cli.mjs",
+        "sha256": "ede067b72a3582d56c83d39388bd9877cc334a95f952c8635f23b415e4c595c6"
+      },
+      {
+        "bytes": 15133,
+        "path": "src/performance/crawl-phase-diagnostic-verification.mjs",
+        "sha256": "ab38de656fec6acdc23c0b896a7a8b69121db8d2d9a38519e042937e18e2ce9a"
+      },
+      {
         "bytes": 70573,
         "path": "src/performance/crawl-phase-diagnostic.mjs",
         "sha256": "9b8c54d14fb8fae6debd06172f600cdcf8c2a0e541829ed21ef3f9e9739c80e5"
@@ -302,6 +312,21 @@
         "bytes": 15643,
         "path": "src/performance/replication-invalid.mjs",
         "sha256": "b6e45848c5fda9c817a865fc3f12f4d0f681cbf476d78cb487e5ec7d9b9d1dcf"
+      },
+      {
+        "bytes": 28039,
+        "path": "src/performance/replication-public-release.mjs",
+        "sha256": "53c0689eea5fb285471a0317a99ff2f2d57502dff4917e31b3a00cf41854b418"
+      },
+      {
+        "bytes": 9422,
+        "path": "src/performance/replication-publication-cli.mjs",
+        "sha256": "18337824c62da68c88b4bed43e550abd3211e07e5fb95cc84793683b727aa7f3"
+      },
+      {
+        "bytes": 50006,
+        "path": "src/performance/replication-publication.mjs",
+        "sha256": "7d38f8361de9d5324cc3487790fd1707d105a22199794f8d862b6f7e1e9c4ce2"
       },
       {
         "bytes": 17166,
@@ -1339,6 +1364,11 @@
         "sha256": "83210a939ef0696e8f4c35b388301d75ab4cfc20e8cebb4eab1c9331631a97cd"
       },
       {
+        "bytes": 24213,
+        "path": "test/performance-crawl-phase-diagnostic-verification.test.mjs",
+        "sha256": "eb7905d5bcf146f34bc63b693db40adbeb52ccc192958d3b8666dcd4ab7a6e84"
+      },
+      {
         "bytes": 41774,
         "path": "test/performance-crawl-phase-diagnostic.test.mjs",
         "sha256": "ef0b07240a1301ba9a98e9c10ed79caf77c9f6779149d306ff7093cd8e02e2f3"
@@ -1387,6 +1417,21 @@
         "bytes": 13217,
         "path": "test/performance-replication-invalid.test.mjs",
         "sha256": "f634e0d532ff37549e6405874d66197224012da0151946e00a94a5c4a666f996"
+      },
+      {
+        "bytes": 27324,
+        "path": "test/performance-replication-public-release.test.mjs",
+        "sha256": "215be7c024d3a6d3960cc5f8dee0a484c567c1bd9d985cd2c545a85425163872"
+      },
+      {
+        "bytes": 8981,
+        "path": "test/performance-replication-publication-cli.test.mjs",
+        "sha256": "34429d041a34bb3c91a947b8879fb5caad9a2b42476d965978a24c4175fd8027"
+      },
+      {
+        "bytes": 19194,
+        "path": "test/performance-replication-publication.test.mjs",
+        "sha256": "1e97e7c5d31dd5934a58432de0b799b966c8932aa3f0adcd632c45c26907f5df"
       },
       {
         "bytes": 26052,
@@ -1702,10 +1747,10 @@
         "sha256": "923acbfee9a36d8dfb3d21608ad2532fd00be3413438123a074822ee71a45ee6"
       },
       {
-        "bytes": 3292,
+        "bytes": 3767,
         "path": "package.json",
         "reason": "confirmed public author email in package metadata",
-        "sha256": "c4fc375b152c35505bb20f6e9cae876a15ba8fe57e6f94d22f27b9a8563e7f05"
+        "sha256": "1007a64fe5a44369443ba9dc6c2c5422a4c4b01e67e17d4a2a816a1a6c5d5ad6"
       },
       {
         "bytes": 9803,
@@ -1724,6 +1769,12 @@
         "path": "test/current-url-observability-regression.test.mjs",
         "reason": "reviewed synthetic email literal used by a privacy or corpus test",
         "sha256": "fa84f471570c7c6b505537fab78047e6dd1d5887f72600a81cae7b8b26840e27"
+      },
+      {
+        "bytes": 27324,
+        "path": "test/performance-replication-public-release.test.mjs",
+        "reason": "reviewed synthetic email literal used by a privacy or corpus test",
+        "sha256": "215be7c024d3a6d3960cc5f8dee0a484c567c1bd9d985cd2c545a85425163872"
       },
       {
         "bytes": 20650,
