@@ -1,9 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
 
 import {
   crawlPhaseDiagnosticComparisonEvidenceIdentity,
@@ -23,14 +20,12 @@ import {
   verifyCrawlPhaseDiagnosticHostedProvenance,
 } from "../src/performance/crawl-phase-diagnostic-hosted-provenance.mjs";
 import {
-  alignDiagnosticHostedReceiptToPreflight,
   createCrawlPhaseDiagnosticHostedFixture,
 } from "./fixtures/crawl-phase-diagnostic-hosted-fixture.mjs";
 
 const targetSha = "d".repeat(40);
 const releaseId = 987_654;
 const contractReleaseId = 987_653;
-const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const acceptFixturePreflightBinding = (_preflight, hosted) => hosted;
 
 test("anonymous verifier resolves three lightweight tags and downloads every outcome inventory without credentials", async () => {
@@ -88,7 +83,7 @@ test("anonymous verifier resolves three lightweight tags and downloads every out
     assert.deepEqual(releaseInput.anonymousDownloadedAssetBytes, fixture.assetBytes);
     assert.equal(
       harness.calls.length,
-      12 + 2 * crawlPhaseDiagnosticPublicationAssetNamesByOutcome[outcomeClass].length,
+      18 + 2 * crawlPhaseDiagnosticPublicationAssetNamesByOutcome[outcomeClass].length,
     );
     for (const call of harness.calls) {
       assert.equal(call.options.method, "GET");
@@ -260,6 +255,10 @@ test("anonymous contract replay rejects digest, size, blob, tag, commit, and ret
     }],
     ["size", (fixture) => { fixture.contractReleaseRecord.assets[0].size += 1; }],
     ["blob", (fixture) => { fixture.commitRecord.files[0].sha = "0".repeat(40); }],
+    ["blob URL encoding", (fixture) => {
+      fixture.commitRecord.files[0].blob_url =
+        fixture.commitRecord.files[0].blob_url.replaceAll("%2F", "/");
+    }],
     ["tag", (fixture) => { fixture.contractReleaseRecord.tag_name = "wrong"; }],
     ["commit", (fixture) => {
       const treeSha = "f".repeat(40);
@@ -299,32 +298,42 @@ test("anonymous contract replay rejects digest, size, blob, tag, commit, and ret
   }
 });
 
+test("anonymous replay independently rejects workflow source REST representation drift", async () => {
+  const cases = [
+    ["source commit URL encoding", (fixture) => {
+      fixture.workflowSourceCommitRecord.files[0].raw_url =
+        fixture.workflowSourceCommitRecord.files[0].raw_url.replaceAll("%2F", "/");
+    }],
+    ["truncated root tree", (fixture) => {
+      fixture.workflowSourceTreeRecords.root.truncated = true;
+    }],
+    ["wrong workflows tree blob", (fixture) => {
+      fixture.workflowSourceTreeRecords.workflows.tree[0].sha = "0".repeat(40);
+    }],
+    ["noncanonical blob wrapping", (fixture) => {
+      fixture.workflowSourceBlobRecord.content =
+        fixture.workflowSourceBlobRecord.content.replace("\n", " ");
+    }],
+  ];
+  for (const [label, mutate] of cases) {
+    const fixture = publicFixture("DIAGNOSTIC_INVALID_WITH_STATUS");
+    mutate(fixture);
+    await assert.rejects(
+      verifyAnonymousCrawlPhaseDiagnosticPublicRelease({
+        expectedOfflineAssetMap: fixture.expectedMap,
+        expectedReleaseTargetSha: targetSha,
+      }, {
+        fetchImpl: fetchHarness(fixture).fetch,
+        verifyRelease: () => releaseVerificationReceipt(fixture),
+      }),
+      /workflow|tree|blob|URL|base64/iu,
+      label,
+    );
+  }
+});
+
 test("anonymous contract replay binds the preregistered workflow source to hosted evidence", async () => {
-  const preflight = JSON.parse(readFileSync(
-    path.join(
-      repositoryRoot,
-      "protocol",
-      crawlPhaseDiagnosticContractIdentity.assets.preflight,
-    ),
-    "utf8",
-  ));
-  const syntheticHosted = verifyCrawlPhaseDiagnosticHostedProvenance(
-    createCrawlPhaseDiagnosticHostedFixture(),
-  );
-  const alignedHosted = alignDiagnosticHostedReceiptToPreflight(syntheticHosted, preflight);
-  const workflowBytes = readFileSync(path.join(
-    repositoryRoot,
-    "protocol",
-    crawlPhaseDiagnosticContractIdentity.assets.workflow,
-  ));
-  alignedHosted.workflowSource.workflow.bytes = workflowBytes.byteLength;
-  alignedHosted.workflowSource.workflow.sha256 = hash(workflowBytes);
   const fixture = publicFixture("VALID_NON_AUTHORITATIVE");
-  replaceEvidenceAsset(
-    fixture,
-    "hosted-provenance.json",
-    canonicalBytes(alignedHosted),
-  );
   const result = await verifyAnonymousCrawlPhaseDiagnosticPublicRelease({
     expectedOfflineAssetMap: fixture.expectedMap,
     expectedReleaseTargetSha: targetSha,
@@ -334,7 +343,10 @@ test("anonymous contract replay binds the preregistered workflow source to hoste
   });
   assert.equal(result.verification.contractPreflightMatchesHostedEvidence, true);
 
-  const driftedHosted = structuredClone(alignedHosted);
+  const retainedHosted = JSON.parse(
+    fixture.assetBytes["hosted-provenance.json"].toString("utf8"),
+  );
+  const driftedHosted = structuredClone(retainedHosted);
   driftedHosted.workflowSource.commitSha = "4".repeat(40);
   driftedHosted.producer.headSha = "4".repeat(40);
   replaceEvidenceAsset(
@@ -353,7 +365,7 @@ test("anonymous contract replay binds the preregistered workflow source to hoste
     /preflight workflow source differs|preflight.*hosted/iu,
   );
 
-  const wrongWorkflowIdentity = structuredClone(alignedHosted);
+  const wrongWorkflowIdentity = structuredClone(retainedHosted);
   wrongWorkflowIdentity.workflowSource.workflow.bytes += 1;
   wrongWorkflowIdentity.workflowSource.workflow.sha256 = "5".repeat(64);
   replaceEvidenceAsset(
@@ -444,17 +456,23 @@ test("ambient token variables never enter anonymous request headers", async () =
 
 function publicFixture(outcomeClass) {
   const names = crawlPhaseDiagnosticPublicationAssetNamesByOutcome[outcomeClass];
-  const contractAssetBytes = contractAssetFixtureBytes();
+  const hostedInput = hostedInputFixture(outcomeClass);
+  const hostedReceipt = verifyCrawlPhaseDiagnosticHostedProvenance(hostedInput);
+  const contractAssetBytes = {
+    [crawlPhaseDiagnosticContractIdentity.assets.protocol]:
+      Buffer.from(hostedInput.diagnosticContractAssets.protocol),
+    [crawlPhaseDiagnosticContractIdentity.assets.workflow]:
+      Buffer.from(hostedInput.diagnosticContractAssets.workflow),
+    [crawlPhaseDiagnosticContractIdentity.assets.preflight]:
+      Buffer.from(hostedInput.diagnosticContractAssets.preflight.bytes),
+  };
   const commitRecord = commitRecordFixture(contractAssetBytes);
   const contractReleaseRecord = contractReleaseRecordFixture(contractAssetBytes);
   const assetBytes = Object.fromEntries(names.map((name) => [
     name,
     Buffer.from(`fixture-bytes:${outcomeClass}:${name}\n`, "utf8"),
   ]));
-  assetBytes["hosted-provenance.json"] = canonicalBytes({
-    schema: "fixture-hosted-provenance",
-    outcomeClass,
-  });
+  assetBytes["hosted-provenance.json"] = canonicalBytes(hostedReceipt);
   assetBytes["contract-commit.json"] = canonicalBytes(commitRecord);
   assetBytes["contract-release.json"] = canonicalBytes(contractReleaseRecord);
   const expectedMap = Object.fromEntries(names.map((name) => [name, {
@@ -476,13 +494,26 @@ function publicFixture(outcomeClass) {
     contractTagRef: tagRef(crawlPhaseDiagnosticContractIdentity.tag, targetSha),
     evidenceTagRef: tagRef(crawlPhaseDiagnosticPublicationIdentity.tag, targetSha),
     commitRecord,
+    workflowSourceCommitRecord: hostedInput.workflowSourceCommitRecord,
+    workflowSourceTreeRecords: hostedInput.workflowSourceTreeRecords,
+    workflowSourceBlobRecord: hostedInput.workflowSourceBlobRecord,
+    preservedComparisonWorkflowBlobRecord:
+      hostedInput.preservedComparisonWorkflowBlobRecord,
   };
 }
 
-function contractAssetFixtureBytes() {
-  return Object.fromEntries(Object.values(crawlPhaseDiagnosticContractIdentity.assets).map(
-    (name) => [name, readFileSync(path.join(repositoryRoot, "protocol", name))],
-  ));
+function hostedInputFixture(outcomeClass) {
+  if (outcomeClass === "VALID_NON_AUTHORITATIVE") {
+    return createCrawlPhaseDiagnosticHostedFixture();
+  }
+  if (outcomeClass === "DIAGNOSTIC_INVALID_WITH_STATUS") {
+    return createCrawlPhaseDiagnosticHostedFixture({ conclusion: "failure" });
+  }
+  return createCrawlPhaseDiagnosticHostedFixture({
+    conclusion: "failure",
+    artifactCount: 0,
+    stepMode: "no_artifact",
+  });
 }
 
 function contractReleaseRecordFixture(assetBytes) {
@@ -584,13 +615,14 @@ function commitRecordFixture(contractAssetBytes) {
     }],
     files: Object.keys(contractAssetBytes).sort(compareUtf8).map((name) => {
       const filename = `protocol/${name}`;
+      const encodedFilename = encodeURIComponent(filename);
       return {
         filename,
         status: "added",
         sha: gitBlobHash(contractAssetBytes[name]),
-        blob_url: `${web}/blob/${targetSha}/${filename}`,
-        raw_url: `${web}/raw/${targetSha}/${filename}`,
-        contents_url: `${api}/contents/${filename}?ref=${targetSha}`,
+        blob_url: `${web}/blob/${targetSha}/${encodedFilename}`,
+        raw_url: `${web}/raw/${targetSha}/${encodedFilename}`,
+        contents_url: `${api}/contents/${encodedFilename}?ref=${targetSha}`,
       };
     }),
   };
@@ -646,6 +678,16 @@ function fetchHarness(fixture, mode = "ok") {
     [`/git/ref/tags/${encodeURIComponent(crawlPhaseDiagnosticContractIdentity.tag)}`, fixture.contractTagRef],
     [`/git/ref/tags/${encodeURIComponent(crawlPhaseDiagnosticPublicationIdentity.tag)}`, fixture.evidenceTagRef],
     [`/commits/${targetSha}`, fixture.commitRecord],
+    [`/commits/${fixture.workflowSourceCommitRecord.sha}`, fixture.workflowSourceCommitRecord],
+    [`/git/trees/${fixture.workflowSourceTreeRecords.root.sha}`,
+      fixture.workflowSourceTreeRecords.root],
+    [`/git/trees/${fixture.workflowSourceTreeRecords.github.sha}`,
+      fixture.workflowSourceTreeRecords.github],
+    [`/git/trees/${fixture.workflowSourceTreeRecords.workflows.sha}`,
+      fixture.workflowSourceTreeRecords.workflows],
+    [`/git/blobs/${fixture.workflowSourceBlobRecord.sha}`, fixture.workflowSourceBlobRecord],
+    [`/git/blobs/${fixture.preservedComparisonWorkflowBlobRecord.sha}`,
+      fixture.preservedComparisonWorkflowBlobRecord],
   ]);
   const harness = {
     calls,

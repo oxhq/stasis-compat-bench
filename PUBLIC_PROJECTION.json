@@ -4,9 +4,9 @@
   "projectedTree": {
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
-    "fileCount": 343,
-    "totalBytes": 6333035,
-    "sha256": "fbc3ba5e3fe9e71f68b73e43607fa31818869eb27116aad10d416cf7f4aa3591",
+    "fileCount": 345,
+    "totalBytes": 6408124,
+    "sha256": "b5b92a58955bc55756b40f8d82633113b1da25bf6045975a5ad3c2f5ebffc09b",
     "files": [
       {
         "bytes": 19,
@@ -259,14 +259,14 @@
         "sha256": "48bbb785254deadf2e8739d3477594eab25cce978a9e1ca17a1360283d149a65"
       },
       {
-        "bytes": 88637,
+        "bytes": 92039,
         "path": "src/performance/crawl-phase-diagnostic-hosted-provenance.mjs",
-        "sha256": "2ed94dce2105451e5b487d9a544614ab55ff1fd70284f2e285ec9bfc318bbde9"
+        "sha256": "af0889b8580a85d87f13643c04f48f58b7abe6da78abe93f8151116cf44cb240"
       },
       {
-        "bytes": 40203,
+        "bytes": 44426,
         "path": "src/performance/crawl-phase-diagnostic-public-release.mjs",
-        "sha256": "5b3e3248fda7d1a6b139d8bcededbb8baf80e4bb8cd173511bc730cdbd2dd7ad"
+        "sha256": "8c7f7e0af760531ec62adef0d99718c27e6fc4d226b173af15724aa81d7b2a62"
       },
       {
         "bytes": 11434,
@@ -274,9 +274,9 @@
         "sha256": "4b99fc47448ce861024ff991b38938141a0c3891962669352a7d57a699fcf29e"
       },
       {
-        "bytes": 68253,
+        "bytes": 76903,
         "path": "src/performance/crawl-phase-diagnostic-publication.mjs",
-        "sha256": "9b2757d5dcc97eaaeefad91a0b7e28191f4fd41ba53ece60ad7f17748f23c2a7"
+        "sha256": "7016eb3f52078c8f622cc56143c04aafd3d3272ff68e4b15990f5de044cd69f6"
       },
       {
         "bytes": 13833,
@@ -774,9 +774,19 @@
         "sha256": "70e2ae07e2f4092e8613e20ac82dbaf05299b3bbb7a497fdfb4e7b0298cac6e9"
       },
       {
-        "bytes": 33391,
+        "bytes": 44778,
+        "path": "test/fixtures/comparison-evidence-release-commit-6c1a0066.json.br.base64",
+        "sha256": "141f98c0df6a9571addba09a363923bbd927bcd31357ba7d12d6f64e3fcc6061"
+      },
+      {
+        "bytes": 34332,
         "path": "test/fixtures/crawl-phase-diagnostic-hosted-fixture.mjs",
-        "sha256": "5727f418ca5c6f870b6c5af7c40eeec9e3216c27d2de795611ebea028b69d2dc"
+        "sha256": "3d04633ae6e8f0d9abd9780f0a9b75f9b84c7efcb81c58b7baba9eec54aa2263"
+      },
+      {
+        "bytes": 2879,
+        "path": "test/fixtures/crawl-phase-diagnostic-reviewed-privacy-fixture.mjs",
+        "sha256": "038adcb1a564a374ce4b42b58d7d2fa5e386bc4e0da011a2623a4c2d01c6011a"
       },
       {
         "bytes": 1502,
@@ -1414,14 +1424,14 @@
         "sha256": "670fb0dd42cd7bb0b952fb5427577202af350fbf12a4fbf7c1f1d919468d2a72"
       },
       {
-        "bytes": 19640,
+        "bytes": 21696,
         "path": "test/performance-crawl-phase-diagnostic-hosted-provenance.test.mjs",
-        "sha256": "e5f05e08f237d9bc68db86cc93298b095ab41a646d57f5ab697d22221b8e40f6"
+        "sha256": "9c8d753f04e449453d54d89bdb473dd3e01bcc9b556594289bb2a8e8b828b943"
       },
       {
-        "bytes": 29156,
+        "bytes": 31383,
         "path": "test/performance-crawl-phase-diagnostic-public-release.test.mjs",
-        "sha256": "48bdff1160d6546bf0c366bb78fa1c54123c4fd53f25eae40d101fb962c3b4ec"
+        "sha256": "63683a6b8e1ff8a5248f8051e4e8e776a84bd7450b1ef6817b219b76cfef4623"
       },
       {
         "bytes": 10707,
@@ -1429,9 +1439,9 @@
         "sha256": "54823e29499c3510b7002153f4e7dc8fcd5169f340943838ff7de48dd5d0f45c"
       },
       {
-        "bytes": 26993,
+        "bytes": 32926,
         "path": "test/performance-crawl-phase-diagnostic-publication.test.mjs",
-        "sha256": "f1fae51ecf6177b02ef71c41374363bc751fd1e324cbcb5257f9a2ea5f074c63"
+        "sha256": "22680df0cf4ddc9e8783badac04ab2dabde9b7b25bf5c49de4cae98f5f1a8665"
       },
       {
         "bytes": 24213,

@@ -281,7 +281,7 @@ export function verifyCrawlPhaseDiagnosticHostedProvenance({
   comparisonEvidenceTagRefRecord,
   comparisonEvidenceAssets,
   workflowSourceCommitRecord,
-  workflowSourceTreeRecord,
+  workflowSourceTreeRecords,
   workflowSourceBlobRecord,
   workflowSourceBytes,
   preservedComparisonWorkflowBlobRecord,
@@ -303,14 +303,14 @@ export function verifyCrawlPhaseDiagnosticHostedProvenance({
     assets: contractInputs,
     preflight,
   });
-  const source = verifyWorkflowSource({
-    commit: workflowSourceCommitRecord,
-    tree: workflowSourceTreeRecord,
-    workflowBlob: workflowSourceBlobRecord,
-    workflowBytes: exactBuffer(workflowSourceBytes, "workflow source bytes"),
-    preservedBlob: preservedComparisonWorkflowBlobRecord,
-    mirrorBytes: contractInputs.workflow,
-    preflight,
+  const source = verifyCrawlPhaseDiagnosticWorkflowSourceProvenance({
+    workflowSourceCommitRecord,
+    workflowSourceTreeRecords,
+    workflowSourceBlobRecord,
+    workflowSourceBytes,
+    preservedComparisonWorkflowBlobRecord,
+    diagnosticContractWorkflowBytes: contractInputs.workflow,
+    diagnosticContractPreflightValue: preflight,
   });
   const run = verifyRunRecord(runRecord, preflight);
   const oneShot = verifyWorkflowRunsListing(workflowRunsListing, run, preflight);
@@ -380,6 +380,39 @@ export function verifyCrawlPhaseDiagnosticHostedProvenance({
     },
   };
   return assertCrawlPhaseDiagnosticHostedProvenanceReceipt(deepFreeze(receipt));
+}
+
+/**
+ * Verifies the immutable S1 commit, its targeted nonrecursive Git-tree path,
+ * and both bound workflow blobs. Publisher assembly and anonymous public
+ * replay share this exact gate so neither path can reinterpret GitHub's REST
+ * representation differently.
+ */
+export function verifyCrawlPhaseDiagnosticWorkflowSourceProvenance({
+  workflowSourceCommitRecord,
+  workflowSourceTreeRecords,
+  workflowSourceBlobRecord,
+  workflowSourceBytes,
+  preservedComparisonWorkflowBlobRecord,
+  diagnosticContractWorkflowBytes,
+  diagnosticContractPreflightValue,
+} = {}) {
+  const preflight = verifyPreflight(diagnosticContractPreflightValue);
+  const suppliedWorkflowBytes = workflowSourceBytes === undefined
+    ? undefined
+    : exactBuffer(workflowSourceBytes, "workflow source bytes");
+  return deepFreeze(verifyWorkflowSource({
+    commit: workflowSourceCommitRecord,
+    trees: workflowSourceTreeRecords,
+    workflowBlob: workflowSourceBlobRecord,
+    workflowBytes: suppliedWorkflowBytes,
+    preservedBlob: preservedComparisonWorkflowBlobRecord,
+    mirrorBytes: exactBuffer(
+      diagnosticContractWorkflowBytes,
+      "diagnostic contract workflow bytes",
+    ),
+    preflight,
+  }));
 }
 
 export function assertCrawlPhaseDiagnosticHostedProvenanceReceipt(value) {
@@ -988,7 +1021,7 @@ function verifyDiagnosticContractPublication({ release, commit, tagRef, assets, 
 }
 
 function verifyWorkflowSource({
-  commit, tree, workflowBlob, workflowBytes, preservedBlob, mirrorBytes, preflight,
+  commit, trees, workflowBlob, workflowBytes, preservedBlob, mirrorBytes, preflight,
 }) {
   const source = preflight.workflowSource;
   const verifiedCommit = verifyCommit(commit, {
@@ -1001,8 +1034,8 @@ function verifyWorkflowSource({
     throw new TypeError("Diagnostic workflow source commit parent changed");
   }
   verifySourceCommitFiles(commit, source);
-  verifyRecursiveTree(tree, source);
-  verifyGitBlob(workflowBlob, {
+  verifyTargetedTreeChain(trees, source);
+  const decodedWorkflowBytes = verifyGitBlob(workflowBlob, {
     repository: source.repository,
     expectedSha: source.workflow.blobSha,
     expectedBytes: workflowBytes,
@@ -1013,10 +1046,10 @@ function verifyWorkflowSource({
     expectedSha: source.preservedComparisonWorkflow.blobSha,
     label: "preserved comparison workflow blob",
   });
-  if (!workflowBytes.equals(mirrorBytes)) {
+  if (!decodedWorkflowBytes.equals(mirrorBytes)) {
     throw new TypeError("Diagnostic workflow source bytes differ from contract mirror bytes");
   }
-  const identity = fileIdentity(workflowBytes);
+  const identity = fileIdentity(decodedWorkflowBytes);
   return {
     repository: source.repository,
     branch: source.branch,
@@ -1519,19 +1552,20 @@ function verifyContractCommitAssets(commit, targetSha, assets) {
     if (file.status !== "added" || file.sha !== identity.blobSha) {
       throw new TypeError(`Diagnostic contract asset commit blob changed: ${identity.name}`);
     }
+    const encodedFilename = encodeURIComponent(file.filename);
     verifyExactUrl(
       file.blob_url,
-      `${webRoot}/${repository}/blob/${targetSha}/${file.filename}`,
+      `${webRoot}/${repository}/blob/${targetSha}/${encodedFilename}`,
       `diagnostic contract asset blob URL: ${identity.name}`,
     );
     verifyExactUrl(
       file.raw_url,
-      `${webRoot}/${repository}/raw/${targetSha}/${file.filename}`,
+      `${webRoot}/${repository}/raw/${targetSha}/${encodedFilename}`,
       `diagnostic contract asset raw URL: ${identity.name}`,
     );
     verifyExactUrl(
       file.contents_url,
-      `${apiRoot}/${repository}/contents/${file.filename}?ref=${targetSha}`,
+      `${apiRoot}/${repository}/contents/${encodedFilename}?ref=${targetSha}`,
       `diagnostic contract asset contents URL: ${identity.name}`,
     );
     matched.set(identity.name, {
@@ -1593,44 +1627,98 @@ function verifySourceCommitFiles(commit, source) {
     throw new TypeError("Diagnostic workflow source changed-file identity changed");
   }
   const repository = source.repository;
+  const encodedFilename = encodeURIComponent(source.workflow.path);
   verifyExactUrl(file.blob_url,
-    `${webRoot}/${repository}/blob/${source.commitSha}/${source.workflow.path}`,
+    `${webRoot}/${repository}/blob/${source.commitSha}/${encodedFilename}`,
     "diagnostic workflow source blob web URL");
   verifyExactUrl(file.raw_url,
-    `${webRoot}/${repository}/raw/${source.commitSha}/${source.workflow.path}`,
+    `${webRoot}/${repository}/raw/${source.commitSha}/${encodedFilename}`,
     "diagnostic workflow source raw URL");
   verifyExactUrl(file.contents_url,
-    `${apiRoot}/${repository}/contents/${source.workflow.path}?ref=${source.commitSha}`,
+    `${apiRoot}/${repository}/contents/${encodedFilename}?ref=${source.commitSha}`,
     "diagnostic workflow source contents URL");
 }
 
-function verifyRecursiveTree(value, source) {
-  const tree = requireRecord(value, "diagnostic workflow source recursive tree");
-  if (tree.sha !== source.treeSha || tree.truncated !== false || !Array.isArray(tree.tree)) {
-    throw new TypeError("Diagnostic workflow source recursive tree is incomplete");
-  }
-  verifyExactUrl(tree.url, `${apiRoot}/${source.repository}/git/trees/${source.treeSha}`,
-    "diagnostic workflow source tree URL");
-  const expected = new Map([
-    [source.workflow.path, source.workflow.blobSha],
-    [source.preservedComparisonWorkflow.path, source.preservedComparisonWorkflow.blobSha],
-  ]);
-  const matches = new Map();
-  for (const entry of tree.tree) {
-    requireRecord(entry, "diagnostic workflow source tree entry");
-    if (!expected.has(entry.path)) continue;
-    if (matches.has(entry.path)) throw new TypeError("Diagnostic workflow tree duplicates a bound path");
-    const expectedSha = expected.get(entry.path);
-    if (
-      entry.mode !== "100644" || entry.type !== "blob" || entry.sha !== expectedSha
-    ) {
-      throw new TypeError(`Diagnostic workflow tree entry changed: ${entry.path}`);
+function verifyTargetedTreeChain(value, source) {
+  const records = requireRecord(value, "diagnostic workflow source tree records");
+  exactKeys(records, ["root", "github", "workflows"],
+    "diagnostic workflow source tree records");
+  const root = verifyNonrecursiveTree(records.root, {
+    repository: source.repository,
+    expectedSha: source.treeSha,
+    label: "diagnostic workflow source root tree",
+  });
+  const githubEntry = verifyTreeEntry(root, {
+    repository: source.repository,
+    path: ".github",
+    mode: "040000",
+    type: "tree",
+    label: "diagnostic workflow source .github tree entry",
+  });
+  const github = verifyNonrecursiveTree(records.github, {
+    repository: source.repository,
+    expectedSha: githubEntry.sha,
+    label: "diagnostic workflow source .github tree",
+  });
+  const workflowsEntry = verifyTreeEntry(github, {
+    repository: source.repository,
+    path: "workflows",
+    mode: "040000",
+    type: "tree",
+    label: "diagnostic workflow source workflows tree entry",
+  });
+  const workflows = verifyNonrecursiveTree(records.workflows, {
+    repository: source.repository,
+    expectedSha: workflowsEntry.sha,
+    label: "diagnostic workflow source workflows tree",
+  });
+  const prefix = ".github/workflows/";
+  for (const expected of [source.workflow, source.preservedComparisonWorkflow]) {
+    if (!expected.path.startsWith(prefix) || expected.path.slice(prefix.length).includes("/")) {
+      throw new TypeError("Diagnostic workflow source path is outside the targeted tree chain");
     }
-    verifyExactUrl(entry.url, `${apiRoot}/${source.repository}/git/blobs/${expectedSha}`,
-      `diagnostic workflow tree blob URL: ${entry.path}`);
-    matches.set(entry.path, true);
+    verifyTreeEntry(workflows, {
+      repository: source.repository,
+      path: expected.path.slice(prefix.length),
+      mode: "100644",
+      type: "blob",
+      expectedSha: expected.blobSha,
+      label: `diagnostic workflow source blob tree entry: ${expected.path}`,
+    });
   }
-  if (matches.size !== expected.size) throw new TypeError("Diagnostic workflow tree omits a bound workflow");
+}
+
+function verifyNonrecursiveTree(value, { repository, expectedSha, label }) {
+  const tree = requireRecord(value, label);
+  if (
+    tree.sha !== expectedSha || tree.truncated !== false || !Array.isArray(tree.tree)
+  ) {
+    throw new TypeError(`${label} is not one complete nonrecursive tree`);
+  }
+  verifyExactUrl(tree.url, `${apiRoot}/${repository}/git/trees/${expectedSha}`, `${label} URL`);
+  return tree.tree;
+}
+
+function verifyTreeEntry(entries, {
+  repository, path, mode, type, expectedSha = undefined, label,
+}) {
+  const matches = entries.filter((entry) => {
+    requireRecord(entry, `${label} candidate`);
+    return entry.path === path;
+  });
+  if (matches.length !== 1) {
+    throw new TypeError(`${label} must occur exactly once`);
+  }
+  const entry = matches[0];
+  if (
+    entry.mode !== mode || entry.type !== type || !gitShaPattern.test(entry.sha ?? "") ||
+    (expectedSha !== undefined && entry.sha !== expectedSha)
+  ) {
+    throw new TypeError(`${label} identity changed`);
+  }
+  const objectKind = type === "tree" ? "trees" : "blobs";
+  verifyExactUrl(entry.url, `${apiRoot}/${repository}/git/${objectKind}/${entry.sha}`, `${label} URL`);
+  return entry;
 }
 
 function verifyGitBlob(value, { repository, expectedSha, expectedBytes, label }) {
@@ -1649,6 +1737,7 @@ function verifyGitBlob(value, { repository, expectedSha, expectedBytes, label })
   if (expectedBytes !== undefined && !decoded.equals(expectedBytes)) {
     throw new TypeError(`${label} content differs from supplied exact bytes`);
   }
+  return decoded;
 }
 
 function assertReceiptProducer(value) {
@@ -1972,12 +2061,25 @@ function assertUtf8Text(bytes, label) {
 }
 
 function decodeCanonicalBase64(value, label) {
-  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?(?:\r?\n)?$/u.test(value)) {
-    throw new TypeError(`${label} content is not canonical base64`);
+  if (typeof value !== "string" || !value.endsWith("\n") || value.includes("\r")) {
+    throw new TypeError(`${label} content is not canonical GitHub base64`);
   }
-  const compact = value.replace(/\r?\n$/u, "");
+  const lines = value.slice(0, -1).split("\n");
+  if (
+    lines.length < 1 || lines.some((line, index) =>
+      line.length < 1 || line.length > 60 ||
+      (index < lines.length - 1 && line.length !== 60))
+  ) {
+    throw new TypeError(`${label} content is not canonical GitHub base64`);
+  }
+  const compact = lines.join("");
+  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u.test(compact)) {
+    throw new TypeError(`${label} content is not canonical GitHub base64`);
+  }
   const decoded = Buffer.from(compact, "base64");
-  if (decoded.toString("base64") !== compact) throw new TypeError(`${label} content is not canonical base64`);
+  if (decoded.toString("base64") !== compact) {
+    throw new TypeError(`${label} content is not canonical GitHub base64`);
+  }
   return decoded;
 }
 

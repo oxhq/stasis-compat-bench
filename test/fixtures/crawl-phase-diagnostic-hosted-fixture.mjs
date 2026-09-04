@@ -54,8 +54,14 @@ export function canonicalDiagnosticFixtureBytes(value) {
 }
 
 export function createCrawlPhaseDiagnosticHostedFixture({ conclusion = "success", artifactCount, stepMode } = {}) {
-  const workflowBytes = Buffer.from("name: frozen diagnostic workflow\n", "utf8");
-  const preservedBytes = Buffer.from("name: preserved comparison workflow\n", "utf8");
+  const workflowBytes = Buffer.from(
+    "name: frozen diagnostic workflow\nsource: canonical GitHub line-wrapped fixture\n",
+    "utf8",
+  );
+  const preservedBytes = Buffer.from(
+    "name: preserved comparison workflow\nsource: canonical GitHub line-wrapped fixture\n",
+    "utf8",
+  );
   const workflowBlobSha = gitBlobSha(workflowBytes);
   const preservedBlobSha = gitBlobSha(preservedBytes);
   const sourceSha = "a".repeat(40);
@@ -199,7 +205,7 @@ export function createCrawlPhaseDiagnosticHostedFixture({ conclusion = "success"
       freshCrawlRaw: Buffer.from(crawlPhaseDiagnosticComparisonFixtureBytes.freshCrawlRaw),
     },
     workflowSourceCommitRecord: sourceCommit(preflight),
-    workflowSourceTreeRecord: sourceTree(preflight),
+    workflowSourceTreeRecords: sourceTrees(preflight),
     workflowSourceBlobRecord: blobRecord(
       crawlPhaseDiagnosticHostedIdentity.repository,
       workflowBytes,
@@ -412,13 +418,14 @@ function sourceCommit(preflight) {
     tree: source.treeSha,
     parents: [source.parentCommitSha],
   });
+  const encodedPath = encodeURIComponent(source.workflow.path);
   result.files = [{
     status: "added",
     filename: source.workflow.path,
     sha: source.workflow.blobSha,
-    blob_url: `https://github.com/${source.repository}/blob/${source.commitSha}/${source.workflow.path}`,
-    raw_url: `https://github.com/${source.repository}/raw/${source.commitSha}/${source.workflow.path}`,
-    contents_url: `https://api.github.com/repos/${source.repository}/contents/${source.workflow.path}?ref=${source.commitSha}`,
+    blob_url: `https://github.com/${source.repository}/blob/${source.commitSha}/${encodedPath}`,
+    raw_url: `https://github.com/${source.repository}/raw/${source.commitSha}/${encodedPath}`,
+    contents_url: `https://api.github.com/repos/${source.repository}/contents/${encodedPath}?ref=${source.commitSha}`,
   }];
   return result;
 }
@@ -431,14 +438,15 @@ function contractSourceCommit(commit, assets) {
   };
   commit.files = Object.entries(byName).map(([name, bytes]) => {
     const filename = `protocol/${name}`;
+    const encodedFilename = encodeURIComponent(filename);
     const blobSha = gitBlobSha(bytes);
     return {
       status: "added",
       filename,
       sha: blobSha,
-      blob_url: `https://github.com/oxhq/stasis-compat-bench/blob/${commit.sha}/${filename}`,
-      raw_url: `https://github.com/oxhq/stasis-compat-bench/raw/${commit.sha}/${filename}`,
-      contents_url: `https://api.github.com/repos/oxhq/stasis-compat-bench/contents/${filename}?ref=${commit.sha}`,
+      blob_url: `https://github.com/oxhq/stasis-compat-bench/blob/${commit.sha}/${encodedFilename}`,
+      raw_url: `https://github.com/oxhq/stasis-compat-bench/raw/${commit.sha}/${encodedFilename}`,
+      contents_url: `https://api.github.com/repos/oxhq/stasis-compat-bench/contents/${encodedFilename}?ref=${commit.sha}`,
     };
   });
   commit.files.push({
@@ -449,30 +457,54 @@ function contractSourceCommit(commit, assets) {
   return commit;
 }
 
-function sourceTree(preflight) {
+function sourceTrees(preflight) {
   const source = preflight.workflowSource;
-  return {
-    sha: source.treeSha,
-    url: `https://api.github.com/repos/${source.repository}/git/trees/${source.treeSha}`,
+  const githubSha = "c".repeat(40);
+  const workflowsSha = "d".repeat(40);
+  const tree = (sha, entries) => ({
+    sha,
+    url: `https://api.github.com/repos/${source.repository}/git/trees/${sha}`,
     truncated: false,
-    tree: [source.workflow, source.preservedComparisonWorkflow].map((entry) => ({
-      path: entry.path,
+    tree: entries,
+  });
+  return {
+    root: tree(source.treeSha, [{
+      path: ".github",
+      mode: "040000",
+      type: "tree",
+      sha: githubSha,
+      url: `https://api.github.com/repos/${source.repository}/git/trees/${githubSha}`,
+    }]),
+    github: tree(githubSha, [{
+      path: "workflows",
+      mode: "040000",
+      type: "tree",
+      sha: workflowsSha,
+      url: `https://api.github.com/repos/${source.repository}/git/trees/${workflowsSha}`,
+    }]),
+    workflows: tree(workflowsSha, [
+      source.workflow,
+      source.preservedComparisonWorkflow,
+    ].map((entry) => ({
+      path: entry.path.slice(".github/workflows/".length),
       mode: "100644",
       type: "blob",
       sha: entry.blobSha,
       size: 10,
       url: `https://api.github.com/repos/${source.repository}/git/blobs/${entry.blobSha}`,
-    })),
+    }))),
   };
 }
 
 function blobRecord(repository, bytes) {
   const sha = gitBlobSha(bytes);
+  const compact = bytes.toString("base64");
+  const content = `${compact.match(/.{1,60}/gu).join("\n")}\n`;
   return {
     sha,
     size: bytes.byteLength,
     encoding: "base64",
-    content: `${bytes.toString("base64")}\n`,
+    content,
     url: `https://api.github.com/repos/${repository}/git/blobs/${sha}`,
   };
 }

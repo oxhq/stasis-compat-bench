@@ -22,10 +22,14 @@ import {
   crawlPhaseDiagnosticComparisonEvidenceTargetSha,
   crawlPhaseDiagnosticBundleArchiveNamesByOutcome,
   crawlPhaseDiagnosticOutcomeClasses,
+  crawlPhaseDiagnosticPrivacyErratumSchema,
+  crawlPhaseDiagnosticPrivacyScanSchema,
   crawlPhaseDiagnosticPublicationAssetNamesByOutcome,
   crawlPhaseDiagnosticPublicationIdentity,
   crawlPhaseDiagnosticPublicationPayloadNamesByOutcome,
   crawlPhaseDiagnosticPublicationSchema,
+  crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture,
+  createCrawlPhaseDiagnosticPrivacyScan,
   publicationAssetNamesForCrawlPhaseDiagnosticOutcome,
   verifyCrawlPhaseDiagnosticGitHubRelease,
   verifyCrawlPhaseDiagnosticPublication,
@@ -37,6 +41,10 @@ import {
   crawlPhaseDiagnosticComparisonFixtureBytes,
   diagnosticFixtureSha256,
 } from "./fixtures/crawl-phase-diagnostic-hosted-fixture.mjs";
+import {
+  crawlPhaseDiagnosticReviewedPrivacyFixtureIdentity,
+  exactCrawlPhaseDiagnosticReviewedPrivacyFixtureBytes,
+} from "./fixtures/crawl-phase-diagnostic-reviewed-privacy-fixture.mjs";
 
 const targetSha = "d".repeat(40);
 
@@ -331,6 +339,131 @@ test("privacy seal rejects direct, encoded, split-line, archived, and private-pa
   }
 });
 
+test("privacy erratum masks only the exact reviewed frozen-H1 synthetic fixture", () => {
+  assert.equal(
+    crawlPhaseDiagnosticPrivacyScanSchema,
+    "stasis-v0.3.3-performance-crawl-phase-diagnostic-privacy-scan-v2",
+  );
+  assert.deepEqual(crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture, {
+    ruleId: "credentialed_url",
+    asset: {
+      name: "comparison-evidence-release-commit.json",
+      bytes: 228009,
+      sha256: "59981d35875e61909e1a16b3c007baf676d8e49e5e10870999dff588adc1f543",
+    },
+    source: {
+      commitSha: "6c1a0066eb17425628293993fd7312d4cf26e0f5",
+      treeSha: "0d5322a5c2c104d2065a37fb7deecfa6944100bc",
+      jsonPointer: "/files/8/patch",
+      filename: "test/performance-replication-public-release.test.mjs",
+      blobSha: "d0c28f94c133819f8260bb298e3dfe0afb8bd797",
+      contextLabel: "URL credentials",
+    },
+    occurrence: {
+      rawOccurrenceCount: 1,
+      byteStart: 181160,
+      byteEnd: 181197,
+      derivedProjectionMatchCount: 13,
+    },
+  });
+  assert.equal(Object.isFrozen(crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture), true);
+  assert.equal(Object.isFrozen(crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture.asset), true);
+  assert.deepEqual(crawlPhaseDiagnosticReviewedPrivacyFixtureIdentity, {
+    encodedBytes: 44778,
+    encodedSha256: "141f98c0df6a9571addba09a363923bbd927bcd31357ba7d12d6f64e3fcc6061",
+    compressedBytes: 33147,
+    compressedSha256: "65d2f697f4a5310730bb42566240e90480d38c5702178c3eb22e284e05157c45",
+    inflatedBytes: 228009,
+    inflatedSha256: "59981d35875e61909e1a16b3c007baf676d8e49e5e10870999dff588adc1f543",
+  });
+
+  const payload = fixturePayload("DIAGNOSTIC_INVALID_WITH_STATUS");
+  const reviewedBytes = payload["comparison-evidence-release-commit.json"];
+  const reviewedLiteral = Buffer.from(
+    ["https://user", ["secret", "github.com/unsafe"].join("@")].join(":"),
+    "utf8",
+  );
+  assert.equal(reviewedBytes.byteLength, 228009);
+  assert.equal(hash(reviewedBytes), crawlPhaseDiagnosticReviewedPrivacyFixtureIdentity.inflatedSha256);
+  assert.equal(reviewedBytes.indexOf(reviewedLiteral), 181160);
+  assert.equal(reviewedBytes.lastIndexOf(reviewedLiteral), 181160);
+
+  const receipt = createFixturePrivacyScan(payload);
+  assert.equal(receipt.erratum.schema, crawlPhaseDiagnosticPrivacyErratumSchema);
+  assert.equal(receipt.erratum.status, "applied");
+  assert.equal(receipt.erratum.ruleId, "credentialed_url");
+  assert.deepEqual(
+    receipt.erratum.asset,
+    crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture.asset,
+  );
+  assert.deepEqual(
+    receipt.erratum.source,
+    crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture.source,
+  );
+  assert.deepEqual(receipt.erratum.occurrence, {
+    rawOccurrenceCount: 1,
+    byteStart: 181160,
+    byteEnd: 181197,
+    derivedProjectionMatchCount: 13,
+    unreviewedMatchCount: 0,
+  });
+  assert.deepEqual(receipt.erratum.treatment, {
+    rawBytesRetained: true,
+    onlyReviewedRangeMaskedInScanCopy: true,
+    everyRemainingByteScannedByExistingRules: true,
+  });
+
+  const cases = [
+    ["wrong name", (value) => {
+      value["workflow-source-commit.json"] = Buffer.from(reviewedBytes);
+    }, /privacy scan rejected.*workflow-source-commit/u],
+    ["wrong hash", (value) => {
+      value["comparison-evidence-release-commit.json"] = mutateReviewedCommit(
+        reviewedBytes,
+        (record) => { record.node_id = `${record.node_id}x`; },
+      );
+    }, /asset identity changed/u],
+    ["removed credential colon", (value) => {
+      value["comparison-evidence-release-commit.json"] = mutateReviewedCommit(
+        reviewedBytes,
+        (record) => {
+          record.files[8].patch = record.files[8].patch.replace(
+            ["https://user", ["secret", "github.com/unsafe"].join("@")].join(":"),
+            ["https://user", ["secret", "github.com/unsafe"].join("@")].join("-"),
+          );
+        },
+      );
+    }, /asset identity changed/u],
+    ["wrong context", (value) => {
+      value["comparison-evidence-release-commit.json"] = mutateReviewedCommit(
+        reviewedBytes,
+        (record) => {
+          record.files[8].patch = record.files[8].patch.replace(
+            "URL credentials",
+            "URL credentialx",
+          );
+        },
+      );
+    }, /asset identity changed/u],
+    ["second occurrence", (value) => {
+      value["comparison-evidence-release-commit.json"] = mutateReviewedCommit(
+        reviewedBytes,
+        (record) => { record.files[8].patch += `\n+${reviewedLiteral.toString("utf8")}`; },
+      );
+    }, /asset identity changed/u],
+    ["other match", (value) => {
+      value["workflow-source-commit.json"] = canonicalBytes({
+        redirect: ["https://other", ["private", "github.com/other"].join("@")].join(":"),
+      });
+    }, /privacy scan rejected.*workflow-source-commit/u],
+  ];
+  for (const [label, mutate, pattern] of cases) {
+    const drift = fixturePayload("DIAGNOSTIC_INVALID_WITH_STATUS");
+    mutate(drift);
+    assert.throws(() => createFixturePrivacyScan(drift), pattern, label);
+  }
+});
+
 test("ZIP inspection rejects nested archives, unsafe names, and case collisions", () => {
   const nested = fixturePayload("DIAGNOSTIC_INVALID_WITH_STATUS");
   nested["actions-diagnostic-bundle.zip"] = zipBytes([
@@ -517,9 +650,8 @@ function productionDiagnosticInvalidPayload() {
     "comparison-artifact-binding.json": Buffer.from(
       crawlPhaseDiagnosticComparisonFixtureBytes.artifactBinding,
     ),
-    "comparison-evidence-release-commit.json": canonicalDiagnosticFixtureBytes(
-      hostedInput.comparisonEvidenceCommitRecord,
-    ),
+    "comparison-evidence-release-commit.json":
+      exactCrawlPhaseDiagnosticReviewedPrivacyFixtureBytes(),
     "comparison-evidence-release.json": canonicalDiagnosticFixtureBytes(
       hostedInput.comparisonEvidenceReleaseRecord,
     ),
@@ -552,6 +684,8 @@ function fixturePayload(outcomeClass) {
     name,
     canonicalBytes({ schema: "safe-fixture", marker: name }),
   ]));
+  result["comparison-evidence-release-commit.json"] =
+    exactCrawlPhaseDiagnosticReviewedPrivacyFixtureBytes();
   result["diagnostic-outcome.json"] = outcomeBytes;
   if (names.includes("actions-diagnostic-bundle.zip")) {
     const bundleNames = outcomeClass === "VALID_NON_AUTHORITATIVE"
@@ -569,6 +703,22 @@ function fixturePayload(outcomeClass) {
     );
   }
   return result;
+}
+
+function createFixturePrivacyScan(payload) {
+  const outcomeClass = "DIAGNOSTIC_INVALID_WITH_STATUS";
+  const outcome = fixtureOutcome(outcomeClass);
+  return createCrawlPhaseDiagnosticPrivacyScan(
+    payload,
+    fixtureOptions(outcomeClass).receiptChainValidator(),
+    outcome,
+  );
+}
+
+function mutateReviewedCommit(bytes, mutate) {
+  const value = JSON.parse(bytes.toString("utf8"));
+  mutate(value);
+  return canonicalBytes(value);
 }
 
 function fixtureOptions(outcomeClass) {

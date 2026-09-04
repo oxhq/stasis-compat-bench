@@ -14,6 +14,7 @@ import {
 import {
   assertCrawlPhaseDiagnosticContractAssets,
   assertCrawlPhaseDiagnosticPreflightHostedBinding as assertPreflightProvenanceBinding,
+  verifyCrawlPhaseDiagnosticWorkflowSourceProvenance,
 } from "./crawl-phase-diagnostic-hosted-provenance.mjs";
 
 export const crawlPhaseDiagnosticAnonymousReleaseVerificationSchema =
@@ -120,6 +121,11 @@ export async function verifyAnonymousCrawlPhaseDiagnosticPublicRelease(
     releaseTargetCommitRecord,
     targetSha: expectedReleaseTargetSha,
   });
+  const workflowSourceReplay = await fetchAndVerifyAnonymousWorkflowSource({
+    fetchImpl,
+    preflightValue: contractReplay.preflightValue,
+    workflowMirrorBytes: contractReplay.workflowBytes,
+  });
 
   const anonymousDownloadedAssetBytes = {};
   for (const name of expected.names) {
@@ -160,6 +166,9 @@ export async function verifyAnonymousCrawlPhaseDiagnosticPublicRelease(
     ) !== retainedHostedReceipt
   ) {
     throw new TypeError("Diagnostic contract preflight does not bind to hosted evidence");
+  }
+  if (!isDeepStrictEqual(workflowSourceReplay, retainedHostedReceipt.workflowSource)) {
+    throw new TypeError("Anonymous diagnostic workflow source differs from hosted evidence");
   }
 
   const releaseVerification = verifyRelease({
@@ -306,6 +315,7 @@ async function fetchAndVerifyAnonymousDiagnosticContract({
   return {
     preflightValue,
     releaseRecord,
+    workflowBytes: Buffer.from(assetBytes[identity.assets.workflow]),
     receipt: deepFreeze({
       repository: identity.repository,
       tag: identity.tag,
@@ -319,6 +329,119 @@ async function fetchAndVerifyAnonymousDiagnosticContract({
       assets,
     }),
   };
+}
+
+async function fetchAndVerifyAnonymousWorkflowSource({
+  fetchImpl,
+  preflightValue,
+  workflowMirrorBytes,
+}) {
+  const source = requireRecord(preflightValue?.workflowSource,
+    "diagnostic contract workflow source");
+  const repository = source.repository;
+  const apiRoot = `https://api.github.com/repos/${repository}`;
+  const [commitRecord, rootTreeRecord, workflowBlobRecord,
+    preservedComparisonWorkflowBlobRecord] = await Promise.all([
+    fetchAnonymousJson(
+      `${apiRoot}/commits/${source.commitSha}`,
+      "diagnostic workflow source commit API",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${apiRoot}/git/trees/${source.treeSha}`,
+      "diagnostic workflow source root tree API",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${apiRoot}/git/blobs/${source.workflow?.blobSha}`,
+      "diagnostic workflow source blob API",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${apiRoot}/git/blobs/${source.preservedComparisonWorkflow?.blobSha}`,
+      "preserved comparison workflow blob API",
+      fetchImpl,
+    ),
+  ]);
+  const githubTreeSha = directoryTreeShaForFetch(rootTreeRecord, {
+    repository,
+    expectedTreeSha: source.treeSha,
+    path: ".github",
+    label: "diagnostic workflow source .github directory",
+  });
+  const githubTreeRecord = await fetchAnonymousJson(
+    `${apiRoot}/git/trees/${githubTreeSha}`,
+    "diagnostic workflow source .github tree API",
+    fetchImpl,
+  );
+  const workflowsTreeSha = directoryTreeShaForFetch(githubTreeRecord, {
+    repository,
+    expectedTreeSha: githubTreeSha,
+    path: "workflows",
+    label: "diagnostic workflow source workflows directory",
+  });
+  const workflowsTreeRecord = await fetchAnonymousJson(
+    `${apiRoot}/git/trees/${workflowsTreeSha}`,
+    "diagnostic workflow source workflows tree API",
+    fetchImpl,
+  );
+  return verifyCrawlPhaseDiagnosticWorkflowSourceProvenance({
+    workflowSourceCommitRecord: commitRecord,
+    workflowSourceTreeRecords: {
+      root: rootTreeRecord,
+      github: githubTreeRecord,
+      workflows: workflowsTreeRecord,
+    },
+    workflowSourceBlobRecord: workflowBlobRecord,
+    preservedComparisonWorkflowBlobRecord,
+    diagnosticContractWorkflowBytes: workflowMirrorBytes,
+    diagnosticContractPreflightValue: preflightValue,
+  });
+}
+
+async function fetchAnonymousJson(url, label, fetchImpl) {
+  const bytes = await fetchAnonymousBytes(url, {
+    accept: "application/vnd.github+json",
+    fetchImpl,
+    label,
+    maximumBytes: crawlPhaseDiagnosticAnonymousFetchPolicy.maximumApiResponseBytes,
+  });
+  return parseJsonBytes(bytes, label);
+}
+
+function directoryTreeShaForFetch(value, {
+  repository,
+  expectedTreeSha,
+  path,
+  label,
+}) {
+  const tree = requireRecord(value, `${label} parent tree`);
+  if (
+    tree.sha !== expectedTreeSha || tree.truncated !== false || !Array.isArray(tree.tree)
+  ) {
+    throw new TypeError(`${label} parent is not one complete nonrecursive tree`);
+  }
+  exactString(
+    tree.url,
+    `https://api.github.com/repos/${repository}/git/trees/${expectedTreeSha}`,
+    `${label} parent tree URL`,
+  );
+  const matches = tree.tree.filter((entry) =>
+    requireRecord(entry, `${label} candidate`).path === path);
+  if (matches.length !== 1) throw new TypeError(`${label} must occur exactly once`);
+  const entry = matches[0];
+  if (
+    entry.mode !== "040000" || entry.type !== "tree" ||
+    !gitShaPattern.test(entry.sha ?? "")
+  ) {
+    throw new TypeError(`${label} identity is invalid`);
+  }
+  exactString(
+    entry.url,
+    `https://api.github.com/repos/${repository}/git/trees/${entry.sha}`,
+    `${label} URL`,
+  );
+  return entry.sha;
 }
 
 function validateContractReleaseBeforeDownloads(value, targetSha) {
@@ -429,11 +552,12 @@ function validateContractAssetGitBlobs(commitRecord, targetSha, assetBytes) {
     if (file.status !== "added" || file.sha !== expectedFile.blobSha) {
       throw new TypeError(`Diagnostic contract target Git blob mismatch: ${expectedFile.name}`);
     }
-    exactString(file.blob_url, `${web}/blob/${targetSha}/${file.filename}`,
+    const encodedFilename = encodeURIComponent(file.filename);
+    exactString(file.blob_url, `${web}/blob/${targetSha}/${encodedFilename}`,
       `contract target blob URL: ${expectedFile.name}`);
-    exactString(file.raw_url, `${web}/raw/${targetSha}/${file.filename}`,
+    exactString(file.raw_url, `${web}/raw/${targetSha}/${encodedFilename}`,
       `contract target raw URL: ${expectedFile.name}`);
-    exactString(file.contents_url, `${api}/contents/${file.filename}?ref=${targetSha}`,
+    exactString(file.contents_url, `${api}/contents/${encodedFilename}?ref=${targetSha}`,
       `contract target contents URL: ${expectedFile.name}`);
     matched.set(expectedFile.name, expectedFile.blobSha);
   }

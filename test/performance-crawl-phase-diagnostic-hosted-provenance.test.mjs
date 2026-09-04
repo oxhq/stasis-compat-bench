@@ -89,6 +89,11 @@ test("the real contract assets are canonical and bind the exact preregistered wo
 
 test("hosted provenance verifies immutable chronology, exact workflow bytes, and one valid first attempt", () => {
   const input = fixture();
+  assert.match(input.workflowSourceCommitRecord.files[0].blob_url, /\.github%2Fworkflows%2F/u);
+  assert.equal(input.workflowSourceTreeRecords.root.truncated, false);
+  assert.equal(input.workflowSourceTreeRecords.github.truncated, false);
+  assert.equal(input.workflowSourceTreeRecords.workflows.truncated, false);
+  assert.match(input.workflowSourceBlobRecord.content, /\n[A-Za-z0-9+/]{4,60}={0,2}\n$/u);
   const first = verifyCrawlPhaseDiagnosticHostedProvenance(input);
   const second = verifyCrawlPhaseDiagnosticHostedProvenance(structuredCloneExceptBuffers(input));
 
@@ -389,14 +394,45 @@ test("hosted provenance rejects contract, comparison, source, and chronology dri
         structuredClone(input.diagnosticContractCommitRecord.files[0]),
       );
     }, /paths are invalid or duplicated/u],
+    ["contract asset unencoded URL path", (input) => {
+      input.diagnosticContractCommitRecord.files[0].blob_url =
+        input.diagnosticContractCommitRecord.files[0].blob_url.replaceAll("%2F", "/");
+    }, /asset blob URL.*repository binding/u],
     ["source parent", (input) => {
       input.workflowSourceCommitRecord.parents[0].sha = "1".repeat(40);
     }, /source commit parent/u],
+    ["source unencoded URL path", (input) => {
+      input.workflowSourceCommitRecord.files[0].contents_url =
+        input.workflowSourceCommitRecord.files[0].contents_url.replaceAll("%2F", "/");
+    }, /source contents URL.*repository binding/u],
     ["preserved workflow", (input) => {
-      input.workflowSourceTreeRecord.tree[1].sha = "2".repeat(40);
-    }, /tree entry changed/u],
-    ["truncated tree", (input) => { input.workflowSourceTreeRecord.truncated = true; },
-      /recursive tree is incomplete/u],
+      input.workflowSourceTreeRecords.workflows.tree[1].sha = "2".repeat(40);
+    }, /blob tree entry.*identity changed/u],
+    ["duplicate preserved workflow", (input) => {
+      input.workflowSourceTreeRecords.workflows.tree.push(
+        structuredClone(input.workflowSourceTreeRecords.workflows.tree[1]),
+      );
+    }, /must occur exactly once/u],
+    ["truncated root tree", (input) => {
+      input.workflowSourceTreeRecords.root.truncated = true;
+    }, /complete nonrecursive tree/u],
+    ["truncated .github tree", (input) => {
+      input.workflowSourceTreeRecords.github.truncated = true;
+    }, /complete nonrecursive tree/u],
+    ["truncated workflows tree", (input) => {
+      input.workflowSourceTreeRecords.workflows.truncated = true;
+    }, /complete nonrecursive tree/u],
+    ["missing .github tree", (input) => {
+      input.workflowSourceTreeRecords.root.tree = [];
+    }, /must occur exactly once/u],
+    ["noncanonical GitHub base64 wrapping", (input) => {
+      input.workflowSourceBlobRecord.content =
+        input.workflowSourceBlobRecord.content.replace("\n", " ");
+    }, /canonical GitHub base64/u],
+    ["wrong GitHub base64 line width", (input) => {
+      input.preservedComparisonWorkflowBlobRecord.content =
+        input.preservedComparisonWorkflowBlobRecord.content.replace(/^(.{59})(.)/u, "$1\n$2");
+    }, /canonical GitHub base64/u],
   ];
   for (const [name, mutate, pattern] of cases) {
     await context.test(name, () => {

@@ -41,7 +41,9 @@ import {
 export const crawlPhaseDiagnosticPublicationSchema =
   "stasis-v0.3.3-performance-crawl-phase-diagnostic-publication-v1";
 export const crawlPhaseDiagnosticPrivacyScanSchema =
-  "stasis-v0.3.3-performance-crawl-phase-diagnostic-privacy-scan-v1";
+  "stasis-v0.3.3-performance-crawl-phase-diagnostic-privacy-scan-v2";
+export const crawlPhaseDiagnosticPrivacyErratumSchema =
+  "stasis-v0.3.3-performance-crawl-phase-diagnostic-privacy-erratum-v1";
 export const crawlPhaseDiagnosticReleaseVerificationSchema =
   "stasis-v0.3.3-performance-crawl-phase-diagnostic-release-verification-v1";
 export const crawlPhaseDiagnosticOutcomeSchema =
@@ -148,6 +150,33 @@ const privateTaskPathRules = Object.freeze([
   ["task_windows_profile", /\bC:[\\/]+Users[\\/]+garae(?:[\\/]|\b)/giu],
   ["task_posix_profile", /\/(?:Users|home)\/garae(?:\/|\b)/giu],
 ]);
+
+const reviewedSyntheticCredentialUrlBytes = Buffer.from(
+  ["https://user", ["secret", "github.com/unsafe"].join("@")].join(":"),
+  "utf8",
+);
+export const crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture = deepFreeze({
+  ruleId: "credentialed_url",
+  asset: {
+    name: "comparison-evidence-release-commit.json",
+    bytes: 228009,
+    sha256: "59981d35875e61909e1a16b3c007baf676d8e49e5e10870999dff588adc1f543",
+  },
+  source: {
+    commitSha: "6c1a0066eb17425628293993fd7312d4cf26e0f5",
+    treeSha: "0d5322a5c2c104d2065a37fb7deecfa6944100bc",
+    jsonPointer: "/files/8/patch",
+    filename: "test/performance-replication-public-release.test.mjs",
+    blobSha: "d0c28f94c133819f8260bb298e3dfe0afb8bd797",
+    contextLabel: "URL credentials",
+  },
+  occurrence: {
+    rawOccurrenceCount: 1,
+    byteStart: 181160,
+    byteEnd: 181197,
+    derivedProjectionMatchCount: 13,
+  },
+});
 
 const invalidPhaseCodes = deepFreeze({
   input_verification: "INPUT_VERIFICATION_FAILED",
@@ -614,12 +643,25 @@ export function validateCrawlPhaseDiagnosticPublicationReceiptChain(
   });
 }
 
-export function createCrawlPhaseDiagnosticPrivacyScan(payload, chainIdentity, outcome) {
+export function createCrawlPhaseDiagnosticPrivacyScan(
+  payload,
+  chainIdentity,
+  outcome,
+) {
   assertCrawlPhaseDiagnosticOutcome(outcome);
   const names = publicationPayloadNamesForCrawlPhaseDiagnosticOutcome(outcome.outcomeClass);
   assertExactByteMap(payload, names, "crawl phase diagnostic privacy payload");
   const chain = assertReceiptChainIdentity(chainIdentity, outcome);
-  const assets = names.map((name) => scanAsset(name, payload[name]));
+  const scans = names.map((name) => scanAsset(
+    name,
+    payload[name],
+    crawlPhaseDiagnosticReviewedSyntheticPrivacyFixture,
+  ));
+  const assets = scans.map(({ asset }) => asset);
+  const errata = scans.flatMap(({ erratum }) => erratum === null ? [] : [erratum]);
+  if (errata.length > 1) {
+    throw new TypeError("Diagnostic privacy scan applied the reviewed erratum more than once");
+  }
   const archiveEntryCount = assets.reduce(
     (total, asset) => total + asset.archiveEntries.length,
     0,
@@ -653,8 +695,11 @@ export function createCrawlPhaseDiagnosticPrivacyScan(payload, chainIdentity, ou
       privateTaskPathRuleIds: privateTaskPathRules.map(([name]) => name),
       publicApiSourceTreatment:
         "direct signature and private-task-path scan without encoded source reinterpretation",
+      reviewedSyntheticFixtureTreatment:
+        "retain exact raw bytes; mask only the reviewed byte range in a copy; scan every remaining byte",
       matchDisclosure: "counts only; matching text is never emitted",
     },
+    erratum: errata[0] ?? null,
     totals: {
       directCredentialSignatureMatches: 0,
       decodedCredentialSignatureMatches: 0,
@@ -1160,12 +1205,13 @@ function assertTerminalDiagnosticRun(value, outcome, workflowSourceSha, contract
 }
 
 
-function scanAsset(name, bytes) {
+function scanAsset(name, bytes, reviewedSyntheticPrivacyFixture) {
   let semanticPrivacyVerified = false;
   let directCredentialSignatureMatches = 0;
   let decodedCredentialSignatureMatches = 0;
   let privateTaskPathMatches = 0;
   const archiveEntries = [];
+  let erratum = null;
   if (name.endsWith(".zip")) {
     const contents = parseArchive(bytes, name);
     for (const [entryPath, entryBytes] of contents) {
@@ -1199,7 +1245,17 @@ function scanAsset(name, bytes) {
       assertPostSupportArtifactPrivacy(value);
       semanticPrivacyVerified = true;
     }
-    const scan = scanText(text, !apiSnapshotNames.has(name));
+    const reviewed = applyReviewedSyntheticPrivacyFixture(
+      name,
+      bytes,
+      value,
+      reviewedSyntheticPrivacyFixture,
+    );
+    const scan = scanText(
+      reviewed === null ? text : decodeUtf8(reviewed.maskedBytes, `${name} masked scan copy`),
+      !apiSnapshotNames.has(name),
+    );
+    erratum = reviewed?.receipt ?? null;
     directCredentialSignatureMatches = scan.directCredentialSignatureMatches;
     decodedCredentialSignatureMatches = scan.decodedCredentialSignatureMatches;
     privateTaskPathMatches = scan.privateTaskPathMatches;
@@ -1212,16 +1268,189 @@ function scanAsset(name, bytes) {
     throw new TypeError(`Diagnostic publication privacy scan rejected ${name}`);
   }
   return {
-    name,
-    bytes: bytes.byteLength,
-    sha256: sha256(bytes),
-    format: name.endsWith(".zip") ? "zip" : name.endsWith(".json") ? "json" : "text",
-    semanticPrivacyVerified,
-    directCredentialSignatureMatches,
-    decodedCredentialSignatureMatches,
-    privateTaskPathMatches,
-    archiveEntries,
+    asset: {
+      name,
+      bytes: bytes.byteLength,
+      sha256: sha256(bytes),
+      format: name.endsWith(".zip") ? "zip" : name.endsWith(".json") ? "json" : "text",
+      semanticPrivacyVerified,
+      directCredentialSignatureMatches,
+      decodedCredentialSignatureMatches,
+      privateTaskPathMatches,
+      archiveEntries,
+    },
+    erratum,
   };
+}
+
+function applyReviewedSyntheticPrivacyFixture(name, bytes, parsedValue, definition) {
+  const review = assertReviewedSyntheticPrivacyFixtureDefinition(definition);
+  if (name !== review.asset.name) return null;
+  if (
+    bytes.byteLength !== review.asset.bytes ||
+    sha256(bytes) !== review.asset.sha256
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture asset identity changed");
+  }
+  const record = requireRecord(parsedValue, "reviewed synthetic fixture commit record");
+  const commit = requireRecord(record.commit, "reviewed synthetic fixture commit");
+  const tree = requireRecord(commit.tree, "reviewed synthetic fixture commit tree");
+  if (
+    record.sha !== review.source.commitSha ||
+    tree.sha !== review.source.treeSha ||
+    !Array.isArray(record.files) ||
+    record.files.length <= 8
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture source identity changed");
+  }
+  const file = requireRecord(record.files[8], "reviewed synthetic fixture changed file");
+  if (
+    review.source.jsonPointer !== "/files/8/patch" ||
+    file.filename !== review.source.filename ||
+    file.sha !== review.source.blobSha ||
+    typeof file.patch !== "string"
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture JSON location changed");
+  }
+  const literal = reviewedSyntheticCredentialUrlBytes.toString("utf8");
+  const exactContext =
+    `["${review.source.contextLabel}", () => redirectResponse("${literal}")]`;
+  if (countLiteralOccurrences(file.patch, exactContext) !== 1) {
+    throw new TypeError("Reviewed synthetic privacy fixture context changed");
+  }
+  const occurrences = bufferOccurrenceOffsets(bytes, reviewedSyntheticCredentialUrlBytes);
+  if (
+    review.occurrence.rawOccurrenceCount !== 1 ||
+    occurrences.length !== review.occurrence.rawOccurrenceCount ||
+    occurrences[0] !== review.occurrence.byteStart ||
+    review.occurrence.byteEnd !==
+      review.occurrence.byteStart + reviewedSyntheticCredentialUrlBytes.byteLength
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture occurrence changed");
+  }
+  const text = decodeUtf8(bytes, `${name} reviewed synthetic fixture`);
+  const derivedProjectionMatchCount = countRuleMatchesAcrossProjections(
+    text,
+    review.ruleId,
+  );
+  if (
+    derivedProjectionMatchCount !== review.occurrence.derivedProjectionMatchCount
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture projection count changed");
+  }
+  const maskedBytes = Buffer.from(bytes);
+  maskedBytes.fill(0x78, review.occurrence.byteStart, review.occurrence.byteEnd);
+  const unreviewed = scanText(
+    decodeUtf8(maskedBytes, `${name} reviewed synthetic fixture masked copy`),
+    !apiSnapshotNames.has(name),
+  );
+  const unreviewedMatchCount =
+    unreviewed.directCredentialSignatureMatches +
+    unreviewed.decodedCredentialSignatureMatches +
+    unreviewed.privateTaskPathMatches;
+  if (unreviewedMatchCount !== 0) {
+    throw new TypeError("Reviewed synthetic privacy fixture contains an unreviewed match");
+  }
+  return {
+    maskedBytes,
+    receipt: deepFreeze({
+      schema: crawlPhaseDiagnosticPrivacyErratumSchema,
+      status: "applied",
+      ruleId: review.ruleId,
+      asset: { ...review.asset },
+      source: { ...review.source },
+      occurrence: {
+        rawOccurrenceCount: review.occurrence.rawOccurrenceCount,
+        byteStart: review.occurrence.byteStart,
+        byteEnd: review.occurrence.byteEnd,
+        derivedProjectionMatchCount,
+        unreviewedMatchCount,
+      },
+      treatment: {
+        rawBytesRetained: true,
+        onlyReviewedRangeMaskedInScanCopy: true,
+        everyRemainingByteScannedByExistingRules: true,
+      },
+    }),
+  };
+}
+
+function assertReviewedSyntheticPrivacyFixtureDefinition(value) {
+  const review = exactKeys(value, ["ruleId", "asset", "source", "occurrence"],
+    "reviewed synthetic privacy fixture definition");
+  if (review.ruleId !== "credentialed_url") {
+    throw new TypeError("Reviewed synthetic privacy fixture rule changed");
+  }
+  const asset = exactKeys(review.asset, ["name", "bytes", "sha256"],
+    "reviewed synthetic privacy fixture asset");
+  if (
+    typeof asset.name !== "string" || asset.name.length === 0 ||
+    !Number.isSafeInteger(asset.bytes) || asset.bytes < 1 ||
+    !sha256Pattern.test(asset.sha256 ?? "")
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture asset identity is invalid");
+  }
+  const source = exactKeys(review.source, [
+    "commitSha", "treeSha", "jsonPointer", "filename", "blobSha", "contextLabel",
+  ], "reviewed synthetic privacy fixture source");
+  if (
+    !gitShaPattern.test(source.commitSha ?? "") ||
+    !gitShaPattern.test(source.treeSha ?? "") ||
+    source.jsonPointer !== "/files/8/patch" ||
+    typeof source.filename !== "string" || source.filename.length === 0 ||
+    !gitShaPattern.test(source.blobSha ?? "") ||
+    typeof source.contextLabel !== "string" || source.contextLabel.length === 0
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture source identity is invalid");
+  }
+  const occurrence = exactKeys(review.occurrence, [
+    "rawOccurrenceCount", "byteStart", "byteEnd", "derivedProjectionMatchCount",
+  ], "reviewed synthetic privacy fixture occurrence");
+  if (
+    occurrence.rawOccurrenceCount !== 1 ||
+    !Number.isSafeInteger(occurrence.byteStart) || occurrence.byteStart < 0 ||
+    !Number.isSafeInteger(occurrence.byteEnd) ||
+      occurrence.byteEnd <= occurrence.byteStart ||
+    !Number.isSafeInteger(occurrence.derivedProjectionMatchCount) ||
+      occurrence.derivedProjectionMatchCount < 1
+  ) {
+    throw new TypeError("Reviewed synthetic privacy fixture occurrence identity is invalid");
+  }
+  return review;
+}
+
+function bufferOccurrenceOffsets(bytes, needle) {
+  const offsets = [];
+  for (let offset = 0; offset <= bytes.byteLength - needle.byteLength;) {
+    const found = bytes.indexOf(needle, offset);
+    if (found === -1) break;
+    offsets.push(found);
+    offset = found + 1;
+  }
+  return offsets;
+}
+
+function countLiteralOccurrences(value, literal) {
+  let count = 0;
+  for (let offset = 0; offset <= value.length - literal.length;) {
+    const found = value.indexOf(literal, offset);
+    if (found === -1) break;
+    count += 1;
+    offset = found + 1;
+  }
+  return count;
+}
+
+function countRuleMatchesAcrossProjections(text, ruleId) {
+  const rule = credentialRules.find(([name]) => name === ruleId);
+  if (rule === undefined) throw new TypeError("Reviewed synthetic privacy rule is unknown");
+  const [, expression] = rule;
+  let count = 0;
+  for (const projection of privacyTextProjections(text)) {
+    expression.lastIndex = 0;
+    count += [...projection.matchAll(expression)].length;
+  }
+  return count;
 }
 
 function scanText(text, encoded) {
