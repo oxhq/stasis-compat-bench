@@ -35,14 +35,14 @@ import {
 } from "./replication.mjs";
 
 export const crawlPhaseDiagnosticSchema =
-  "stasis-v0.3.3-performance-crawl-phase-diagnostic-v1";
+  "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2";
 export const crawlPhaseDiagnosticProtocol =
-  "stasis-v0.3.3-performance-crawl-phase-diagnostic-v1";
+  "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2";
 export const crawlPhaseDiagnosticTrack = "deterministic-crawl-20-page";
 export const crawlPhaseDiagnosticEvidenceSchema =
-  "stasis-v0.3.3-performance-crawl-phase-localization-evidence-v1";
+  "stasis-v0.3.3-performance-crawl-phase-localization-evidence-v2";
 export const crawlPhaseDiagnosticEvidenceProtocol =
-  "stasis-v0.3.3-performance-crawl-phase-localization-v1";
+  "stasis-v0.3.3-performance-crawl-phase-localization-v2";
 
 const lanes = Object.freeze(["crawlee", "stasis"]);
 const nonnegativeIntegerPattern = /^(?:0|[1-9][0-9]*)$/u;
@@ -128,9 +128,9 @@ export function createCrawlPhaseDiagnosticJob({ lane, ordinal }) {
 }
 
 /**
- * Wraps the public v0.3.3 SDK dependency passed to the unchanged authoritative
- * Stasis runner. The wrapper observes pool boundaries but delegates every
- * operation to the same SDK and pool objects exactly once.
+ * Adapts the public v0.3.3 SDK dependency passed to the unchanged authoritative
+ * Stasis runner. The frozen plain-object adapter observes pool boundaries but
+ * delegates every operation to the same SDK and pool objects exactly once.
  */
 export function createStasisCrawlPhaseDiagnosticRunner({
   identity,
@@ -154,6 +154,22 @@ export function createStasisCrawlPhaseDiagnosticRunner({
     identity: retainedIdentity,
     runner,
     recorder,
+  });
+}
+
+/**
+ * Exposes only the SDK dependency hook for focused verification. Production
+ * diagnostic execution should use createStasisCrawlPhaseDiagnosticRunner so
+ * the real performance runner cannot be substituted.
+ */
+export function createStasisSdkPhaseInstrumentation({
+  sdk,
+  now = () => process.hrtime.bigint(),
+}) {
+  const recorder = createPhaseRecorder(now);
+  return Object.freeze({
+    sdk: instrumentStasisSdk(sdk, recorder),
+    snapshot: () => recorder.snapshot(),
   });
 }
 
@@ -1292,50 +1308,64 @@ function createPhaseRecorder(now) {
 function instrumentStasisSdk(sdk, recorder) {
   if (
     sdk === null ||
-    (typeof sdk !== "object" && typeof sdk !== "function") ||
-    typeof sdk.createStasisSessionPool !== "function"
+    (typeof sdk !== "object" && typeof sdk !== "function")
   ) {
-    throw new TypeError("The Stasis SDK pool factory is required for phase diagnostics");
+    throw new TypeError(
+      "The Stasis SDK crawl and pool factory are required for phase diagnostics",
+    );
   }
+  const originalCrawlWithStasis = sdk.crawlWithStasis;
   const originalCreatePool = sdk.createStasisSessionPool;
-  return new Proxy(sdk, {
-    get(target, property) {
-      if (property === "createStasisSessionPool") {
-        return (...args) => {
-          const ordinal = recorder.stasis.poolCreations.length + 1;
-          const started = recorder.point(`stasis:pool-create:${ordinal}:start`);
-          try {
-            const pool = Reflect.apply(originalCreatePool, target, args);
-            const ended = recorder.point(`stasis:pool-create:${ordinal}:end`);
-            recorder.stasis.poolCreations.push({
-              ordinal,
-              interval: makeInterval({
-                label: "pool_creation",
-                start: started,
-                end: ended,
-                settlement: "fulfilled",
-              }),
-            });
-            return instrumentStasisPool(pool, recorder);
-          } catch (error) {
-            const ended = recorder.point(`stasis:pool-create:${ordinal}:end`);
-            recorder.stasis.poolCreations.push({
-              ordinal,
-              interval: makeInterval({
-                label: "pool_creation",
-                start: started,
-                end: ended,
-                settlement: "rejected",
-                error: serializeError(error),
-              }),
-            });
-            throw error;
-          }
-        };
-      }
-      const value = Reflect.get(target, property, target);
-      return typeof value === "function" ? value.bind(target) : value;
+  const launch = sdk.launch;
+  const profile = sdk.CONTROLLED_WEB_SESSION_V2_PROFILE;
+  if (
+    typeof originalCrawlWithStasis !== "function" ||
+    typeof originalCreatePool !== "function"
+  ) {
+    throw new TypeError(
+      "The Stasis SDK crawl and pool factory are required for phase diagnostics",
+    );
+  }
+  // The verified candidate loader returns a frozen four-field projection.
+  // Proxy get traps may not replace its non-configurable function values, so
+  // V2 uses a separate frozen adapter and proxies only the returned pool.
+  return Object.freeze({
+    launch,
+    crawlWithStasis(...args) {
+      return Reflect.apply(originalCrawlWithStasis, sdk, args);
     },
+    createStasisSessionPool(...args) {
+      const ordinal = recorder.stasis.poolCreations.length + 1;
+      const started = recorder.point(`stasis:pool-create:${ordinal}:start`);
+      try {
+        const pool = Reflect.apply(originalCreatePool, sdk, args);
+        const ended = recorder.point(`stasis:pool-create:${ordinal}:end`);
+        recorder.stasis.poolCreations.push({
+          ordinal,
+          interval: makeInterval({
+            label: "pool_creation",
+            start: started,
+            end: ended,
+            settlement: "fulfilled",
+          }),
+        });
+        return instrumentStasisPool(pool, recorder);
+      } catch (error) {
+        const ended = recorder.point(`stasis:pool-create:${ordinal}:end`);
+        recorder.stasis.poolCreations.push({
+          ordinal,
+          interval: makeInterval({
+            label: "pool_creation",
+            start: started,
+            end: ended,
+            settlement: "rejected",
+            error: serializeError(error),
+          }),
+        });
+        throw error;
+      }
+    },
+    CONTROLLED_WEB_SESSION_V2_PROFILE: profile,
   });
 }
 
@@ -1681,7 +1711,7 @@ function runnerIdentity(lane) {
     ? {
         sourceModule: "src/performance/crawl.mjs",
         factory: "createStasisPerformanceRunner",
-        dependencyHook: "sdk_createStasisSessionPool_proxy",
+        dependencyHook: "sdk_frozen_plain_object_adapter_v2",
         substituted: false,
       }
     : {

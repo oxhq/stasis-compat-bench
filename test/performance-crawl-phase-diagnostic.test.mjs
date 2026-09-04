@@ -11,6 +11,8 @@ import {
   createCrawlPhaseDiagnosticJob,
   createCrawleeLauncherPhaseInstrumentation,
   createStasisCrawlPhaseDiagnosticRunner,
+  createStasisSdkPhaseInstrumentation,
+  crawlPhaseDiagnosticEvidenceProtocol,
   crawlPhaseDiagnosticEvidenceSchema,
   crawlPhaseDiagnosticProtocol,
   crawlPhaseDiagnosticRules,
@@ -21,6 +23,7 @@ import {
   computeCrawlPerformanceHostIdentityDigest,
   createCrawlPerformanceGithubProvenance,
   createCrawlPerformanceHostIdentity,
+  createStasisPerformanceRunner,
   crawlPerformanceCorpusIdentity,
   runCrawlPerformanceAuthority,
 } from "../src/performance/crawl.mjs";
@@ -92,6 +95,10 @@ function successfulSdk(events = []) {
     },
   };
   const sdk = {
+    launch() {
+      events.push("unexpected-real-sdk-launch");
+      assert.equal(this, sdk);
+    },
     CONTROLLED_WEB_SESSION_V2_PROFILE: "controlled-web-session-v2",
     createStasisSessionPool(options) {
       events.push("real-sdk-create-pool");
@@ -130,6 +137,19 @@ function successfulSdk(events = []) {
     },
   };
   return sdk;
+}
+
+function v1ProxyForFrozenSdk(sdk) {
+  const originalCreatePool = sdk.createStasisSessionPool;
+  return new Proxy(sdk, {
+    get(target, property) {
+      if (property === "createStasisSessionPool") {
+        return (...args) => Reflect.apply(originalCreatePool, target, args);
+      }
+      const value = Reflect.get(target, property, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
 }
 
 async function successfulStasisArtifact() {
@@ -575,20 +595,91 @@ test("diagnostic jobs freeze the exact unchanged primary crawl and reject drift"
   );
 });
 
-test("Stasis diagnostics traverse the real runner and retain localization phase ordering", async () => {
+test("V2 Stasis diagnostics adapt the frozen SDK projection without the V1 Proxy invariant failure", async () => {
   const events = [];
   const retainedIdentity = identity();
+  const sdk = Object.freeze(successfulSdk(events));
+  const originalDescriptors = Object.getOwnPropertyDescriptors(sdk);
+  const originalCrawlWithStasis = sdk.crawlWithStasis;
+  const originalCreateStasisSessionPool = sdk.createStasisSessionPool;
+  let clockReads = 0;
+  const clock = incrementalClock();
+  const now = () => {
+    clockReads += 1;
+    return clock();
+  };
+
+  for (const property of Reflect.ownKeys(sdk)) {
+    const descriptor = originalDescriptors[property];
+    assert.equal(descriptor.writable, false);
+    assert.equal(descriptor.configurable, false);
+  }
+  assert.throws(
+    () => createStasisPerformanceRunner({
+      sdk: v1ProxyForFrozenSdk(sdk),
+      sdkVersion: "0.3.3",
+      executablePath: "/must-not-launch/stasis",
+    }),
+    (error) => {
+      assert.equal(error instanceof TypeError, true);
+      assert.match(error.message, /get.*proxy/iu);
+      assert.match(error.message, /crawlWithStasis/u);
+      assert.match(error.message, /non-configurable/u);
+      return true;
+    },
+  );
+  assert.equal(clockReads, 0);
+  assert.deepEqual(events, []);
+  assert.deepEqual(Object.getOwnPropertyDescriptors(sdk), originalDescriptors);
+
+  const instrumentation = createStasisSdkPhaseInstrumentation({ sdk, now });
+  const sdkAdapter = instrumentation.sdk;
+  assert.equal(Object.getPrototypeOf(sdkAdapter), Object.prototype);
+  assert.equal(Object.isFrozen(sdkAdapter), true);
+  assert.deepEqual(Reflect.ownKeys(sdkAdapter), [
+    "launch",
+    "crawlWithStasis",
+    "createStasisSessionPool",
+    "CONTROLLED_WEB_SESSION_V2_PROFILE",
+  ]);
+  assert.equal(sdkAdapter.launch, sdk.launch);
+  assert.notEqual(sdkAdapter.crawlWithStasis, sdk.crawlWithStasis);
+  assert.notEqual(sdkAdapter.createStasisSessionPool, sdk.createStasisSessionPool);
+  assert.equal(
+    sdkAdapter.CONTROLLED_WEB_SESSION_V2_PROFILE,
+    sdk.CONTROLLED_WEB_SESSION_V2_PROFILE,
+  );
+  assert.equal(clockReads, 0);
+  assert.deepEqual(events, []);
+  assert.deepEqual(Object.getOwnPropertyDescriptors(sdk), originalDescriptors);
+
   const runner = createStasisCrawlPhaseDiagnosticRunner({
     identity: retainedIdentity,
-    sdk: successfulSdk(events),
+    sdk,
     sdkVersion: "0.3.3",
     executablePath: "/opt/stasis-v0.3.3/stasis",
     environment: { KEEP_ME: "yes", STASIS_LIFECYCLE_TRACE_V1: "must-not-leak" },
-    now: incrementalClock(),
+    now,
   });
   const job = createCrawlPhaseDiagnosticJob({ lane: "stasis", ordinal: 1 });
   const artifact = await runner(job);
 
+  assert.equal(
+    crawlPhaseDiagnosticSchema,
+    "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2",
+  );
+  assert.equal(
+    crawlPhaseDiagnosticProtocol,
+    "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2",
+  );
+  assert.equal(
+    crawlPhaseDiagnosticEvidenceSchema,
+    "stasis-v0.3.3-performance-crawl-phase-localization-evidence-v2",
+  );
+  assert.equal(
+    crawlPhaseDiagnosticEvidenceProtocol,
+    "stasis-v0.3.3-performance-crawl-phase-localization-v2",
+  );
   assert.equal(artifact.schema, crawlPhaseDiagnosticSchema);
   assert.equal(assertCrawlPhaseDiagnostic(artifact), artifact);
   assert.deepEqual(artifact.identity, retainedIdentity);
@@ -596,7 +687,7 @@ test("Stasis diagnostics traverse the real runner and retain localization phase 
   assert.deepEqual(artifact.runner, {
     sourceModule: "src/performance/crawl.mjs",
     factory: "createStasisPerformanceRunner",
-    dependencyHook: "sdk_createStasisSessionPool_proxy",
+    dependencyHook: "sdk_frozen_plain_object_adapter_v2",
     substituted: false,
   });
   assert.deepEqual(events, [
@@ -610,6 +701,7 @@ test("Stasis diagnostics traverse the real runner and retain localization phase 
   assert.equal(artifact.settlement.status, "fulfilled");
   assert.equal(artifact.settlement.run.success, true);
   assert.equal(artifact.settlement.run.cleanup.status, "passed");
+  assert.equal(artifact.outerInterval.settlement, "fulfilled");
 
   const poolRun = artifact.phases.poolRuns[0];
   assert.equal(poolRun.requestedUrl, start);
@@ -629,15 +721,39 @@ test("Stasis diagnostics traverse the real runner and retain localization phase 
     poolRun.settleExtract.end.readOrdinal,
     poolRun.releasePhysicalCleanup.start.readOrdinal,
   );
+  assert.equal(poolRun.acquireOpen.settlement, "fulfilled");
+  assert.equal(poolRun.settleExtract.settlement, "fulfilled");
+  assert.equal(poolRun.releasePhysicalCleanup.settlement, "fulfilled");
+  assert.equal(artifact.phases.poolCreations[0].interval.settlement, "fulfilled");
+  assert.equal(artifact.phases.poolCloses[0].interval.settlement, "fulfilled");
+  assert.deepEqual(artifact.clockReads.map(({ label }) => label), [
+    "stasis:runner:start",
+    "stasis:pool-create:1:start",
+    "stasis:pool-create:1:end",
+    "stasis:pool-run:1:start",
+    "stasis:pool-run:1:callback-start",
+    "stasis:pool-run:1:callback-end",
+    "stasis:pool-run:1:end",
+    "stasis:pool-close:1:start",
+    "stasis:pool-close:1:end",
+    "stasis:runner:end",
+  ]);
   assert.equal(artifact.outerInterval.durationNs, "90");
   assert.equal(Object.isFrozen(artifact), true);
   assert.equal(Object.isFrozen(artifact.phases.poolRuns[0]), true);
+  assert.equal(Object.isFrozen(sdk), true);
+  assert.equal(sdk.crawlWithStasis, originalCrawlWithStasis);
+  assert.equal(sdk.createStasisSessionPool, originalCreateStasisSessionPool);
+  assert.deepEqual(Object.getOwnPropertyDescriptors(sdk), originalDescriptors);
 
+  const clockReadsAfterRun = clockReads;
   await assert.rejects(
     runner(job),
     /single-use; retries are forbidden/u,
   );
   assert.equal(events.length, 6);
+  assert.equal(clockReads, clockReadsAfterRun);
+  assert.deepEqual(Object.getOwnPropertyDescriptors(sdk), originalDescriptors);
 });
 
 test("Stasis crawl and physical-close failures remain in the diagnostic artifact", async () => {

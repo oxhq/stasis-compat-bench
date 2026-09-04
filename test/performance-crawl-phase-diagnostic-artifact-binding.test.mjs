@@ -14,6 +14,7 @@ import {
   crawlPhaseDiagnosticZipSafetyPolicy,
 } from "../src/performance/crawl-phase-diagnostic-artifact-binding.mjs";
 import {
+  crawlPhaseDiagnosticEvidenceProtocol,
   crawlPhaseDiagnosticEvidenceSchema,
 } from "../src/performance/crawl-phase-diagnostic.mjs";
 import {
@@ -114,7 +115,7 @@ function validFixture() {
   const stasisBytes = canonical(stasis);
   const evidence = {
     schema: crawlPhaseDiagnosticEvidenceSchema,
-    protocol: "stasis-v0.3.3-performance-crawl-phase-localization-v1",
+    protocol: crawlPhaseDiagnosticEvidenceProtocol,
     track: "deterministic-crawl-20-page",
     purpose: "phase_localization_diagnostic_only",
     authorityEligible: false,

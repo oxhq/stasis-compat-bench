@@ -5,8 +5,8 @@
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
     "fileCount": 345,
-    "totalBytes": 6408124,
-    "sha256": "b5b92a58955bc55756b40f8d82633113b1da25bf6045975a5ad3c2f5ebffc09b",
+    "totalBytes": 6413410,
+    "sha256": "f45280023c44c83f6dca465ed4144d31e68bf3ebb1b04ea185c1f4177a2bbd8a",
     "files": [
       {
         "bytes": 19,
@@ -289,9 +289,9 @@
         "sha256": "ab38de656fec6acdc23c0b896a7a8b69121db8d2d9a38519e042937e18e2ce9a"
       },
       {
-        "bytes": 70573,
+        "bytes": 71468,
         "path": "src/performance/crawl-phase-diagnostic.mjs",
-        "sha256": "9b8c54d14fb8fae6debd06172f600cdcf8c2a0e541829ed21ef3f9e9739c80e5"
+        "sha256": "eb5c05d69faa64e24d59952d88e07fc51755e53a9c9195f4b9bb78de631b24a1"
       },
       {
         "bytes": 45319,
@@ -1419,9 +1419,9 @@
         "sha256": "83210a939ef0696e8f4c35b388301d75ab4cfc20e8cebb4eab1c9331631a97cd"
       },
       {
-        "bytes": 32913,
+        "bytes": 32934,
         "path": "test/performance-crawl-phase-diagnostic-artifact-binding.test.mjs",
-        "sha256": "670fb0dd42cd7bb0b952fb5427577202af350fbf12a4fbf7c1f1d919468d2a72"
+        "sha256": "05e6fc3fdb601003d69100dfd0551ede87905e414c25d2af9584b665bcc9bd70"
       },
       {
         "bytes": 21696,
@@ -1449,9 +1449,9 @@
         "sha256": "eb7905d5bcf146f34bc63b693db40adbeb52ccc192958d3b8666dcd4ab7a6e84"
       },
       {
-        "bytes": 41774,
+        "bytes": 46144,
         "path": "test/performance-crawl-phase-diagnostic.test.mjs",
-        "sha256": "ef0b07240a1301ba9a98e9c10ed79caf77c9f6779149d306ff7093cd8e02e2f3"
+        "sha256": "79fd323b6b32bca2817c6806f4c268ae136bf7d8ca09208602961a7dd56470e4"
       },
       {
         "bytes": 24069,
