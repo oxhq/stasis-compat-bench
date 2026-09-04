@@ -4,9 +4,9 @@
   "projectedTree": {
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
-    "fileCount": 396,
-    "totalBytes": 8232717,
-    "sha256": "77abed6375e08a0d51666c82af37a2f9ac43242cf93b996b74830d7de4109e1d",
+    "fileCount": 422,
+    "totalBytes": 8707744,
+    "sha256": "617672f99c38f96479b261f6a6de03b843b0a49ec6b599a0ee5d9a6db41dd0fb",
     "files": [
       {
         "bytes": 19,
@@ -69,9 +69,9 @@
         "sha256": "d17fe6f8f7c67b4bfeed0b5f413f513c9c4d94bde1a6bf78115ef1b70591cf8a"
       },
       {
-        "bytes": 5650,
+        "bytes": 6517,
         "path": "package.json",
-        "sha256": "6e425906d42bda9489d7065df1d5eff271a26c54d7adb47da9dc727b355bbc13"
+        "sha256": "39c6db5082895c7e281d844824cca900dbc2d1149280ebd5c539f1e809637e3d"
       },
       {
         "bytes": 12491,
@@ -177,6 +177,26 @@
         "bytes": 11646,
         "path": "protocol/stasis-v0.3.3-performance-crawl-v1.md",
         "sha256": "9a8e4c00bf57514b66f7ed1f15c1ce3e3599a90c336ccc884fd38016839c72ff"
+      },
+      {
+        "bytes": 9022,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v1.json",
+        "sha256": "241757bb9cedc26a5774a74585dc0f7e4c1d56363a4981b4ce944b704b2576bf"
+      },
+      {
+        "bytes": 13708,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v1.md",
+        "sha256": "fc9629bea46426d3455bece3b2688eca8b5da9ccb4ed4b20a74c729420afabe0"
+      },
+      {
+        "bytes": 2004,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
+        "sha256": "9fd4efb7138175cc3db6341b0fd8693956390119fd4958dcdf1b27b438cbb436"
+      },
+      {
+        "bytes": 40758,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
+        "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472"
       },
       {
         "bytes": 11702,
@@ -469,6 +489,51 @@
         "sha256": "a94629f82483a3a1920785cde27f4404ad93acc884f5aef7226bf46e94a8e05f"
       },
       {
+        "bytes": 9931,
+        "path": "src/performance/navigation-causal-artifact-binding.mjs",
+        "sha256": "aedb2ac43296870046fcab394ad409dc0dad17c12d07fff5c8f06d86634bd7b0"
+      },
+      {
+        "bytes": 9907,
+        "path": "src/performance/navigation-causal-contract.mjs",
+        "sha256": "844715db8d3f6e5e5c23e784f2b780c4e9790e20873bf64540c0d50479c416ad"
+      },
+      {
+        "bytes": 15783,
+        "path": "src/performance/navigation-causal-hosted-provenance.mjs",
+        "sha256": "b478b6da0ab66d3c36b6818c296b3c183ae08087bc2c562ff65ee9df8d4ff68d"
+      },
+      {
+        "bytes": 14943,
+        "path": "src/performance/navigation-causal-public-release.mjs",
+        "sha256": "1a479f5ed38dc0a35ecaf3eae37e494f5d80a9729ab94d54974c78f8802b2771"
+      },
+      {
+        "bytes": 36742,
+        "path": "src/performance/navigation-causal-public-verification.mjs",
+        "sha256": "6db880f1c719773e0da8f82b7c90fd839cda65fb35dd116726a4b1946c9d8432"
+      },
+      {
+        "bytes": 5966,
+        "path": "src/performance/navigation-causal-publication-cli.mjs",
+        "sha256": "26db184bf0933a9accd0792e580462adedcbb30e9b1f998a60b3d58ff16863d2"
+      },
+      {
+        "bytes": 15863,
+        "path": "src/performance/navigation-causal-publication.mjs",
+        "sha256": "60ae1d918c8009b13afca30a62af8bc5c657459aa1814f70b1eb1072e26185a0"
+      },
+      {
+        "bytes": 8979,
+        "path": "src/performance/navigation-causal-replication.mjs",
+        "sha256": "7935ac5f488a01d56f845847bb292d1589821a5a9abeae32a0df5fe2ebb8d41f"
+      },
+      {
+        "bytes": 40506,
+        "path": "src/performance/navigation-causal.mjs",
+        "sha256": "7f718eccb4258c4d75acf37873defdfa5b86b51e5cdd1a581bf55b6c10f7ddd7"
+      },
+      {
         "bytes": 20455,
         "path": "src/performance/publication.mjs",
         "sha256": "16bf3ef8b4bd3747ab3c74a026e3950b2e62bb03bc4108bf689174f6aec0bd0a"
@@ -524,6 +589,11 @@
         "sha256": "324697c9eead8f8568a639af810a6ca8e864b671b628d9eb97c531b9c1da99d0"
       },
       {
+        "bytes": 7696,
+        "path": "src/performance/run-navigation-causal.mjs",
+        "sha256": "308e27689f758756591f2f4370db7acd45b54031c40e608c7d9e23a390b383c8"
+      },
+      {
         "bytes": 39268,
         "path": "src/performance/run-rwa.mjs",
         "sha256": "f87c181c17c0116d8855884e93eb92401a144adfb319a4f2ac869335204ce25f"
@@ -549,9 +619,9 @@
         "sha256": "d575278bfb3c3bb362f6a088f95926de175d6016843ad44c7247a8b9719943fa"
       },
       {
-        "bytes": 20630,
+        "bytes": 21036,
         "path": "src/post-support/artifact-privacy.mjs",
-        "sha256": "fe3cfc74b636e4f8fb77acdaeb59e1e133c5fd3dc3e93aba7592a761bcb108ca"
+        "sha256": "f27793676c4cc8d437a5edfb40280ba3b59b034ffbf3f7d77cbd89365f7f1b43"
       },
       {
         "bytes": 35732,
@@ -949,6 +1019,11 @@
         "sha256": "83f92cbcf1f6781d0eb157e8ad38b8ce6f47116bd4c852119392830be08351d8"
       },
       {
+        "bytes": 130092,
+        "path": "test/fixtures/crawl-phase-localization-evidence-v4-public.json",
+        "sha256": "fdc8cd495f8cd6116763ddbbc84ec896123bde828d6fb17bcb508b1bc772f34f"
+      },
+      {
         "bytes": 1502,
         "path": "test/fixtures/deterministic-v03/artifact-index.json",
         "sha256": "3eeb21118b93889cd75495e85d177fbb1395c6fb9f0988e32a32ad33e74287d2"
@@ -972,6 +1047,16 @@
         "bytes": 9448,
         "path": "test/fixtures/deterministic-v03/stasis-post-0.3-census-v1/deterministic/stasis-raw.json",
         "sha256": "43ea58350709e228d04a2492e90927bce198ec9bc7987fb1eb7b958bb0906d54"
+      },
+      {
+        "bytes": 5513,
+        "path": "test/fixtures/navigation-causal-host-fixture.mjs",
+        "sha256": "53caeb48bbdbefaaf2d72b9e480a51d2dff3d81ccd45e57c939a98933d53f0b8"
+      },
+      {
+        "bytes": 4429,
+        "path": "test/fixtures/navigation-causal-hosted-fixture.mjs",
+        "sha256": "d54b3cba37f6b9f358c71b4a5b6b39be4a2ca9b90532493b795b38c6aa16c186"
       },
       {
         "bytes": 3371,
@@ -1729,6 +1814,46 @@
         "sha256": "f8d2237f7dcc8d73ccfbea045f0e1a702f58066c3b13523831d22a4cc223ccda"
       },
       {
+        "bytes": 10498,
+        "path": "test/performance-navigation-causal-artifact-binding.test.mjs",
+        "sha256": "4d3ea2fdbf5d4faf658b971bb5ea825b1f25e3c97d65498990e189dd10d7070b"
+      },
+      {
+        "bytes": 3218,
+        "path": "test/performance-navigation-causal-contract.test.mjs",
+        "sha256": "5377f15618ae5c7cadd8b8c586baf24c6c3bdbc437e2d2af9409693d8fcbf62b"
+      },
+      {
+        "bytes": 11226,
+        "path": "test/performance-navigation-causal-hosted-provenance.test.mjs",
+        "sha256": "c977a218136c39a1635cf92e670466191b0efd99b0558c34a9ce37d32196f3f4"
+      },
+      {
+        "bytes": 7597,
+        "path": "test/performance-navigation-causal-public-release.test.mjs",
+        "sha256": "914aa1c052951762fcdffd0e84464dc2ef6736d92622c62de25f6a01becd0a37"
+      },
+      {
+        "bytes": 5028,
+        "path": "test/performance-navigation-causal-publication-cli.test.mjs",
+        "sha256": "a196420ca76fe0712b88671e32f2b7d0b8d109aeffbe55da5dc368bd37b5e1cd"
+      },
+      {
+        "bytes": 34071,
+        "path": "test/performance-navigation-causal-publication.test.mjs",
+        "sha256": "875447988e2635215c8576e27ed43fa6b542c39e598f81b8b1fea838be5170df"
+      },
+      {
+        "bytes": 7205,
+        "path": "test/performance-navigation-causal-replication.test.mjs",
+        "sha256": "de73405aaf27c21801a4cbacb8273b1926e90de4312e8ba1e3f4cf7c58392333"
+      },
+      {
+        "bytes": 15327,
+        "path": "test/performance-navigation-causal.test.mjs",
+        "sha256": "10867ca9629fc160d17976993721d947d416ce19672836eedb91dedf1f7c32d9"
+      },
+      {
         "bytes": 27388,
         "path": "test/performance-publication.test.mjs",
         "sha256": "d7afe7114bd80c5fbefffdf0a21466c95dc7c81c3ed1ba073e59d46f7ecec714"
@@ -1772,6 +1897,11 @@
         "bytes": 26052,
         "path": "test/performance-replication.test.mjs",
         "sha256": "3373880f762b83e159bd4bf4d110da524869e092d0ff743926e07bc392473a89"
+      },
+      {
+        "bytes": 7433,
+        "path": "test/performance-run-navigation-causal.test.mjs",
+        "sha256": "a7d12b5a6344069e53c769dd89be42a10b353d3a99b7a50a91ec9c304d9ecf73"
       },
       {
         "bytes": 24959,
@@ -1859,9 +1989,9 @@
         "sha256": "a8340f7f3f153a85a7f71fccb41966c0dff7de85f69f0593deaf6cb7c9e6c6e1"
       },
       {
-        "bytes": 8753,
+        "bytes": 9062,
         "path": "test/publication-projection.test.mjs",
-        "sha256": "a3e0459a82646f7c9d397098711cba31b526e60a75eae0c37f7a0f1c9a118c3f"
+        "sha256": "f4eec33cc72599fd33e59eb19bbaf1e46519d89cc41955d2599a781b710893c0"
       },
       {
         "bytes": 2100,
@@ -2131,6 +2261,26 @@
       "sha256": "9a8e4c00bf57514b66f7ed1f15c1ce3e3599a90c336ccc884fd38016839c72ff"
     },
     {
+      "bytes": 9022,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v1.json",
+      "sha256": "241757bb9cedc26a5774a74585dc0f7e4c1d56363a4981b4ce944b704b2576bf"
+    },
+    {
+      "bytes": 13708,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v1.md",
+      "sha256": "fc9629bea46426d3455bece3b2688eca8b5da9ccb4ed4b20a74c729420afabe0"
+    },
+    {
+      "bytes": 2004,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
+      "sha256": "9fd4efb7138175cc3db6341b0fd8693956390119fd4958dcdf1b27b438cbb436"
+    },
+    {
+      "bytes": 40758,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
+      "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472"
+    },
+    {
       "bytes": 11702,
       "path": "protocol/stasis-v0.3.3-performance-replication-v1.md",
       "sha256": "fe0ef201c36e9fcbdd2fb822aa9204b8d4f98707d5659c043c4fdabd5a43acef"
@@ -2152,9 +2302,9 @@
         "reason": "confirmed public email in the README author attribution"
       },
       {
-        "bytes": 5650,
+        "bytes": 6517,
         "path": "package.json",
-        "sha256": "6e425906d42bda9489d7065df1d5eff271a26c54d7adb47da9dc727b355bbc13",
+        "sha256": "39c6db5082895c7e281d844824cca900dbc2d1149280ebd5c539f1e809637e3d",
         "reason": "confirmed public author email in package metadata"
       },
       {
@@ -2295,6 +2445,18 @@
         "bytes": 3963,
         "path": "test/manifest-identities.test.mjs",
         "sha256": "9f296e339b6f499afd43cf026d26415a1f33993dc33df8bf890af66680341701",
+        "reason": "reviewed synthetic path or escaped Windows syntax"
+      },
+      {
+        "bytes": 5028,
+        "path": "test/performance-navigation-causal-publication-cli.test.mjs",
+        "sha256": "a196420ca76fe0712b88671e32f2b7d0b8d109aeffbe55da5dc368bd37b5e1cd",
+        "reason": "reviewed synthetic path or escaped Windows syntax"
+      },
+      {
+        "bytes": 7433,
+        "path": "test/performance-run-navigation-causal.test.mjs",
+        "sha256": "a7d12b5a6344069e53c769dd89be42a10b353d3a99b7a50a91ec9c304d9ecf73",
         "reason": "reviewed synthetic path or escaped Windows syntax"
       },
       {

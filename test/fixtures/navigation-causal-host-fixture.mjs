@@ -23,7 +23,7 @@ const phaseOrder = Object.freeze([
 
 export async function navigationCausalHostFixtureRaw(
   hostLane,
-  { openDeltaNs = 70n } = {},
+  { documentHtml = finalDocumentHtml, openDeltaNs = 70n, wrongFinalOrdinal = null } = {},
 ) {
   let cursor = 1_000n;
   return runNavigationCausalHost({
@@ -46,10 +46,11 @@ export async function navigationCausalHostFixtureRaw(
         name,
         interval(boundaries[index], boundaries[index + 1]),
       ]));
+      const wrongFinal = job.ordinal === wrongFinalOrdinal;
       return {
         job: structuredClone(job),
-        status: "completed",
-        timingEligible: job.phase === "sample",
+        status: wrongFinal ? "incorrect" : "completed",
+        timingEligible: !wrongFinal && job.phase === "sample",
         lifecycle: {
           status: "complete",
           order: phaseOrder,
@@ -62,17 +63,19 @@ export async function navigationCausalHostFixtureRaw(
         result: {
           requestedUrl: job.requestedUrl,
           sessionRequestedUrl: job.requestedUrl,
-          finalUrl: `${origin}/navigation-final`,
+          finalUrl: wrongFinal ? `${origin}/wrong-final` : `${origin}/navigation-final`,
           boundary: "controlled_ready",
           profile: "controlled-web-session-v2",
           settleOutcome: "quiescent",
-          documentHtml: finalDocumentHtml,
+          documentHtml,
           title: "navigation-final",
           statusText: "complete",
           statusState: "complete",
           firstLink: `${origin}/leaf/navigation`,
         },
-        oracle: { valid: true, reasons: [] },
+        oracle: wrongFinal
+          ? { valid: false, reasons: ["final_url_mismatch"] }
+          : { valid: true, reasons: [] },
         cleanup: { status: "passed", mode: "graceful_session_close" },
         error: null,
       };

@@ -1,0 +1,284 @@
+{
+  "schema": "stasis-v0.3.3-performance-navigation-causal-preflight-v1",
+  "status": "preregistered",
+  "contract": {
+    "repository": "oxhq/stasis-compat-bench",
+    "soleParentSha": "11948d347204e3392fb960ed2966fcc63d769271",
+    "tag": "stasis-v0.3.3-performance-navigation-causal-contract-v1",
+    "preflightTag": "stasis-v0.3.3-performance-navigation-causal-preflight-v1",
+    "preflightAsset": "anonymous-contract-preflight.json",
+    "evidenceTag": "stasis-v0.3.3-performance-navigation-causal-evidence-v1",
+    "assetNames": [
+      "stasis-v0.3.3-performance-navigation-causal-v1.md",
+      "stasis-v0.3.3-performance-navigation-causal-preflight-v1.json",
+      "stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
+      "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json"
+    ],
+    "knownAssetIdentities": {
+      "protocol": {
+        "name": "stasis-v0.3.3-performance-navigation-causal-v1.md",
+        "bytes": 13708,
+        "sha256": "fc9629bea46426d3455bece3b2688eca8b5da9ccb4ed4b20a74c729420afabe0"
+      },
+      "workflow": {
+        "name": "stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
+        "bytes": 40758,
+        "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472"
+      },
+      "selection": {
+        "name": "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
+        "bytes": 2004,
+        "sha256": "9fd4efb7138175cc3db6341b0fd8693956390119fd4958dcdf1b27b438cbb436"
+      },
+      "preflightIdentityBoundByH8bBlobAndContractRelease": true
+    }
+  },
+  "harness": {
+    "repository": "oxhq/stasis-compat-bench",
+    "revision": "11948d347204e3392fb960ed2966fcc63d769271",
+    "parentRevision": "6b51796f646133dd74feb727a3edeb3ae1a8a443",
+    "grandparentRevision": "de1c9a000cba734c549f2fcee182e92c0565dff5",
+    "tree": "c8ba9cf9ddd6bcc85abf10c017349882544e0b1b",
+    "topology": "two_commit_h8a_stack_from_h7"
+  },
+  "workflowSource": {
+    "repository": "oxhq/stasis",
+    "branch": "codex/stasis-v033-navigation-causal-source",
+    "ref": "refs/heads/codex/stasis-v033-navigation-causal-source",
+    "revision": "cb5bba41cda038fce82d2a5da6e4f853f1e97440",
+    "parentRevision": "b4c847b6543e34677630c311b20d9e3ff64d0925",
+    "tree": "9883ccb6fd3ddf72c3e4745e9fa3b1d9cc1d95da",
+    "workflow": {
+      "path": ".github/workflows/stasis-v0.3.3-performance-navigation-causal.yml",
+      "blob": "f24f67ac0d2c8b7b7cbd3a1e2bfc8a304c1c8038",
+      "bytes": 40758,
+      "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472",
+      "lineCount": 829,
+      "name": "Stasis v0.3.3 navigation causal experiment"
+    }
+  },
+  "invocation": {
+    "event": "push",
+    "createdBranch": true,
+    "runAttempt": 1,
+    "workflowDispatch": false,
+    "schedule": false,
+    "matrix": false,
+    "rerun": false,
+    "replacementRun": false,
+    "secondPush": false,
+    "immutablePreflightReceiptReleaseRequired": true,
+    "contractReleaseLatest": false,
+    "preflightReceiptReleaseLatest": false,
+    "evidenceReleaseLatest": false
+  },
+  "hosts": [
+    {
+      "lane": "host-a",
+      "jobId": "navigation-causal-host-a",
+      "jobName": "Native Ubuntu 22.04 navigation causal host A",
+      "runnerLabel": "ubuntu-22.04",
+      "artifactName": "stasis-v0.3.3-navigation-causal-host-a-attempt-1",
+      "warmupOrder": "AB",
+      "pairOrder": [
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA"
+      ]
+    },
+    {
+      "lane": "host-b",
+      "jobId": "navigation-causal-host-b",
+      "jobName": "Native Ubuntu 22.04 navigation causal host B",
+      "runnerLabel": "ubuntu-22.04",
+      "artifactName": "stasis-v0.3.3-navigation-causal-host-b-attempt-1",
+      "warmupOrder": "BA",
+      "pairOrder": [
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB"
+      ]
+    }
+  ],
+  "bootIndependence": {
+    "saltDomain": "stasis-v0.3.3-navigation-causal-boot-salt-v1",
+    "saltInputs": [
+      "GITHUB_RUN_ID",
+      "GITHUB_SHA"
+    ],
+    "sameSaltRequiredAcrossJobs": true,
+    "distinctBootInstanceDigestRequired": true,
+    "distinctHostClassDigestRequired": false,
+    "hostClassDigestIsDescriptiveOnly": true
+  },
+  "measurement": {
+    "package": "@oxhq/stasis@0.3.3",
+    "nodeVersion": "v22.20.0",
+    "armA": "http://stasis-compat.test/navigation-start",
+    "armB": "http://stasis-compat.test/navigation-final",
+    "oneChangedVariable": "requested_url",
+    "freshNativeProcessesPerHost": 22,
+    "untimedCorrectnessWarmupsPerHost": 2,
+    "timedAdjacentPairsPerHost": 10,
+    "gracefulTerminalOperation": "Session.close",
+    "successfulRuntimeClose": false,
+    "lifecyclePhases": [
+      "processProtocolLaunch",
+      "engineAndInitialOpen",
+      "settle",
+      "extract",
+      "physicalClose"
+    ],
+    "retries": false,
+    "sleeps": false,
+    "fallbacks": false,
+    "discardedObservations": false,
+    "caching": false,
+    "pooling": "none"
+  },
+  "effectRulePerHost": {
+    "exactCorrectEquivalentPairs": 10,
+    "minimumPositiveEngineAndInitialOpenDeltas": 9,
+    "positiveMedianEngineAndInitialOpenDelta": true,
+    "positiveMedianTotalDelta": true,
+    "minimumOpenDeltaDominatesAbsoluteCombinedOtherPhaseDeltas": 8
+  },
+  "replication": {
+    "bothHostsMustIndependentlyMeetEveryRule": true,
+    "statisticsPooledAcrossHosts": false,
+    "exactFinalDocumentHtmlAcrossHosts": true,
+    "validStatuses": [
+      "VALID_REPLICATED_EFFECT",
+      "VALID_NO_REPLICATED_EFFECT"
+    ],
+    "invalidStatuses": [
+      "INVALID_HOST_MEASUREMENT",
+      "INVALID_CROSS_HOST_INDEPENDENCE",
+      "INVALID_CROSS_HOST_CORRECTNESS"
+    ],
+    "validNoReplicatedEffectMeansZeroEffect": false
+  },
+  "hostedTopology": {
+    "declaredStepsPerJob": 16,
+    "stepNumbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      33,
+      34,
+      35
+    ],
+    "postSteps": [
+      {
+        "number": 33,
+        "name": "Post Set up exact Node 22.20.0 x64"
+      },
+      {
+        "number": 34,
+        "name": "Post Check out the exact navigation causal runner"
+      },
+      {
+        "number": 35,
+        "name": "Complete job"
+      }
+    ],
+    "implicitSetupStep": {
+      "number": 1,
+      "name": "Set up job"
+    },
+    "retainedInvalidConclusionPattern": {
+      "propagationStep17": "failure",
+      "postNodeStep33": "skipped",
+      "postCheckoutStep34": "success",
+      "completeJobStep35": "success",
+      "job": "failure"
+    },
+    "artifactCount": 2,
+    "filesPerArtifact": 2
+  },
+  "v4SelectionBinding": {
+    "releaseId": 382939276,
+    "localizationAssetId": 544735276,
+    "localizationAssetSha256": "fdc8cd495f8cd6116763ddbbc84ec896123bde828d6fb17bcb508b1bc772f34f",
+    "jsonPointer": "/observations/stasis/phases/poolRuns/9",
+    "selectedOrdinal": 10,
+    "v4TimingImportedIntoCausalStatistics": false
+  },
+  "evidenceReleaseAssetNames": [
+    "actions-navigation-causal-host-a.zip",
+    "actions-navigation-causal-host-b.zip",
+    "navigation-causal-host-a-raw.json",
+    "navigation-causal-host-a-outcome.json",
+    "navigation-causal-host-b-raw.json",
+    "navigation-causal-host-b-outcome.json",
+    "navigation-causal-artifact-binding.json",
+    "navigation-causal-hosted-provenance.json",
+    "navigation-causal-replication.json",
+    "anonymous-contract-preflight.json",
+    "contract-release.json",
+    "contract-commit.json",
+    "workflow-run.json",
+    "workflow-runs.json",
+    "workflow-jobs.json",
+    "workflow-artifacts.json",
+    "workflow-source-commit.json",
+    "v4-evidence-release.json",
+    "v4-localization-evidence.json",
+    "privacy-scan.json",
+    "SHA256SUMS.txt"
+  ],
+  "publicationPrivacy": {
+    "documentHtmlValidatedBeforeProjection": true,
+    "documentHtmlPrivacyScannedBeforeOmission": true,
+    "onlyReplacedLiteral": "/leaf/navigation",
+    "replacementMarker": "stasis-navigation-causal-public-fixture-path",
+    "originalDocumentHtmlIdentityRetained": true,
+    "credentialLikeTextMayBeOmittedWithoutRejection": false
+  },
+  "publicVerification": {
+    "preflightReceiptReleaseAnchoredBeforeS5": true,
+    "preflightReceiptReleaseAssetCount": 1,
+    "liveSourceBranchAndCommitRefetched": true,
+    "completeWorkflowBranchListingRefetched": true,
+    "selectedRunAllAttemptJobsAndArtifactsRefetched": true,
+    "hostedZipAndReplicationReceiptsReplayed": true,
+    "actionsArtifactMetadataRequiredPresentAndNonexpired": true,
+    "liveActionsReverificationRetentionBounded": true,
+    "indefiniteLiveActionsReverificationClaimed": false,
+    "contractPreflightAndEvidenceReleasesLatest": false
+  },
+  "claimBoundary": {
+    "comparisonCorpusChanged": false,
+    "generalizedSpeedClaimAuthorized": false,
+    "implementationWorkAuthorized": false,
+    "decisionState": "STAY_0_4_UNASSIGNED"
+  }
+}

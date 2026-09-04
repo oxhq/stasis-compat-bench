@@ -81,6 +81,17 @@ export function assertPostSupportArtifactPrivacy(value) {
   return value;
 }
 
+export function assertPostSupportArtifactHtmlPrivacy(value) {
+  if (typeof value !== "string") {
+    throw new TypeError("Post-support HTML privacy input must be a string");
+  }
+  const withoutMarkupSlashes = value
+    .replace(/<\/(?=[a-z][a-z0-9:-]*(?:\s|>))/giu, "<")
+    .replace(/\/(?=\s*>)/gu, "");
+  assertSafeString(withoutMarkupSlashes, ["controlledPublicDocumentHtml"]);
+  return value;
+}
+
 function privacySnapshot(value, location, seen) {
   if (typeof value === "string") {
     assertSafeString(value, location);
@@ -262,7 +273,8 @@ function assertDecodedString(original, value, location) {
     /\bfile:(?:\/\/|\\\\)/iu.test(scanned) ||
     /(?:^|[^a-z0-9])[a-z]:[^\s"']*[\\/]/iu.test(scanned) ||
     /\\\\(?:[?.]\\|[^\\])/u.test(scanned) ||
-    (!typedSlashText && /(?:^|[^a-z0-9\\/])[\\/](?![\\/])[^\s"']+/iu.test(scanned)) ||
+    (!typedSlashText &&
+      /(?:^|[^a-z0-9\\/])[\\/](?![\\/])[^\s"']+/iu.test(scanned)) ||
     /(?:^|[\s"'=(])\/\/[^/\s"']+\/[^\s"']+/u.test(scanned) ||
     /(?:^|[^a-z0-9])\/(?:build|data|etc|home|mnt|opt|private|root|srv|tmp|usr|users|var|workspace)\//iu.test(scanned) ||
     /(?:^|[\\/])\.\.(?:[\\/]|$)/u.test(scanned)

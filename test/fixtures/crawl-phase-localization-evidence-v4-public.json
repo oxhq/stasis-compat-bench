@@ -1,0 +1,3672 @@
+{
+  "schema": "stasis-v0.3.3-performance-crawl-phase-localization-evidence-v2",
+  "protocol": "stasis-v0.3.3-performance-crawl-phase-localization-v2",
+  "track": "deterministic-crawl-20-page",
+  "purpose": "phase_localization_diagnostic_only",
+  "authorityEligible": false,
+  "timingEligible": false,
+  "statisticsEligible": false,
+  "comparisonEligible": false,
+  "optimizationEligible": false,
+  "authorityInput": {
+    "fileSha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b",
+    "fileBytes": 221543,
+    "schema": "stasis-v0.3.3-performance-crawl-raw-v1",
+    "protocol": "stasis-v0.3.3-performance-crawl-v1",
+    "track": "deterministic-crawl-20-page",
+    "workflowProvenance": {
+      "provider": "github-actions",
+      "repository": "oxhq/stasis",
+      "workflow": "Stasis v0.3.3 performance evidence",
+      "job": "ubuntu-crawl",
+      "runId": "33862916068",
+      "runAttempt": "1",
+      "workflowSourceSha": "6c7a6013e00584c8cb8d54c80cee5dbbcf3ca1b9",
+      "workflowSourceRef": "refs/heads/codex/stasis-v033-performance-evidence",
+      "harnessCheckoutRevision": "c5678b045852a29b89ed4b853da0aa39e6e3bf06",
+      "harnessCheckoutTree": "4e491acd7d781878a5e84f57ac769e863ee58ac2",
+      "harnessCheckoutWorktree": {
+        "schema": "stasis-performance-harness-worktree-v1",
+        "clean": true,
+        "statusFormat": "porcelain-v1-z",
+        "untrackedFiles": "all",
+        "ignoredFiles": "excluded",
+        "statusEntryCount": 0
+      }
+    },
+    "host": {
+      "platform": "linux",
+      "arch": "x64",
+      "runnerOs": "Linux",
+      "imageOs": "ubuntu22",
+      "imageVersion": "20260824.273.3",
+      "cpuModel": "AMD EPYC 7763 64-Core Processor",
+      "logicalCpuCount": 4,
+      "bootInstanceDigest": "d47e513de30e3c64f63cba73d820da6b608bb4438e9fe2563c1283a221ffe698",
+      "hostClassDigest": "b404d2a4ec3ab01b6b00269a2481965f5fa837c4a3082322ca8e98bb4be9ffca"
+    },
+    "softwareIdentity": {
+      "crawlee": {
+        "runner": "crawlee-playwrightcrawler",
+        "nodeVersion": "v22.20.0",
+        "crawleeVersion": "3.18.1",
+        "playwrightVersion": "1.62.1",
+        "browser": "chromium",
+        "chromiumVersion": "Google Chrome for Testing 151.0.7922.34",
+        "chromiumExecutableBytes": 290614600,
+        "chromiumExecutableSha256": "0b20b130e7edd9dd51873be867761295fe0cfad490c2b9a64f95bd3cfc08fa71"
+      },
+      "stasis": {
+        "runner": "stasis-reference-crawler-v0.3.3",
+        "nodeVersion": "v22.20.0",
+        "package": "@oxhq/stasis",
+        "sdkVersion": "0.3.3",
+        "revision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+        "profile": "controlled-web-session-v2",
+        "releaseTag": "v0.3.3",
+        "packageQualificationRunId": "33506181780",
+        "packageQualificationRunAttempt": "1",
+        "sdkArchiveSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+        "executableSha256": "c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37",
+        "runtimeManifestSha256": "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4"
+      }
+    },
+    "hostRuntime": {
+      "stasisEglRuntime": {
+        "schema": "stasis-linux-egl-runtime-prerequisite-v1",
+        "dlopen": {
+          "method": "python3_ctypes_cdll_proc_maps_v1",
+          "status": "passed"
+        },
+        "packages": [
+          {
+            "name": "libegl1",
+            "version": "1.4.0-1"
+          },
+          {
+            "name": "libegl-mesa0",
+            "version": "23.2.1-1ubuntu3.1~22.04.4"
+          },
+          {
+            "name": "libglvnd0",
+            "version": "1.4.0-1"
+          }
+        ],
+        "libraries": [
+          {
+            "package": "libegl1",
+            "soname": "libEGL.so.1",
+            "basename": "libEGL.so.1.1.0",
+            "bytes": 72352,
+            "sha256": "69816a7062d7d624144472f5ef71f5b23732b9003df7472662920602e62805db"
+          },
+          {
+            "package": "libegl-mesa0",
+            "soname": "libEGL_mesa.so.0",
+            "basename": "libEGL_mesa.so.0.0.0",
+            "bytes": 296600,
+            "sha256": "267172b546de46e94e0ce1318327b7cd68e791cf1c7e70b8c86c032a8e6430a8"
+          },
+          {
+            "package": "libglvnd0",
+            "soname": "libGLdispatch.so.0",
+            "basename": "libGLdispatch.so.0.0.0",
+            "bytes": 715200,
+            "sha256": "a4f2642498fba54d2f39e90ca3daa94340cdd52198473185a5285608ae318cb6"
+          }
+        ]
+      }
+    },
+    "artifactBinding": {
+      "schema": "stasis-v0.3.3-performance-replication-artifact-binding-v1",
+      "status": "passed",
+      "pooling": "none",
+      "claimBoundary": "two_separate_single_host_observations_only",
+      "decisionState": "STAY_0_4_UNASSIGNED",
+      "generalizedSpeedClaimAuthorized": false,
+      "implementationWorkAuthorized": false,
+      "inputs": {
+        "semanticReceiptSchema": "stasis-v0.3.3-performance-replication-verification-v1",
+        "hostedReceiptSchema": "stasis-v0.3.3-performance-replication-hosted-provenance-v1",
+        "workflow": {
+          "provider": "github-actions",
+          "repository": "oxhq/stasis",
+          "workflow": "Stasis v0.3.3 performance evidence",
+          "runId": 33862916068,
+          "runAttempt": 1,
+          "workflowSourceSha": "6c7a6013e00584c8cb8d54c80cee5dbbcf3ca1b9",
+          "workflowSourceRef": "refs/heads/codex/stasis-v033-performance-evidence",
+          "crawlJob": {
+            "lane": "ubuntu-crawl",
+            "hostedName": "Ubuntu 22.04 Crawlee vs Stasis",
+            "hostedJobId": 100991246321
+          }
+        }
+      },
+      "crawlLaneRaw": {
+        "archive": "stasis-v0.3.3-performance-crawl-raw-attempt-1",
+        "name": "crawl-raw.json",
+        "bytes": 221543,
+        "sha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b"
+      },
+      "verification": {
+        "exactSevenArchiveSet": true,
+        "laneRawCopiesByteIdentical": true,
+        "semanticFreshFileBoundaryMatched": true,
+        "semanticAndHostedWorkflowMatched": true,
+        "laneJobsMatched": true,
+        "rawContentsRetained": false,
+        "urlsRetained": false
+      }
+    },
+    "oraclePairIndex": 1,
+    "oracleResultSha256": {
+      "crawlee": "906e2c586bed61e9220bf905037f6ae014e2d8348e5a7b76ae67fd779b70dd99",
+      "stasis": "346e177a131cd87a88109213b73760f85219a87c32228a09bd2509ac3382238e"
+    }
+  },
+  "authorityInputContinuity": {
+    "beforeSha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b",
+    "afterSha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b",
+    "beforeBytes": 221543,
+    "afterBytes": 221543,
+    "exactBytesUnchanged": true
+  },
+  "diagnosticAttestation": {
+    "host": {
+      "platform": "linux",
+      "arch": "x64",
+      "runnerOs": "Linux",
+      "imageOs": "ubuntu22",
+      "imageVersion": "20260831.284.1",
+      "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+      "logicalCpuCount": 4,
+      "bootInstanceDigest": "a9c348128df14d74b6e11c62baa261f8e76cddc2ff56c57a10b3c69cc3bdaf6e",
+      "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+    },
+    "provenance": {
+      "provider": "github-actions",
+      "repository": "oxhq/stasis",
+      "workflow": "Stasis v0.3.3 performance crawl phase diagnostic V4",
+      "job": "crawl-phase-diagnostic-v4",
+      "runId": "33905672027",
+      "runAttempt": "1",
+      "workflowSourceSha": "b4c847b6543e34677630c311b20d9e3ff64d0925",
+      "workflowSourceRef": "refs/heads/codex/stasis-v033-crawl-phase-diagnostic-v4",
+      "harnessCheckoutRevision": "58742c0f35939558b334eeb792cbf17ae8ab3426",
+      "harnessCheckoutTree": "f6c9e5b56ee34135c4197fc080cb67f5a4d01fa5",
+      "harnessCheckoutWorktree": {
+        "schema": "stasis-performance-harness-worktree-v1",
+        "clean": true,
+        "statusFormat": "porcelain-v1-z",
+        "untrackedFiles": "all",
+        "ignoredFiles": "excluded",
+        "statusEntryCount": 0
+      }
+    },
+    "crawlee": {
+      "runner": "crawlee-playwrightcrawler",
+      "nodeVersion": "v22.20.0",
+      "crawleeVersion": "3.18.1",
+      "playwrightVersion": "1.62.1",
+      "browser": "chromium",
+      "chromiumVersion": "Google Chrome for Testing 151.0.7922.34",
+      "chromiumExecutableBytes": 290614600,
+      "chromiumExecutableSha256": "0b20b130e7edd9dd51873be867761295fe0cfad490c2b9a64f95bd3cfc08fa71",
+      "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+    },
+    "stasis": {
+      "runner": "stasis-reference-crawler-v0.3.3",
+      "nodeVersion": "v22.20.0",
+      "package": "@oxhq/stasis",
+      "sdkVersion": "0.3.3",
+      "revision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+      "profile": "controlled-web-session-v2",
+      "releaseTag": "v0.3.3",
+      "packageQualificationRunId": "33506181780",
+      "packageQualificationRunAttempt": "1",
+      "sdkArchiveSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+      "executableSha256": "c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37",
+      "runtimeManifestSha256": "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4",
+      "eglRuntime": {
+        "schema": "stasis-linux-egl-runtime-prerequisite-v1",
+        "dlopen": {
+          "method": "python3_ctypes_cdll_proc_maps_v1",
+          "status": "passed"
+        },
+        "packages": [
+          {
+            "name": "libegl1",
+            "version": "1.4.0-1"
+          },
+          {
+            "name": "libegl-mesa0",
+            "version": "23.2.1-1ubuntu3.1~22.04.4"
+          },
+          {
+            "name": "libglvnd0",
+            "version": "1.4.0-1"
+          }
+        ],
+        "libraries": [
+          {
+            "package": "libegl1",
+            "soname": "libEGL.so.1",
+            "basename": "libEGL.so.1.1.0",
+            "bytes": 72352,
+            "sha256": "69816a7062d7d624144472f5ef71f5b23732b9003df7472662920602e62805db"
+          },
+          {
+            "package": "libegl-mesa0",
+            "soname": "libEGL_mesa.so.0",
+            "basename": "libEGL_mesa.so.0.0.0",
+            "bytes": 296600,
+            "sha256": "267172b546de46e94e0ce1318327b7cd68e791cf1c7e70b8c86c032a8e6430a8"
+          },
+          {
+            "package": "libglvnd0",
+            "soname": "libGLdispatch.so.0",
+            "basename": "libGLdispatch.so.0.0.0",
+            "bytes": 715200,
+            "sha256": "a4f2642498fba54d2f39e90ca3daa94340cdd52198473185a5285608ae318cb6"
+          }
+        ]
+      },
+      "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+    }
+  },
+  "hostRelation": {
+    "authorityHostClassDigest": "b404d2a4ec3ab01b6b00269a2481965f5fa837c4a3082322ca8e98bb4be9ffca",
+    "diagnosticHostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744",
+    "hostClass": "different_class",
+    "bootInstance": "distinct",
+    "stasisEglRuntime": "same",
+    "timingCombinedAcrossHosts": false
+  },
+  "order": [
+    "crawlee",
+    "stasis"
+  ],
+  "observations": {
+    "crawlee": {
+      "schema": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2",
+      "protocol": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2",
+      "track": "deterministic-crawl-20-page",
+      "purpose": "phase_localization_diagnostic_only",
+      "authorityEligible": false,
+      "timingEligible": false,
+      "statisticsEligible": false,
+      "comparisonEligible": false,
+      "optimizationEligible": false,
+      "rules": {
+        "purpose": "phase_localization_diagnostic_only",
+        "workload": {
+          "start": "http://stasis-compat.test/",
+          "pageLimit": 20,
+          "depthLimit": 2,
+          "concurrency": 1
+        },
+        "runnerSource": "src/performance/crawl.mjs",
+        "runnerSubstitution": false,
+        "retries": false,
+        "sleeps": false,
+        "fallbacks": false,
+        "discardedFailures": false,
+        "clock": "injected_monotonic_nanoseconds",
+        "rawIntervalsRetained": true,
+        "phaseDurationsAreBenchmarkSamples": false,
+        "phaseDurationsMayBePooledAcrossObservationsOrHosts": false,
+        "phaseDurationsMayBeSummedWithinOneObservationAfterNonOverlapValidation": true,
+        "crawleeWorkloadWindowMeaning": "browser_launch_settlement_through_first_browser_close_invocation",
+        "stasisAcquireOpenMeaning": "pool_run_invocation_through_work_callback_entry",
+        "stasisSettleExtractMeaning": "work_callback_entry_through_work_callback_settlement",
+        "stasisReleasePhysicalCleanupMeaning": "work_callback_settlement_through_pool_run_settlement",
+        "stasisPoolCloseMeaning": "pool_close_invocation_through_pool_close_settlement"
+      },
+      "identity": {
+        "authorityInput": {
+          "fileSha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b",
+          "fileBytes": 221543,
+          "schema": "stasis-v0.3.3-performance-crawl-raw-v1",
+          "protocol": "stasis-v0.3.3-performance-crawl-v1",
+          "track": "deterministic-crawl-20-page",
+          "workflowProvenance": {
+            "provider": "github-actions",
+            "repository": "oxhq/stasis",
+            "workflow": "Stasis v0.3.3 performance evidence",
+            "job": "ubuntu-crawl",
+            "runId": "33862916068",
+            "runAttempt": "1",
+            "workflowSourceSha": "6c7a6013e00584c8cb8d54c80cee5dbbcf3ca1b9",
+            "workflowSourceRef": "refs/heads/codex/stasis-v033-performance-evidence",
+            "harnessCheckoutRevision": "c5678b045852a29b89ed4b853da0aa39e6e3bf06",
+            "harnessCheckoutTree": "4e491acd7d781878a5e84f57ac769e863ee58ac2",
+            "harnessCheckoutWorktree": {
+              "schema": "stasis-performance-harness-worktree-v1",
+              "clean": true,
+              "statusFormat": "porcelain-v1-z",
+              "untrackedFiles": "all",
+              "ignoredFiles": "excluded",
+              "statusEntryCount": 0
+            }
+          },
+          "host": {
+            "platform": "linux",
+            "arch": "x64",
+            "runnerOs": "Linux",
+            "imageOs": "ubuntu22",
+            "imageVersion": "20260824.273.3",
+            "cpuModel": "AMD EPYC 7763 64-Core Processor",
+            "logicalCpuCount": 4,
+            "bootInstanceDigest": "d47e513de30e3c64f63cba73d820da6b608bb4438e9fe2563c1283a221ffe698",
+            "hostClassDigest": "b404d2a4ec3ab01b6b00269a2481965f5fa837c4a3082322ca8e98bb4be9ffca"
+          },
+          "softwareIdentity": {
+            "crawlee": {
+              "runner": "crawlee-playwrightcrawler",
+              "nodeVersion": "v22.20.0",
+              "crawleeVersion": "3.18.1",
+              "playwrightVersion": "1.62.1",
+              "browser": "chromium",
+              "chromiumVersion": "Google Chrome for Testing 151.0.7922.34",
+              "chromiumExecutableBytes": 290614600,
+              "chromiumExecutableSha256": "0b20b130e7edd9dd51873be867761295fe0cfad490c2b9a64f95bd3cfc08fa71"
+            },
+            "stasis": {
+              "runner": "stasis-reference-crawler-v0.3.3",
+              "nodeVersion": "v22.20.0",
+              "package": "@oxhq/stasis",
+              "sdkVersion": "0.3.3",
+              "revision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+              "profile": "controlled-web-session-v2",
+              "releaseTag": "v0.3.3",
+              "packageQualificationRunId": "33506181780",
+              "packageQualificationRunAttempt": "1",
+              "sdkArchiveSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+              "executableSha256": "c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37",
+              "runtimeManifestSha256": "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4"
+            }
+          },
+          "hostRuntime": {
+            "stasisEglRuntime": {
+              "schema": "stasis-linux-egl-runtime-prerequisite-v1",
+              "dlopen": {
+                "method": "python3_ctypes_cdll_proc_maps_v1",
+                "status": "passed"
+              },
+              "packages": [
+                {
+                  "name": "libegl1",
+                  "version": "1.4.0-1"
+                },
+                {
+                  "name": "libegl-mesa0",
+                  "version": "23.2.1-1ubuntu3.1~22.04.4"
+                },
+                {
+                  "name": "libglvnd0",
+                  "version": "1.4.0-1"
+                }
+              ],
+              "libraries": [
+                {
+                  "package": "libegl1",
+                  "soname": "libEGL.so.1",
+                  "basename": "libEGL.so.1.1.0",
+                  "bytes": 72352,
+                  "sha256": "69816a7062d7d624144472f5ef71f5b23732b9003df7472662920602e62805db"
+                },
+                {
+                  "package": "libegl-mesa0",
+                  "soname": "libEGL_mesa.so.0",
+                  "basename": "libEGL_mesa.so.0.0.0",
+                  "bytes": 296600,
+                  "sha256": "267172b546de46e94e0ce1318327b7cd68e791cf1c7e70b8c86c032a8e6430a8"
+                },
+                {
+                  "package": "libglvnd0",
+                  "soname": "libGLdispatch.so.0",
+                  "basename": "libGLdispatch.so.0.0.0",
+                  "bytes": 715200,
+                  "sha256": "a4f2642498fba54d2f39e90ca3daa94340cdd52198473185a5285608ae318cb6"
+                }
+              ]
+            }
+          },
+          "artifactBinding": {
+            "schema": "stasis-v0.3.3-performance-replication-artifact-binding-v1",
+            "status": "passed",
+            "pooling": "none",
+            "claimBoundary": "two_separate_single_host_observations_only",
+            "decisionState": "STAY_0_4_UNASSIGNED",
+            "generalizedSpeedClaimAuthorized": false,
+            "implementationWorkAuthorized": false,
+            "inputs": {
+              "semanticReceiptSchema": "stasis-v0.3.3-performance-replication-verification-v1",
+              "hostedReceiptSchema": "stasis-v0.3.3-performance-replication-hosted-provenance-v1",
+              "workflow": {
+                "provider": "github-actions",
+                "repository": "oxhq/stasis",
+                "workflow": "Stasis v0.3.3 performance evidence",
+                "runId": 33862916068,
+                "runAttempt": 1,
+                "workflowSourceSha": "6c7a6013e00584c8cb8d54c80cee5dbbcf3ca1b9",
+                "workflowSourceRef": "refs/heads/codex/stasis-v033-performance-evidence",
+                "crawlJob": {
+                  "lane": "ubuntu-crawl",
+                  "hostedName": "Ubuntu 22.04 Crawlee vs Stasis",
+                  "hostedJobId": 100991246321
+                }
+              }
+            },
+            "crawlLaneRaw": {
+              "archive": "stasis-v0.3.3-performance-crawl-raw-attempt-1",
+              "name": "crawl-raw.json",
+              "bytes": 221543,
+              "sha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b"
+            },
+            "verification": {
+              "exactSevenArchiveSet": true,
+              "laneRawCopiesByteIdentical": true,
+              "semanticFreshFileBoundaryMatched": true,
+              "semanticAndHostedWorkflowMatched": true,
+              "laneJobsMatched": true,
+              "rawContentsRetained": false,
+              "urlsRetained": false
+            }
+          },
+          "oraclePairIndex": 1,
+          "oracleResultSha256": {
+            "crawlee": "906e2c586bed61e9220bf905037f6ae014e2d8348e5a7b76ae67fd779b70dd99",
+            "stasis": "346e177a131cd87a88109213b73760f85219a87c32228a09bd2509ac3382238e"
+          }
+        },
+        "diagnosticAttestation": {
+          "host": {
+            "platform": "linux",
+            "arch": "x64",
+            "runnerOs": "Linux",
+            "imageOs": "ubuntu22",
+            "imageVersion": "20260831.284.1",
+            "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+            "logicalCpuCount": 4,
+            "bootInstanceDigest": "a9c348128df14d74b6e11c62baa261f8e76cddc2ff56c57a10b3c69cc3bdaf6e",
+            "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+          },
+          "provenance": {
+            "provider": "github-actions",
+            "repository": "oxhq/stasis",
+            "workflow": "Stasis v0.3.3 performance crawl phase diagnostic V4",
+            "job": "crawl-phase-diagnostic-v4",
+            "runId": "33905672027",
+            "runAttempt": "1",
+            "workflowSourceSha": "b4c847b6543e34677630c311b20d9e3ff64d0925",
+            "workflowSourceRef": "refs/heads/codex/stasis-v033-crawl-phase-diagnostic-v4",
+            "harnessCheckoutRevision": "58742c0f35939558b334eeb792cbf17ae8ab3426",
+            "harnessCheckoutTree": "f6c9e5b56ee34135c4197fc080cb67f5a4d01fa5",
+            "harnessCheckoutWorktree": {
+              "schema": "stasis-performance-harness-worktree-v1",
+              "clean": true,
+              "statusFormat": "porcelain-v1-z",
+              "untrackedFiles": "all",
+              "ignoredFiles": "excluded",
+              "statusEntryCount": 0
+            }
+          },
+          "crawlee": {
+            "runner": "crawlee-playwrightcrawler",
+            "nodeVersion": "v22.20.0",
+            "crawleeVersion": "3.18.1",
+            "playwrightVersion": "1.62.1",
+            "browser": "chromium",
+            "chromiumVersion": "Google Chrome for Testing 151.0.7922.34",
+            "chromiumExecutableBytes": 290614600,
+            "chromiumExecutableSha256": "0b20b130e7edd9dd51873be867761295fe0cfad490c2b9a64f95bd3cfc08fa71",
+            "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+          },
+          "stasis": {
+            "runner": "stasis-reference-crawler-v0.3.3",
+            "nodeVersion": "v22.20.0",
+            "package": "@oxhq/stasis",
+            "sdkVersion": "0.3.3",
+            "revision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+            "profile": "controlled-web-session-v2",
+            "releaseTag": "v0.3.3",
+            "packageQualificationRunId": "33506181780",
+            "packageQualificationRunAttempt": "1",
+            "sdkArchiveSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+            "executableSha256": "c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37",
+            "runtimeManifestSha256": "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4",
+            "eglRuntime": {
+              "schema": "stasis-linux-egl-runtime-prerequisite-v1",
+              "dlopen": {
+                "method": "python3_ctypes_cdll_proc_maps_v1",
+                "status": "passed"
+              },
+              "packages": [
+                {
+                  "name": "libegl1",
+                  "version": "1.4.0-1"
+                },
+                {
+                  "name": "libegl-mesa0",
+                  "version": "23.2.1-1ubuntu3.1~22.04.4"
+                },
+                {
+                  "name": "libglvnd0",
+                  "version": "1.4.0-1"
+                }
+              ],
+              "libraries": [
+                {
+                  "package": "libegl1",
+                  "soname": "libEGL.so.1",
+                  "basename": "libEGL.so.1.1.0",
+                  "bytes": 72352,
+                  "sha256": "69816a7062d7d624144472f5ef71f5b23732b9003df7472662920602e62805db"
+                },
+                {
+                  "package": "libegl-mesa0",
+                  "soname": "libEGL_mesa.so.0",
+                  "basename": "libEGL_mesa.so.0.0.0",
+                  "bytes": 296600,
+                  "sha256": "267172b546de46e94e0ce1318327b7cd68e791cf1c7e70b8c86c032a8e6430a8"
+                },
+                {
+                  "package": "libglvnd0",
+                  "soname": "libGLdispatch.so.0",
+                  "basename": "libGLdispatch.so.0.0.0",
+                  "bytes": 715200,
+                  "sha256": "a4f2642498fba54d2f39e90ca3daa94340cdd52198473185a5285608ae318cb6"
+                }
+              ]
+            },
+            "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+          }
+        }
+      },
+      "job": {
+        "phase": "diagnostic",
+        "lane": "crawlee",
+        "ordinal": 1,
+        "crawl": {
+          "start": "http://stasis-compat.test/",
+          "pageLimit": 20,
+          "depthLimit": 2
+        }
+      },
+      "lane": "crawlee",
+      "runner": {
+        "sourceModule": "src/performance/crawl.mjs",
+        "factory": "createCrawleePerformanceRunner",
+        "dependencyHook": "playwright_launcher_proxy",
+        "substituted": false
+      },
+      "settlement": {
+        "status": "fulfilled",
+        "run": {
+          "success": true,
+          "result": {
+            "pages": [
+              {
+                "requestedUrl": "http://stasis-compat.test/",
+                "url": "http://stasis-compat.test/",
+                "depth": 0,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/static",
+                  "http://stasis-compat.test/canonical",
+                  "http://stasis-compat.test/microtask",
+                  "http://stasis-compat.test/timer",
+                  "http://stasis-compat.test/raf",
+                  "http://stasis-compat.test/fetch",
+                  "http://stasis-compat.test/xhr",
+                  "http://stasis-compat.test/state",
+                  "http://stasis-compat.test/navigation-start",
+                  "http://stasis-compat.test/interval"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/static",
+                "url": "http://stasis-compat.test/static",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/static"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/canonical",
+                "url": "http://stasis-compat.test/canonical",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/canonical"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/microtask",
+                "url": "http://stasis-compat.test/microtask",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/microtask"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/timer",
+                "url": "http://stasis-compat.test/timer",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/timer"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/raf",
+                "url": "http://stasis-compat.test/raf",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/raf"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/fetch",
+                "url": "http://stasis-compat.test/fetch",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/fetch"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/xhr",
+                "url": "http://stasis-compat.test/xhr",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/xhr"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/state",
+                "url": "http://stasis-compat.test/state/ready/",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/state/ready/leaf"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/navigation-start",
+                "url": "http://stasis-compat.test/navigation-final",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/navigation"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/interval",
+                "url": "http://stasis-compat.test/interval",
+                "depth": 1,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": [
+                  "http://stasis-compat.test/leaf/static"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/static",
+                "url": "http://stasis-compat.test/leaf/static",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/canonical",
+                "url": "http://stasis-compat.test/leaf/canonical",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/microtask",
+                "url": "http://stasis-compat.test/leaf/microtask",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/timer",
+                "url": "http://stasis-compat.test/leaf/timer",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/raf",
+                "url": "http://stasis-compat.test/leaf/raf",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/fetch",
+                "url": "http://stasis-compat.test/leaf/fetch",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/xhr",
+                "url": "http://stasis-compat.test/leaf/xhr",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/state/ready/leaf",
+                "url": "http://stasis-compat.test/state/ready/leaf",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/navigation",
+                "url": "http://stasis-compat.test/leaf/navigation",
+                "depth": 2,
+                "status": "crawled",
+                "responseStatus": 200,
+                "links": []
+              }
+            ],
+            "scheduledUrls": [
+              "http://stasis-compat.test/",
+              "http://stasis-compat.test/static",
+              "http://stasis-compat.test/canonical",
+              "http://stasis-compat.test/microtask",
+              "http://stasis-compat.test/timer",
+              "http://stasis-compat.test/raf",
+              "http://stasis-compat.test/fetch",
+              "http://stasis-compat.test/xhr",
+              "http://stasis-compat.test/state",
+              "http://stasis-compat.test/navigation-start",
+              "http://stasis-compat.test/interval",
+              "http://stasis-compat.test/leaf/static",
+              "http://stasis-compat.test/leaf/canonical",
+              "http://stasis-compat.test/leaf/microtask",
+              "http://stasis-compat.test/leaf/timer",
+              "http://stasis-compat.test/leaf/raf",
+              "http://stasis-compat.test/leaf/fetch",
+              "http://stasis-compat.test/leaf/xhr",
+              "http://stasis-compat.test/state/ready/leaf",
+              "http://stasis-compat.test/leaf/navigation"
+            ]
+          },
+          "failures": [],
+          "fixtureMisses": [],
+          "cleanup": {
+            "status": "passed",
+            "phase": "crawler_run_and_event_manager_close"
+          }
+        }
+      },
+      "outerInterval": {
+        "label": "runner_total",
+        "settlement": "fulfilled",
+        "clockStatus": "complete",
+        "start": {
+          "readOrdinal": 1,
+          "label": "crawlee:runner:start",
+          "status": "recorded",
+          "nanoseconds": "88926920401",
+          "error": null
+        },
+        "end": {
+          "readOrdinal": 6,
+          "label": "crawlee:runner:end",
+          "status": "recorded",
+          "nanoseconds": "92271726396",
+          "error": null
+        },
+        "durationNs": "3344805995",
+        "error": null,
+        "reason": null
+      },
+      "clockReads": [
+        {
+          "readOrdinal": 1,
+          "label": "crawlee:runner:start",
+          "status": "recorded",
+          "nanoseconds": "88926920401",
+          "error": null
+        },
+        {
+          "readOrdinal": 2,
+          "label": "crawlee:launch:1:start",
+          "status": "recorded",
+          "nanoseconds": "90324623154",
+          "error": null
+        },
+        {
+          "readOrdinal": 3,
+          "label": "crawlee:launch:1:end",
+          "status": "recorded",
+          "nanoseconds": "90402326265",
+          "error": null
+        },
+        {
+          "readOrdinal": 4,
+          "label": "crawlee:browser:1:close:1:start",
+          "status": "recorded",
+          "nanoseconds": "90402921848",
+          "error": null
+        },
+        {
+          "readOrdinal": 5,
+          "label": "crawlee:browser:1:close:1:end",
+          "status": "recorded",
+          "nanoseconds": "90467722775",
+          "error": null
+        },
+        {
+          "readOrdinal": 6,
+          "label": "crawlee:runner:end",
+          "status": "recorded",
+          "nanoseconds": "92271726396",
+          "error": null
+        }
+      ],
+      "phases": {
+        "launches": [
+          {
+            "ordinal": 1,
+            "interval": {
+              "label": "browser_launch",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 2,
+                "label": "crawlee:launch:1:start",
+                "status": "recorded",
+                "nanoseconds": "90324623154",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 3,
+                "label": "crawlee:launch:1:end",
+                "status": "recorded",
+                "nanoseconds": "90402326265",
+                "error": null
+              },
+              "durationNs": "77703111",
+              "error": null,
+              "reason": null
+            }
+          }
+        ],
+        "browsers": [
+          {
+            "ordinal": 1,
+            "launchOrdinal": 1,
+            "workloadWindow": {
+              "label": "browser_resident_workload",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 3,
+                "label": "crawlee:launch:1:end",
+                "status": "recorded",
+                "nanoseconds": "90402326265",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 4,
+                "label": "crawlee:browser:1:close:1:start",
+                "status": "recorded",
+                "nanoseconds": "90402921848",
+                "error": null
+              },
+              "durationNs": "595583",
+              "error": null,
+              "reason": null
+            },
+            "closes": [
+              {
+                "ordinal": 1,
+                "interval": {
+                  "label": "browser_close",
+                  "settlement": "fulfilled",
+                  "clockStatus": "complete",
+                  "start": {
+                    "readOrdinal": 4,
+                    "label": "crawlee:browser:1:close:1:start",
+                    "status": "recorded",
+                    "nanoseconds": "90402921848",
+                    "error": null
+                  },
+                  "end": {
+                    "readOrdinal": 5,
+                    "label": "crawlee:browser:1:close:1:end",
+                    "status": "recorded",
+                    "nanoseconds": "90467722775",
+                    "error": null
+                  },
+                  "durationNs": "64800927",
+                  "error": null,
+                  "reason": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "stasis": {
+      "schema": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2",
+      "protocol": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2",
+      "track": "deterministic-crawl-20-page",
+      "purpose": "phase_localization_diagnostic_only",
+      "authorityEligible": false,
+      "timingEligible": false,
+      "statisticsEligible": false,
+      "comparisonEligible": false,
+      "optimizationEligible": false,
+      "rules": {
+        "purpose": "phase_localization_diagnostic_only",
+        "workload": {
+          "start": "http://stasis-compat.test/",
+          "pageLimit": 20,
+          "depthLimit": 2,
+          "concurrency": 1
+        },
+        "runnerSource": "src/performance/crawl.mjs",
+        "runnerSubstitution": false,
+        "retries": false,
+        "sleeps": false,
+        "fallbacks": false,
+        "discardedFailures": false,
+        "clock": "injected_monotonic_nanoseconds",
+        "rawIntervalsRetained": true,
+        "phaseDurationsAreBenchmarkSamples": false,
+        "phaseDurationsMayBePooledAcrossObservationsOrHosts": false,
+        "phaseDurationsMayBeSummedWithinOneObservationAfterNonOverlapValidation": true,
+        "crawleeWorkloadWindowMeaning": "browser_launch_settlement_through_first_browser_close_invocation",
+        "stasisAcquireOpenMeaning": "pool_run_invocation_through_work_callback_entry",
+        "stasisSettleExtractMeaning": "work_callback_entry_through_work_callback_settlement",
+        "stasisReleasePhysicalCleanupMeaning": "work_callback_settlement_through_pool_run_settlement",
+        "stasisPoolCloseMeaning": "pool_close_invocation_through_pool_close_settlement"
+      },
+      "identity": {
+        "authorityInput": {
+          "fileSha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b",
+          "fileBytes": 221543,
+          "schema": "stasis-v0.3.3-performance-crawl-raw-v1",
+          "protocol": "stasis-v0.3.3-performance-crawl-v1",
+          "track": "deterministic-crawl-20-page",
+          "workflowProvenance": {
+            "provider": "github-actions",
+            "repository": "oxhq/stasis",
+            "workflow": "Stasis v0.3.3 performance evidence",
+            "job": "ubuntu-crawl",
+            "runId": "33862916068",
+            "runAttempt": "1",
+            "workflowSourceSha": "6c7a6013e00584c8cb8d54c80cee5dbbcf3ca1b9",
+            "workflowSourceRef": "refs/heads/codex/stasis-v033-performance-evidence",
+            "harnessCheckoutRevision": "c5678b045852a29b89ed4b853da0aa39e6e3bf06",
+            "harnessCheckoutTree": "4e491acd7d781878a5e84f57ac769e863ee58ac2",
+            "harnessCheckoutWorktree": {
+              "schema": "stasis-performance-harness-worktree-v1",
+              "clean": true,
+              "statusFormat": "porcelain-v1-z",
+              "untrackedFiles": "all",
+              "ignoredFiles": "excluded",
+              "statusEntryCount": 0
+            }
+          },
+          "host": {
+            "platform": "linux",
+            "arch": "x64",
+            "runnerOs": "Linux",
+            "imageOs": "ubuntu22",
+            "imageVersion": "20260824.273.3",
+            "cpuModel": "AMD EPYC 7763 64-Core Processor",
+            "logicalCpuCount": 4,
+            "bootInstanceDigest": "d47e513de30e3c64f63cba73d820da6b608bb4438e9fe2563c1283a221ffe698",
+            "hostClassDigest": "b404d2a4ec3ab01b6b00269a2481965f5fa837c4a3082322ca8e98bb4be9ffca"
+          },
+          "softwareIdentity": {
+            "crawlee": {
+              "runner": "crawlee-playwrightcrawler",
+              "nodeVersion": "v22.20.0",
+              "crawleeVersion": "3.18.1",
+              "playwrightVersion": "1.62.1",
+              "browser": "chromium",
+              "chromiumVersion": "Google Chrome for Testing 151.0.7922.34",
+              "chromiumExecutableBytes": 290614600,
+              "chromiumExecutableSha256": "0b20b130e7edd9dd51873be867761295fe0cfad490c2b9a64f95bd3cfc08fa71"
+            },
+            "stasis": {
+              "runner": "stasis-reference-crawler-v0.3.3",
+              "nodeVersion": "v22.20.0",
+              "package": "@oxhq/stasis",
+              "sdkVersion": "0.3.3",
+              "revision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+              "profile": "controlled-web-session-v2",
+              "releaseTag": "v0.3.3",
+              "packageQualificationRunId": "33506181780",
+              "packageQualificationRunAttempt": "1",
+              "sdkArchiveSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+              "executableSha256": "c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37",
+              "runtimeManifestSha256": "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4"
+            }
+          },
+          "hostRuntime": {
+            "stasisEglRuntime": {
+              "schema": "stasis-linux-egl-runtime-prerequisite-v1",
+              "dlopen": {
+                "method": "python3_ctypes_cdll_proc_maps_v1",
+                "status": "passed"
+              },
+              "packages": [
+                {
+                  "name": "libegl1",
+                  "version": "1.4.0-1"
+                },
+                {
+                  "name": "libegl-mesa0",
+                  "version": "23.2.1-1ubuntu3.1~22.04.4"
+                },
+                {
+                  "name": "libglvnd0",
+                  "version": "1.4.0-1"
+                }
+              ],
+              "libraries": [
+                {
+                  "package": "libegl1",
+                  "soname": "libEGL.so.1",
+                  "basename": "libEGL.so.1.1.0",
+                  "bytes": 72352,
+                  "sha256": "69816a7062d7d624144472f5ef71f5b23732b9003df7472662920602e62805db"
+                },
+                {
+                  "package": "libegl-mesa0",
+                  "soname": "libEGL_mesa.so.0",
+                  "basename": "libEGL_mesa.so.0.0.0",
+                  "bytes": 296600,
+                  "sha256": "267172b546de46e94e0ce1318327b7cd68e791cf1c7e70b8c86c032a8e6430a8"
+                },
+                {
+                  "package": "libglvnd0",
+                  "soname": "libGLdispatch.so.0",
+                  "basename": "libGLdispatch.so.0.0.0",
+                  "bytes": 715200,
+                  "sha256": "a4f2642498fba54d2f39e90ca3daa94340cdd52198473185a5285608ae318cb6"
+                }
+              ]
+            }
+          },
+          "artifactBinding": {
+            "schema": "stasis-v0.3.3-performance-replication-artifact-binding-v1",
+            "status": "passed",
+            "pooling": "none",
+            "claimBoundary": "two_separate_single_host_observations_only",
+            "decisionState": "STAY_0_4_UNASSIGNED",
+            "generalizedSpeedClaimAuthorized": false,
+            "implementationWorkAuthorized": false,
+            "inputs": {
+              "semanticReceiptSchema": "stasis-v0.3.3-performance-replication-verification-v1",
+              "hostedReceiptSchema": "stasis-v0.3.3-performance-replication-hosted-provenance-v1",
+              "workflow": {
+                "provider": "github-actions",
+                "repository": "oxhq/stasis",
+                "workflow": "Stasis v0.3.3 performance evidence",
+                "runId": 33862916068,
+                "runAttempt": 1,
+                "workflowSourceSha": "6c7a6013e00584c8cb8d54c80cee5dbbcf3ca1b9",
+                "workflowSourceRef": "refs/heads/codex/stasis-v033-performance-evidence",
+                "crawlJob": {
+                  "lane": "ubuntu-crawl",
+                  "hostedName": "Ubuntu 22.04 Crawlee vs Stasis",
+                  "hostedJobId": 100991246321
+                }
+              }
+            },
+            "crawlLaneRaw": {
+              "archive": "stasis-v0.3.3-performance-crawl-raw-attempt-1",
+              "name": "crawl-raw.json",
+              "bytes": 221543,
+              "sha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b"
+            },
+            "verification": {
+              "exactSevenArchiveSet": true,
+              "laneRawCopiesByteIdentical": true,
+              "semanticFreshFileBoundaryMatched": true,
+              "semanticAndHostedWorkflowMatched": true,
+              "laneJobsMatched": true,
+              "rawContentsRetained": false,
+              "urlsRetained": false
+            }
+          },
+          "oraclePairIndex": 1,
+          "oracleResultSha256": {
+            "crawlee": "906e2c586bed61e9220bf905037f6ae014e2d8348e5a7b76ae67fd779b70dd99",
+            "stasis": "346e177a131cd87a88109213b73760f85219a87c32228a09bd2509ac3382238e"
+          }
+        },
+        "diagnosticAttestation": {
+          "host": {
+            "platform": "linux",
+            "arch": "x64",
+            "runnerOs": "Linux",
+            "imageOs": "ubuntu22",
+            "imageVersion": "20260831.284.1",
+            "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+            "logicalCpuCount": 4,
+            "bootInstanceDigest": "a9c348128df14d74b6e11c62baa261f8e76cddc2ff56c57a10b3c69cc3bdaf6e",
+            "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+          },
+          "provenance": {
+            "provider": "github-actions",
+            "repository": "oxhq/stasis",
+            "workflow": "Stasis v0.3.3 performance crawl phase diagnostic V4",
+            "job": "crawl-phase-diagnostic-v4",
+            "runId": "33905672027",
+            "runAttempt": "1",
+            "workflowSourceSha": "b4c847b6543e34677630c311b20d9e3ff64d0925",
+            "workflowSourceRef": "refs/heads/codex/stasis-v033-crawl-phase-diagnostic-v4",
+            "harnessCheckoutRevision": "58742c0f35939558b334eeb792cbf17ae8ab3426",
+            "harnessCheckoutTree": "f6c9e5b56ee34135c4197fc080cb67f5a4d01fa5",
+            "harnessCheckoutWorktree": {
+              "schema": "stasis-performance-harness-worktree-v1",
+              "clean": true,
+              "statusFormat": "porcelain-v1-z",
+              "untrackedFiles": "all",
+              "ignoredFiles": "excluded",
+              "statusEntryCount": 0
+            }
+          },
+          "crawlee": {
+            "runner": "crawlee-playwrightcrawler",
+            "nodeVersion": "v22.20.0",
+            "crawleeVersion": "3.18.1",
+            "playwrightVersion": "1.62.1",
+            "browser": "chromium",
+            "chromiumVersion": "Google Chrome for Testing 151.0.7922.34",
+            "chromiumExecutableBytes": 290614600,
+            "chromiumExecutableSha256": "0b20b130e7edd9dd51873be867761295fe0cfad490c2b9a64f95bd3cfc08fa71",
+            "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+          },
+          "stasis": {
+            "runner": "stasis-reference-crawler-v0.3.3",
+            "nodeVersion": "v22.20.0",
+            "package": "@oxhq/stasis",
+            "sdkVersion": "0.3.3",
+            "revision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+            "profile": "controlled-web-session-v2",
+            "releaseTag": "v0.3.3",
+            "packageQualificationRunId": "33506181780",
+            "packageQualificationRunAttempt": "1",
+            "sdkArchiveSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+            "executableSha256": "c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37",
+            "runtimeManifestSha256": "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4",
+            "eglRuntime": {
+              "schema": "stasis-linux-egl-runtime-prerequisite-v1",
+              "dlopen": {
+                "method": "python3_ctypes_cdll_proc_maps_v1",
+                "status": "passed"
+              },
+              "packages": [
+                {
+                  "name": "libegl1",
+                  "version": "1.4.0-1"
+                },
+                {
+                  "name": "libegl-mesa0",
+                  "version": "23.2.1-1ubuntu3.1~22.04.4"
+                },
+                {
+                  "name": "libglvnd0",
+                  "version": "1.4.0-1"
+                }
+              ],
+              "libraries": [
+                {
+                  "package": "libegl1",
+                  "soname": "libEGL.so.1",
+                  "basename": "libEGL.so.1.1.0",
+                  "bytes": 72352,
+                  "sha256": "69816a7062d7d624144472f5ef71f5b23732b9003df7472662920602e62805db"
+                },
+                {
+                  "package": "libegl-mesa0",
+                  "soname": "libEGL_mesa.so.0",
+                  "basename": "libEGL_mesa.so.0.0.0",
+                  "bytes": 296600,
+                  "sha256": "267172b546de46e94e0ce1318327b7cd68e791cf1c7e70b8c86c032a8e6430a8"
+                },
+                {
+                  "package": "libglvnd0",
+                  "soname": "libGLdispatch.so.0",
+                  "basename": "libGLdispatch.so.0.0.0",
+                  "bytes": 715200,
+                  "sha256": "a4f2642498fba54d2f39e90ca3daa94340cdd52198473185a5285608ae318cb6"
+                }
+              ]
+            },
+            "hostClassDigest": "c657cfdcdddb70e3fbd6d0f1b9de31866e98f119318fc4af29bdd7541cb34744"
+          }
+        }
+      },
+      "job": {
+        "phase": "diagnostic",
+        "lane": "stasis",
+        "ordinal": 2,
+        "crawl": {
+          "start": "http://stasis-compat.test/",
+          "pageLimit": 20,
+          "depthLimit": 2
+        }
+      },
+      "lane": "stasis",
+      "runner": {
+        "sourceModule": "src/performance/crawl.mjs",
+        "factory": "createStasisPerformanceRunner",
+        "dependencyHook": "sdk_frozen_plain_object_adapter_v2",
+        "substituted": false
+      },
+      "settlement": {
+        "status": "fulfilled",
+        "run": {
+          "success": true,
+          "result": {
+            "pages": [
+              {
+                "requestedUrl": "http://stasis-compat.test/",
+                "url": "http://stasis-compat.test/",
+                "depth": 0,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/static",
+                  "http://stasis-compat.test/canonical",
+                  "http://stasis-compat.test/microtask",
+                  "http://stasis-compat.test/timer",
+                  "http://stasis-compat.test/raf",
+                  "http://stasis-compat.test/fetch",
+                  "http://stasis-compat.test/xhr",
+                  "http://stasis-compat.test/state",
+                  "http://stasis-compat.test/navigation-start",
+                  "http://stasis-compat.test/interval"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/static",
+                "url": "http://stasis-compat.test/static",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/static"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/canonical",
+                "url": "http://stasis-compat.test/canonical",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/canonical"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/microtask",
+                "url": "http://stasis-compat.test/microtask",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/microtask"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/timer",
+                "url": "http://stasis-compat.test/timer",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/timer"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/raf",
+                "url": "http://stasis-compat.test/raf",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/raf"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/fetch",
+                "url": "http://stasis-compat.test/fetch",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/fetch"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/xhr",
+                "url": "http://stasis-compat.test/xhr",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/xhr"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/state",
+                "url": "http://stasis-compat.test/state/ready/",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/state/ready/leaf"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/navigation-start",
+                "url": "http://stasis-compat.test/navigation-final",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": [
+                  "http://stasis-compat.test/leaf/navigation"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/interval",
+                "url": "http://stasis-compat.test/interval",
+                "depth": 1,
+                "status": "crawled",
+                "settleOutcome": "quiescent_with_persistent_work",
+                "links": [
+                  "http://stasis-compat.test/leaf/static"
+                ]
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/static",
+                "url": "http://stasis-compat.test/leaf/static",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/canonical",
+                "url": "http://stasis-compat.test/leaf/canonical",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/microtask",
+                "url": "http://stasis-compat.test/leaf/microtask",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/timer",
+                "url": "http://stasis-compat.test/leaf/timer",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/raf",
+                "url": "http://stasis-compat.test/leaf/raf",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/fetch",
+                "url": "http://stasis-compat.test/leaf/fetch",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/xhr",
+                "url": "http://stasis-compat.test/leaf/xhr",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/state/ready/leaf",
+                "url": "http://stasis-compat.test/state/ready/leaf",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              },
+              {
+                "requestedUrl": "http://stasis-compat.test/leaf/navigation",
+                "url": "http://stasis-compat.test/leaf/navigation",
+                "depth": 2,
+                "status": "crawled",
+                "settleOutcome": "quiescent",
+                "links": []
+              }
+            ],
+            "scheduledUrls": [
+              "http://stasis-compat.test/",
+              "http://stasis-compat.test/static",
+              "http://stasis-compat.test/canonical",
+              "http://stasis-compat.test/microtask",
+              "http://stasis-compat.test/timer",
+              "http://stasis-compat.test/raf",
+              "http://stasis-compat.test/fetch",
+              "http://stasis-compat.test/xhr",
+              "http://stasis-compat.test/state",
+              "http://stasis-compat.test/navigation-start",
+              "http://stasis-compat.test/interval",
+              "http://stasis-compat.test/leaf/static",
+              "http://stasis-compat.test/leaf/canonical",
+              "http://stasis-compat.test/leaf/microtask",
+              "http://stasis-compat.test/leaf/timer",
+              "http://stasis-compat.test/leaf/raf",
+              "http://stasis-compat.test/leaf/fetch",
+              "http://stasis-compat.test/leaf/xhr",
+              "http://stasis-compat.test/state/ready/leaf",
+              "http://stasis-compat.test/leaf/navigation"
+            ]
+          },
+          "cleanup": {
+            "status": "passed",
+            "phase": "pool_close"
+          }
+        }
+      },
+      "outerInterval": {
+        "label": "runner_total",
+        "settlement": "fulfilled",
+        "clockStatus": "complete",
+        "start": {
+          "readOrdinal": 1,
+          "label": "stasis:runner:start",
+          "status": "recorded",
+          "nanoseconds": "92274328626",
+          "error": null
+        },
+        "end": {
+          "readOrdinal": 86,
+          "label": "stasis:runner:end",
+          "status": "recorded",
+          "nanoseconds": "97229231212",
+          "error": null
+        },
+        "durationNs": "4954902586",
+        "error": null,
+        "reason": null
+      },
+      "clockReads": [
+        {
+          "readOrdinal": 1,
+          "label": "stasis:runner:start",
+          "status": "recorded",
+          "nanoseconds": "92274328626",
+          "error": null
+        },
+        {
+          "readOrdinal": 2,
+          "label": "stasis:pool-create:1:start",
+          "status": "recorded",
+          "nanoseconds": "92274607329",
+          "error": null
+        },
+        {
+          "readOrdinal": 3,
+          "label": "stasis:pool-create:1:end",
+          "status": "recorded",
+          "nanoseconds": "92274738163",
+          "error": null
+        },
+        {
+          "readOrdinal": 4,
+          "label": "stasis:pool-run:1:start",
+          "status": "recorded",
+          "nanoseconds": "92275489928",
+          "error": null
+        },
+        {
+          "readOrdinal": 5,
+          "label": "stasis:pool-run:1:callback-start",
+          "status": "recorded",
+          "nanoseconds": "92914434342",
+          "error": null
+        },
+        {
+          "readOrdinal": 6,
+          "label": "stasis:pool-run:1:callback-end",
+          "status": "recorded",
+          "nanoseconds": "92918650194",
+          "error": null
+        },
+        {
+          "readOrdinal": 7,
+          "label": "stasis:pool-run:1:end",
+          "status": "recorded",
+          "nanoseconds": "92960823672",
+          "error": null
+        },
+        {
+          "readOrdinal": 8,
+          "label": "stasis:pool-run:2:start",
+          "status": "recorded",
+          "nanoseconds": "92960976148",
+          "error": null
+        },
+        {
+          "readOrdinal": 9,
+          "label": "stasis:pool-run:2:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93053423206",
+          "error": null
+        },
+        {
+          "readOrdinal": 10,
+          "label": "stasis:pool-run:2:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93058249404",
+          "error": null
+        },
+        {
+          "readOrdinal": 11,
+          "label": "stasis:pool-run:2:end",
+          "status": "recorded",
+          "nanoseconds": "93071380399",
+          "error": null
+        },
+        {
+          "readOrdinal": 12,
+          "label": "stasis:pool-run:3:start",
+          "status": "recorded",
+          "nanoseconds": "93071459977",
+          "error": null
+        },
+        {
+          "readOrdinal": 13,
+          "label": "stasis:pool-run:3:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93171578422",
+          "error": null
+        },
+        {
+          "readOrdinal": 14,
+          "label": "stasis:pool-run:3:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93175080341",
+          "error": null
+        },
+        {
+          "readOrdinal": 15,
+          "label": "stasis:pool-run:3:end",
+          "status": "recorded",
+          "nanoseconds": "93187723993",
+          "error": null
+        },
+        {
+          "readOrdinal": 16,
+          "label": "stasis:pool-run:4:start",
+          "status": "recorded",
+          "nanoseconds": "93187773306",
+          "error": null
+        },
+        {
+          "readOrdinal": 17,
+          "label": "stasis:pool-run:4:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93288483775",
+          "error": null
+        },
+        {
+          "readOrdinal": 18,
+          "label": "stasis:pool-run:4:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93290745930",
+          "error": null
+        },
+        {
+          "readOrdinal": 19,
+          "label": "stasis:pool-run:4:end",
+          "status": "recorded",
+          "nanoseconds": "93308214207",
+          "error": null
+        },
+        {
+          "readOrdinal": 20,
+          "label": "stasis:pool-run:5:start",
+          "status": "recorded",
+          "nanoseconds": "93308289528",
+          "error": null
+        },
+        {
+          "readOrdinal": 21,
+          "label": "stasis:pool-run:5:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93398453816",
+          "error": null
+        },
+        {
+          "readOrdinal": 22,
+          "label": "stasis:pool-run:5:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93400519590",
+          "error": null
+        },
+        {
+          "readOrdinal": 23,
+          "label": "stasis:pool-run:5:end",
+          "status": "recorded",
+          "nanoseconds": "93429742100",
+          "error": null
+        },
+        {
+          "readOrdinal": 24,
+          "label": "stasis:pool-run:6:start",
+          "status": "recorded",
+          "nanoseconds": "93429813946",
+          "error": null
+        },
+        {
+          "readOrdinal": 25,
+          "label": "stasis:pool-run:6:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93521922548",
+          "error": null
+        },
+        {
+          "readOrdinal": 26,
+          "label": "stasis:pool-run:6:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93524518188",
+          "error": null
+        },
+        {
+          "readOrdinal": 27,
+          "label": "stasis:pool-run:6:end",
+          "status": "recorded",
+          "nanoseconds": "93556130672",
+          "error": null
+        },
+        {
+          "readOrdinal": 28,
+          "label": "stasis:pool-run:7:start",
+          "status": "recorded",
+          "nanoseconds": "93556209229",
+          "error": null
+        },
+        {
+          "readOrdinal": 29,
+          "label": "stasis:pool-run:7:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93661430032",
+          "error": null
+        },
+        {
+          "readOrdinal": 30,
+          "label": "stasis:pool-run:7:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93663137304",
+          "error": null
+        },
+        {
+          "readOrdinal": 31,
+          "label": "stasis:pool-run:7:end",
+          "status": "recorded",
+          "nanoseconds": "93684121765",
+          "error": null
+        },
+        {
+          "readOrdinal": 32,
+          "label": "stasis:pool-run:8:start",
+          "status": "recorded",
+          "nanoseconds": "93684194854",
+          "error": null
+        },
+        {
+          "readOrdinal": 33,
+          "label": "stasis:pool-run:8:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93774783355",
+          "error": null
+        },
+        {
+          "readOrdinal": 34,
+          "label": "stasis:pool-run:8:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93776437929",
+          "error": null
+        },
+        {
+          "readOrdinal": 35,
+          "label": "stasis:pool-run:8:end",
+          "status": "recorded",
+          "nanoseconds": "93802031167",
+          "error": null
+        },
+        {
+          "readOrdinal": 36,
+          "label": "stasis:pool-run:9:start",
+          "status": "recorded",
+          "nanoseconds": "93802122562",
+          "error": null
+        },
+        {
+          "readOrdinal": 37,
+          "label": "stasis:pool-run:9:callback-start",
+          "status": "recorded",
+          "nanoseconds": "93899478751",
+          "error": null
+        },
+        {
+          "readOrdinal": 38,
+          "label": "stasis:pool-run:9:callback-end",
+          "status": "recorded",
+          "nanoseconds": "93901570684",
+          "error": null
+        },
+        {
+          "readOrdinal": 39,
+          "label": "stasis:pool-run:9:end",
+          "status": "recorded",
+          "nanoseconds": "93916904245",
+          "error": null
+        },
+        {
+          "readOrdinal": 40,
+          "label": "stasis:pool-run:10:start",
+          "status": "recorded",
+          "nanoseconds": "93916978625",
+          "error": null
+        },
+        {
+          "readOrdinal": 41,
+          "label": "stasis:pool-run:10:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96055353623",
+          "error": null
+        },
+        {
+          "readOrdinal": 42,
+          "label": "stasis:pool-run:10:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96056938834",
+          "error": null
+        },
+        {
+          "readOrdinal": 43,
+          "label": "stasis:pool-run:10:end",
+          "status": "recorded",
+          "nanoseconds": "96074412229",
+          "error": null
+        },
+        {
+          "readOrdinal": 44,
+          "label": "stasis:pool-run:11:start",
+          "status": "recorded",
+          "nanoseconds": "96074569843",
+          "error": null
+        },
+        {
+          "readOrdinal": 45,
+          "label": "stasis:pool-run:11:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96168269604",
+          "error": null
+        },
+        {
+          "readOrdinal": 46,
+          "label": "stasis:pool-run:11:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96170600180",
+          "error": null
+        },
+        {
+          "readOrdinal": 47,
+          "label": "stasis:pool-run:11:end",
+          "status": "recorded",
+          "nanoseconds": "96195586532",
+          "error": null
+        },
+        {
+          "readOrdinal": 48,
+          "label": "stasis:pool-run:12:start",
+          "status": "recorded",
+          "nanoseconds": "96195765227",
+          "error": null
+        },
+        {
+          "readOrdinal": 49,
+          "label": "stasis:pool-run:12:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96291392467",
+          "error": null
+        },
+        {
+          "readOrdinal": 50,
+          "label": "stasis:pool-run:12:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96292920398",
+          "error": null
+        },
+        {
+          "readOrdinal": 51,
+          "label": "stasis:pool-run:12:end",
+          "status": "recorded",
+          "nanoseconds": "96304162957",
+          "error": null
+        },
+        {
+          "readOrdinal": 52,
+          "label": "stasis:pool-run:13:start",
+          "status": "recorded",
+          "nanoseconds": "96304219361",
+          "error": null
+        },
+        {
+          "readOrdinal": 53,
+          "label": "stasis:pool-run:13:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96401248154",
+          "error": null
+        },
+        {
+          "readOrdinal": 54,
+          "label": "stasis:pool-run:13:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96403136755",
+          "error": null
+        },
+        {
+          "readOrdinal": 55,
+          "label": "stasis:pool-run:13:end",
+          "status": "recorded",
+          "nanoseconds": "96425949879",
+          "error": null
+        },
+        {
+          "readOrdinal": 56,
+          "label": "stasis:pool-run:14:start",
+          "status": "recorded",
+          "nanoseconds": "96425988476",
+          "error": null
+        },
+        {
+          "readOrdinal": 57,
+          "label": "stasis:pool-run:14:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96526230886",
+          "error": null
+        },
+        {
+          "readOrdinal": 58,
+          "label": "stasis:pool-run:14:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96527877649",
+          "error": null
+        },
+        {
+          "readOrdinal": 59,
+          "label": "stasis:pool-run:14:end",
+          "status": "recorded",
+          "nanoseconds": "96535378868",
+          "error": null
+        },
+        {
+          "readOrdinal": 60,
+          "label": "stasis:pool-run:15:start",
+          "status": "recorded",
+          "nanoseconds": "96535412438",
+          "error": null
+        },
+        {
+          "readOrdinal": 61,
+          "label": "stasis:pool-run:15:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96638367616",
+          "error": null
+        },
+        {
+          "readOrdinal": 62,
+          "label": "stasis:pool-run:15:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96639883705",
+          "error": null
+        },
+        {
+          "readOrdinal": 63,
+          "label": "stasis:pool-run:15:end",
+          "status": "recorded",
+          "nanoseconds": "96653406375",
+          "error": null
+        },
+        {
+          "readOrdinal": 64,
+          "label": "stasis:pool-run:16:start",
+          "status": "recorded",
+          "nanoseconds": "96653443560",
+          "error": null
+        },
+        {
+          "readOrdinal": 65,
+          "label": "stasis:pool-run:16:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96751319100",
+          "error": null
+        },
+        {
+          "readOrdinal": 66,
+          "label": "stasis:pool-run:16:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96753221452",
+          "error": null
+        },
+        {
+          "readOrdinal": 67,
+          "label": "stasis:pool-run:16:end",
+          "status": "recorded",
+          "nanoseconds": "96761192809",
+          "error": null
+        },
+        {
+          "readOrdinal": 68,
+          "label": "stasis:pool-run:17:start",
+          "status": "recorded",
+          "nanoseconds": "96761223815",
+          "error": null
+        },
+        {
+          "readOrdinal": 69,
+          "label": "stasis:pool-run:17:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96859799079",
+          "error": null
+        },
+        {
+          "readOrdinal": 70,
+          "label": "stasis:pool-run:17:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96861592169",
+          "error": null
+        },
+        {
+          "readOrdinal": 71,
+          "label": "stasis:pool-run:17:end",
+          "status": "recorded",
+          "nanoseconds": "96876165271",
+          "error": null
+        },
+        {
+          "readOrdinal": 72,
+          "label": "stasis:pool-run:18:start",
+          "status": "recorded",
+          "nanoseconds": "96876206122",
+          "error": null
+        },
+        {
+          "readOrdinal": 73,
+          "label": "stasis:pool-run:18:callback-start",
+          "status": "recorded",
+          "nanoseconds": "96972780062",
+          "error": null
+        },
+        {
+          "readOrdinal": 74,
+          "label": "stasis:pool-run:18:callback-end",
+          "status": "recorded",
+          "nanoseconds": "96974516467",
+          "error": null
+        },
+        {
+          "readOrdinal": 75,
+          "label": "stasis:pool-run:18:end",
+          "status": "recorded",
+          "nanoseconds": "96992982605",
+          "error": null
+        },
+        {
+          "readOrdinal": 76,
+          "label": "stasis:pool-run:19:start",
+          "status": "recorded",
+          "nanoseconds": "96993047682",
+          "error": null
+        },
+        {
+          "readOrdinal": 77,
+          "label": "stasis:pool-run:19:callback-start",
+          "status": "recorded",
+          "nanoseconds": "97085960374",
+          "error": null
+        },
+        {
+          "readOrdinal": 78,
+          "label": "stasis:pool-run:19:callback-end",
+          "status": "recorded",
+          "nanoseconds": "97087482963",
+          "error": null
+        },
+        {
+          "readOrdinal": 79,
+          "label": "stasis:pool-run:19:end",
+          "status": "recorded",
+          "nanoseconds": "97115510998",
+          "error": null
+        },
+        {
+          "readOrdinal": 80,
+          "label": "stasis:pool-run:20:start",
+          "status": "recorded",
+          "nanoseconds": "97115546380",
+          "error": null
+        },
+        {
+          "readOrdinal": 81,
+          "label": "stasis:pool-run:20:callback-start",
+          "status": "recorded",
+          "nanoseconds": "97208855101",
+          "error": null
+        },
+        {
+          "readOrdinal": 82,
+          "label": "stasis:pool-run:20:callback-end",
+          "status": "recorded",
+          "nanoseconds": "97210567581",
+          "error": null
+        },
+        {
+          "readOrdinal": 83,
+          "label": "stasis:pool-run:20:end",
+          "status": "recorded",
+          "nanoseconds": "97228658773",
+          "error": null
+        },
+        {
+          "readOrdinal": 84,
+          "label": "stasis:pool-close:1:start",
+          "status": "recorded",
+          "nanoseconds": "97228886741",
+          "error": null
+        },
+        {
+          "readOrdinal": 85,
+          "label": "stasis:pool-close:1:end",
+          "status": "recorded",
+          "nanoseconds": "97229072156",
+          "error": null
+        },
+        {
+          "readOrdinal": 86,
+          "label": "stasis:runner:end",
+          "status": "recorded",
+          "nanoseconds": "97229231212",
+          "error": null
+        }
+      ],
+      "phases": {
+        "poolCreations": [
+          {
+            "ordinal": 1,
+            "interval": {
+              "label": "pool_creation",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 2,
+                "label": "stasis:pool-create:1:start",
+                "status": "recorded",
+                "nanoseconds": "92274607329",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 3,
+                "label": "stasis:pool-create:1:end",
+                "status": "recorded",
+                "nanoseconds": "92274738163",
+                "error": null
+              },
+              "durationNs": "130834",
+              "error": null,
+              "reason": null
+            }
+          }
+        ],
+        "poolRuns": [
+          {
+            "ordinal": 1,
+            "requestedUrl": "http://stasis-compat.test/",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 4,
+                "label": "stasis:pool-run:1:start",
+                "status": "recorded",
+                "nanoseconds": "92275489928",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 5,
+                "label": "stasis:pool-run:1:callback-start",
+                "status": "recorded",
+                "nanoseconds": "92914434342",
+                "error": null
+              },
+              "durationNs": "638944414",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 5,
+                "label": "stasis:pool-run:1:callback-start",
+                "status": "recorded",
+                "nanoseconds": "92914434342",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 6,
+                "label": "stasis:pool-run:1:callback-end",
+                "status": "recorded",
+                "nanoseconds": "92918650194",
+                "error": null
+              },
+              "durationNs": "4215852",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 6,
+                "label": "stasis:pool-run:1:callback-end",
+                "status": "recorded",
+                "nanoseconds": "92918650194",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 7,
+                "label": "stasis:pool-run:1:end",
+                "status": "recorded",
+                "nanoseconds": "92960823672",
+                "error": null
+              },
+              "durationNs": "42173478",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 2,
+            "requestedUrl": "http://stasis-compat.test/static",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 8,
+                "label": "stasis:pool-run:2:start",
+                "status": "recorded",
+                "nanoseconds": "92960976148",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 9,
+                "label": "stasis:pool-run:2:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93053423206",
+                "error": null
+              },
+              "durationNs": "92447058",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 9,
+                "label": "stasis:pool-run:2:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93053423206",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 10,
+                "label": "stasis:pool-run:2:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93058249404",
+                "error": null
+              },
+              "durationNs": "4826198",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 10,
+                "label": "stasis:pool-run:2:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93058249404",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 11,
+                "label": "stasis:pool-run:2:end",
+                "status": "recorded",
+                "nanoseconds": "93071380399",
+                "error": null
+              },
+              "durationNs": "13130995",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 3,
+            "requestedUrl": "http://stasis-compat.test/canonical",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 12,
+                "label": "stasis:pool-run:3:start",
+                "status": "recorded",
+                "nanoseconds": "93071459977",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 13,
+                "label": "stasis:pool-run:3:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93171578422",
+                "error": null
+              },
+              "durationNs": "100118445",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 13,
+                "label": "stasis:pool-run:3:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93171578422",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 14,
+                "label": "stasis:pool-run:3:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93175080341",
+                "error": null
+              },
+              "durationNs": "3501919",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 14,
+                "label": "stasis:pool-run:3:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93175080341",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 15,
+                "label": "stasis:pool-run:3:end",
+                "status": "recorded",
+                "nanoseconds": "93187723993",
+                "error": null
+              },
+              "durationNs": "12643652",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 4,
+            "requestedUrl": "http://stasis-compat.test/microtask",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 16,
+                "label": "stasis:pool-run:4:start",
+                "status": "recorded",
+                "nanoseconds": "93187773306",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 17,
+                "label": "stasis:pool-run:4:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93288483775",
+                "error": null
+              },
+              "durationNs": "100710469",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 17,
+                "label": "stasis:pool-run:4:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93288483775",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 18,
+                "label": "stasis:pool-run:4:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93290745930",
+                "error": null
+              },
+              "durationNs": "2262155",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 18,
+                "label": "stasis:pool-run:4:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93290745930",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 19,
+                "label": "stasis:pool-run:4:end",
+                "status": "recorded",
+                "nanoseconds": "93308214207",
+                "error": null
+              },
+              "durationNs": "17468277",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 5,
+            "requestedUrl": "http://stasis-compat.test/timer",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 20,
+                "label": "stasis:pool-run:5:start",
+                "status": "recorded",
+                "nanoseconds": "93308289528",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 21,
+                "label": "stasis:pool-run:5:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93398453816",
+                "error": null
+              },
+              "durationNs": "90164288",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 21,
+                "label": "stasis:pool-run:5:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93398453816",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 22,
+                "label": "stasis:pool-run:5:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93400519590",
+                "error": null
+              },
+              "durationNs": "2065774",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 22,
+                "label": "stasis:pool-run:5:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93400519590",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 23,
+                "label": "stasis:pool-run:5:end",
+                "status": "recorded",
+                "nanoseconds": "93429742100",
+                "error": null
+              },
+              "durationNs": "29222510",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 6,
+            "requestedUrl": "http://stasis-compat.test/raf",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 24,
+                "label": "stasis:pool-run:6:start",
+                "status": "recorded",
+                "nanoseconds": "93429813946",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 25,
+                "label": "stasis:pool-run:6:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93521922548",
+                "error": null
+              },
+              "durationNs": "92108602",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 25,
+                "label": "stasis:pool-run:6:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93521922548",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 26,
+                "label": "stasis:pool-run:6:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93524518188",
+                "error": null
+              },
+              "durationNs": "2595640",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 26,
+                "label": "stasis:pool-run:6:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93524518188",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 27,
+                "label": "stasis:pool-run:6:end",
+                "status": "recorded",
+                "nanoseconds": "93556130672",
+                "error": null
+              },
+              "durationNs": "31612484",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 7,
+            "requestedUrl": "http://stasis-compat.test/fetch",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 28,
+                "label": "stasis:pool-run:7:start",
+                "status": "recorded",
+                "nanoseconds": "93556209229",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 29,
+                "label": "stasis:pool-run:7:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93661430032",
+                "error": null
+              },
+              "durationNs": "105220803",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 29,
+                "label": "stasis:pool-run:7:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93661430032",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 30,
+                "label": "stasis:pool-run:7:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93663137304",
+                "error": null
+              },
+              "durationNs": "1707272",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 30,
+                "label": "stasis:pool-run:7:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93663137304",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 31,
+                "label": "stasis:pool-run:7:end",
+                "status": "recorded",
+                "nanoseconds": "93684121765",
+                "error": null
+              },
+              "durationNs": "20984461",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 8,
+            "requestedUrl": "http://stasis-compat.test/xhr",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 32,
+                "label": "stasis:pool-run:8:start",
+                "status": "recorded",
+                "nanoseconds": "93684194854",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 33,
+                "label": "stasis:pool-run:8:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93774783355",
+                "error": null
+              },
+              "durationNs": "90588501",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 33,
+                "label": "stasis:pool-run:8:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93774783355",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 34,
+                "label": "stasis:pool-run:8:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93776437929",
+                "error": null
+              },
+              "durationNs": "1654574",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 34,
+                "label": "stasis:pool-run:8:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93776437929",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 35,
+                "label": "stasis:pool-run:8:end",
+                "status": "recorded",
+                "nanoseconds": "93802031167",
+                "error": null
+              },
+              "durationNs": "25593238",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 9,
+            "requestedUrl": "http://stasis-compat.test/state",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 36,
+                "label": "stasis:pool-run:9:start",
+                "status": "recorded",
+                "nanoseconds": "93802122562",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 37,
+                "label": "stasis:pool-run:9:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93899478751",
+                "error": null
+              },
+              "durationNs": "97356189",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 37,
+                "label": "stasis:pool-run:9:callback-start",
+                "status": "recorded",
+                "nanoseconds": "93899478751",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 38,
+                "label": "stasis:pool-run:9:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93901570684",
+                "error": null
+              },
+              "durationNs": "2091933",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 38,
+                "label": "stasis:pool-run:9:callback-end",
+                "status": "recorded",
+                "nanoseconds": "93901570684",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 39,
+                "label": "stasis:pool-run:9:end",
+                "status": "recorded",
+                "nanoseconds": "93916904245",
+                "error": null
+              },
+              "durationNs": "15333561",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 10,
+            "requestedUrl": "http://stasis-compat.test/navigation-start",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 40,
+                "label": "stasis:pool-run:10:start",
+                "status": "recorded",
+                "nanoseconds": "93916978625",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 41,
+                "label": "stasis:pool-run:10:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96055353623",
+                "error": null
+              },
+              "durationNs": "2138374998",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 41,
+                "label": "stasis:pool-run:10:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96055353623",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 42,
+                "label": "stasis:pool-run:10:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96056938834",
+                "error": null
+              },
+              "durationNs": "1585211",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 42,
+                "label": "stasis:pool-run:10:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96056938834",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 43,
+                "label": "stasis:pool-run:10:end",
+                "status": "recorded",
+                "nanoseconds": "96074412229",
+                "error": null
+              },
+              "durationNs": "17473395",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 11,
+            "requestedUrl": "http://stasis-compat.test/interval",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 44,
+                "label": "stasis:pool-run:11:start",
+                "status": "recorded",
+                "nanoseconds": "96074569843",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 45,
+                "label": "stasis:pool-run:11:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96168269604",
+                "error": null
+              },
+              "durationNs": "93699761",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 45,
+                "label": "stasis:pool-run:11:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96168269604",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 46,
+                "label": "stasis:pool-run:11:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96170600180",
+                "error": null
+              },
+              "durationNs": "2330576",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 46,
+                "label": "stasis:pool-run:11:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96170600180",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 47,
+                "label": "stasis:pool-run:11:end",
+                "status": "recorded",
+                "nanoseconds": "96195586532",
+                "error": null
+              },
+              "durationNs": "24986352",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 12,
+            "requestedUrl": "http://stasis-compat.test/leaf/static",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 48,
+                "label": "stasis:pool-run:12:start",
+                "status": "recorded",
+                "nanoseconds": "96195765227",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 49,
+                "label": "stasis:pool-run:12:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96291392467",
+                "error": null
+              },
+              "durationNs": "95627240",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 49,
+                "label": "stasis:pool-run:12:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96291392467",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 50,
+                "label": "stasis:pool-run:12:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96292920398",
+                "error": null
+              },
+              "durationNs": "1527931",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 50,
+                "label": "stasis:pool-run:12:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96292920398",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 51,
+                "label": "stasis:pool-run:12:end",
+                "status": "recorded",
+                "nanoseconds": "96304162957",
+                "error": null
+              },
+              "durationNs": "11242559",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 13,
+            "requestedUrl": "http://stasis-compat.test/leaf/canonical",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 52,
+                "label": "stasis:pool-run:13:start",
+                "status": "recorded",
+                "nanoseconds": "96304219361",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 53,
+                "label": "stasis:pool-run:13:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96401248154",
+                "error": null
+              },
+              "durationNs": "97028793",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 53,
+                "label": "stasis:pool-run:13:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96401248154",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 54,
+                "label": "stasis:pool-run:13:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96403136755",
+                "error": null
+              },
+              "durationNs": "1888601",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 54,
+                "label": "stasis:pool-run:13:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96403136755",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 55,
+                "label": "stasis:pool-run:13:end",
+                "status": "recorded",
+                "nanoseconds": "96425949879",
+                "error": null
+              },
+              "durationNs": "22813124",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 14,
+            "requestedUrl": "http://stasis-compat.test/leaf/microtask",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 56,
+                "label": "stasis:pool-run:14:start",
+                "status": "recorded",
+                "nanoseconds": "96425988476",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 57,
+                "label": "stasis:pool-run:14:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96526230886",
+                "error": null
+              },
+              "durationNs": "100242410",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 57,
+                "label": "stasis:pool-run:14:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96526230886",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 58,
+                "label": "stasis:pool-run:14:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96527877649",
+                "error": null
+              },
+              "durationNs": "1646763",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 58,
+                "label": "stasis:pool-run:14:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96527877649",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 59,
+                "label": "stasis:pool-run:14:end",
+                "status": "recorded",
+                "nanoseconds": "96535378868",
+                "error": null
+              },
+              "durationNs": "7501219",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 15,
+            "requestedUrl": "http://stasis-compat.test/leaf/timer",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 60,
+                "label": "stasis:pool-run:15:start",
+                "status": "recorded",
+                "nanoseconds": "96535412438",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 61,
+                "label": "stasis:pool-run:15:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96638367616",
+                "error": null
+              },
+              "durationNs": "102955178",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 61,
+                "label": "stasis:pool-run:15:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96638367616",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 62,
+                "label": "stasis:pool-run:15:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96639883705",
+                "error": null
+              },
+              "durationNs": "1516089",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 62,
+                "label": "stasis:pool-run:15:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96639883705",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 63,
+                "label": "stasis:pool-run:15:end",
+                "status": "recorded",
+                "nanoseconds": "96653406375",
+                "error": null
+              },
+              "durationNs": "13522670",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 16,
+            "requestedUrl": "http://stasis-compat.test/leaf/raf",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 64,
+                "label": "stasis:pool-run:16:start",
+                "status": "recorded",
+                "nanoseconds": "96653443560",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 65,
+                "label": "stasis:pool-run:16:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96751319100",
+                "error": null
+              },
+              "durationNs": "97875540",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 65,
+                "label": "stasis:pool-run:16:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96751319100",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 66,
+                "label": "stasis:pool-run:16:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96753221452",
+                "error": null
+              },
+              "durationNs": "1902352",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 66,
+                "label": "stasis:pool-run:16:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96753221452",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 67,
+                "label": "stasis:pool-run:16:end",
+                "status": "recorded",
+                "nanoseconds": "96761192809",
+                "error": null
+              },
+              "durationNs": "7971357",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 17,
+            "requestedUrl": "http://stasis-compat.test/leaf/fetch",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 68,
+                "label": "stasis:pool-run:17:start",
+                "status": "recorded",
+                "nanoseconds": "96761223815",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 69,
+                "label": "stasis:pool-run:17:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96859799079",
+                "error": null
+              },
+              "durationNs": "98575264",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 69,
+                "label": "stasis:pool-run:17:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96859799079",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 70,
+                "label": "stasis:pool-run:17:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96861592169",
+                "error": null
+              },
+              "durationNs": "1793090",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 70,
+                "label": "stasis:pool-run:17:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96861592169",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 71,
+                "label": "stasis:pool-run:17:end",
+                "status": "recorded",
+                "nanoseconds": "96876165271",
+                "error": null
+              },
+              "durationNs": "14573102",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 18,
+            "requestedUrl": "http://stasis-compat.test/leaf/xhr",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 72,
+                "label": "stasis:pool-run:18:start",
+                "status": "recorded",
+                "nanoseconds": "96876206122",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 73,
+                "label": "stasis:pool-run:18:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96972780062",
+                "error": null
+              },
+              "durationNs": "96573940",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 73,
+                "label": "stasis:pool-run:18:callback-start",
+                "status": "recorded",
+                "nanoseconds": "96972780062",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 74,
+                "label": "stasis:pool-run:18:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96974516467",
+                "error": null
+              },
+              "durationNs": "1736405",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 74,
+                "label": "stasis:pool-run:18:callback-end",
+                "status": "recorded",
+                "nanoseconds": "96974516467",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 75,
+                "label": "stasis:pool-run:18:end",
+                "status": "recorded",
+                "nanoseconds": "96992982605",
+                "error": null
+              },
+              "durationNs": "18466138",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 19,
+            "requestedUrl": "http://stasis-compat.test/state/ready/leaf",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 76,
+                "label": "stasis:pool-run:19:start",
+                "status": "recorded",
+                "nanoseconds": "96993047682",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 77,
+                "label": "stasis:pool-run:19:callback-start",
+                "status": "recorded",
+                "nanoseconds": "97085960374",
+                "error": null
+              },
+              "durationNs": "92912692",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 77,
+                "label": "stasis:pool-run:19:callback-start",
+                "status": "recorded",
+                "nanoseconds": "97085960374",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 78,
+                "label": "stasis:pool-run:19:callback-end",
+                "status": "recorded",
+                "nanoseconds": "97087482963",
+                "error": null
+              },
+              "durationNs": "1522589",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 78,
+                "label": "stasis:pool-run:19:callback-end",
+                "status": "recorded",
+                "nanoseconds": "97087482963",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 79,
+                "label": "stasis:pool-run:19:end",
+                "status": "recorded",
+                "nanoseconds": "97115510998",
+                "error": null
+              },
+              "durationNs": "28028035",
+              "error": null,
+              "reason": null
+            }
+          },
+          {
+            "ordinal": 20,
+            "requestedUrl": "http://stasis-compat.test/leaf/navigation",
+            "acquireOpen": {
+              "label": "acquire_open",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 80,
+                "label": "stasis:pool-run:20:start",
+                "status": "recorded",
+                "nanoseconds": "97115546380",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 81,
+                "label": "stasis:pool-run:20:callback-start",
+                "status": "recorded",
+                "nanoseconds": "97208855101",
+                "error": null
+              },
+              "durationNs": "93308721",
+              "error": null,
+              "reason": null
+            },
+            "settleExtract": {
+              "label": "settle_extract",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 81,
+                "label": "stasis:pool-run:20:callback-start",
+                "status": "recorded",
+                "nanoseconds": "97208855101",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 82,
+                "label": "stasis:pool-run:20:callback-end",
+                "status": "recorded",
+                "nanoseconds": "97210567581",
+                "error": null
+              },
+              "durationNs": "1712480",
+              "error": null,
+              "reason": null
+            },
+            "releasePhysicalCleanup": {
+              "label": "release_physical_cleanup",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 82,
+                "label": "stasis:pool-run:20:callback-end",
+                "status": "recorded",
+                "nanoseconds": "97210567581",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 83,
+                "label": "stasis:pool-run:20:end",
+                "status": "recorded",
+                "nanoseconds": "97228658773",
+                "error": null
+              },
+              "durationNs": "18091192",
+              "error": null,
+              "reason": null
+            }
+          }
+        ],
+        "poolCloses": [
+          {
+            "ordinal": 1,
+            "interval": {
+              "label": "pool_close",
+              "settlement": "fulfilled",
+              "clockStatus": "complete",
+              "start": {
+                "readOrdinal": 84,
+                "label": "stasis:pool-close:1:start",
+                "status": "recorded",
+                "nanoseconds": "97228886741",
+                "error": null
+              },
+              "end": {
+                "readOrdinal": 85,
+                "label": "stasis:pool-close:1:end",
+                "status": "recorded",
+                "nanoseconds": "97229072156",
+                "error": null
+              },
+              "durationNs": "185415",
+              "error": null,
+              "reason": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "correctness": {
+    "oraclePairIndex": 1,
+    "crawlee": {
+      "status": "exact_page_result_match",
+      "pages": 20,
+      "resultSha256": "906e2c586bed61e9220bf905037f6ae014e2d8348e5a7b76ae67fd779b70dd99"
+    },
+    "stasis": {
+      "status": "exact_page_result_match",
+      "pages": 20,
+      "resultSha256": "346e177a131cd87a88109213b73760f85219a87c32228a09bd2509ac3382238e"
+    }
+  },
+  "localization": {
+    "status": "valid_non_authoritative_within_observation_localization",
+    "concurrency": 1,
+    "intervalNonOverlapValidated": true,
+    "authorityTimingReadOrCombined": false,
+    "crossHostPooling": "none",
+    "phaseSumsAreBenchmarkSamples": false,
+    "phaseSumsAuthorizeOptimization": false,
+    "crawlee": {
+      "scope": "one_diagnostic_observation_on_one_host",
+      "intervalsNonOverlapping": true,
+      "counts": {
+        "launches": 1,
+        "browsers": 1,
+        "closes": 1
+      },
+      "runnerTotalNs": "3344805995",
+      "browserLaunchNs": "77703111",
+      "browserResidentWorkloadNs": "595583",
+      "browserCloseNs": "64800927",
+      "observedPhaseSumNs": "143099621",
+      "residualNs": "3201706374",
+      "authorityTimingCombined": false,
+      "benchmarkSample": false,
+      "optimizationProof": false
+    },
+    "stasis": {
+      "scope": "one_diagnostic_observation_on_one_host",
+      "intervalsNonOverlapping": true,
+      "counts": {
+        "poolCreations": 1,
+        "poolRuns": 20,
+        "poolCloses": 1
+      },
+      "runnerTotalNs": "4954902586",
+      "poolCreationNs": "130834",
+      "acquireOpenNs": "4514833306",
+      "settleExtractNs": "44083404",
+      "releasePhysicalCleanupNs": "392831799",
+      "poolCloseNs": "185415",
+      "observedPhaseSumNs": "4952064758",
+      "residualNs": "2837828",
+      "authorityTimingCombined": false,
+      "benchmarkSample": false,
+      "optimizationProof": false
+    }
+  }
+}

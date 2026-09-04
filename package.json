@@ -69,7 +69,12 @@
     "performance:crawl:phase-diagnostic:v4:contract:verify-public": "node src/performance/crawl-phase-diagnostic-publication-cli-v4.mjs verify-contract-public",
     "performance:crawl:phase-diagnostic:v4:publication:verify-public": "node src/performance/crawl-phase-diagnostic-publication-cli-v4.mjs verify-public",
     "performance:navigation:causal": "node src/performance/run-navigation-causal.mjs",
-    "performance:navigation:causal:verify": "node src/performance/run-navigation-causal.mjs verify"
+    "performance:navigation:causal:verify": "node src/performance/run-navigation-causal.mjs verify",
+    "performance:navigation:causal:publication:build": "node src/performance/navigation-causal-publication-cli.mjs build",
+    "performance:navigation:causal:publication:verify": "node src/performance/navigation-causal-publication-cli.mjs verify",
+    "performance:navigation:causal:contract:verify-public": "node src/performance/navigation-causal-publication-cli.mjs verify-contract-public",
+    "performance:navigation:causal:preflight:verify-public": "node src/performance/navigation-causal-publication-cli.mjs verify-preflight-public",
+    "performance:navigation:causal:publication:verify-public": "node src/performance/navigation-causal-publication-cli.mjs verify-public"
   },
   "dependencies": {
     "@oxhq/stasis": "0.2.1",
