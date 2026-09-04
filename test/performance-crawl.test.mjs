@@ -20,6 +20,45 @@ import {
   origin,
 } from "../src/crawl/corpus.mjs";
 import { cleanHarnessWorktreeEvidence } from "../src/performance/harness-worktree.mjs";
+import { linuxEglRuntimeSchema } from "../src/performance/linux-egl-runtime.mjs";
+
+function eglRuntimeEvidence() {
+  return {
+    schema: linuxEglRuntimeSchema,
+    dlopen: {
+      method: "python3_ctypes_cdll_proc_maps_v1",
+      status: "passed",
+    },
+    packages: [
+      { name: "libegl1", version: "1.4.0-1" },
+      { name: "libegl-mesa0", version: "22.0.5-0ubuntu0.1~22.04.1" },
+      { name: "libglvnd0", version: "1.4.0-1" },
+    ],
+    libraries: [
+      {
+        package: "libegl1",
+        soname: "libEGL.so.1",
+        basename: "libEGL.so.1.1.0",
+        bytes: 84_992,
+        sha256: "4".repeat(64),
+      },
+      {
+        package: "libegl-mesa0",
+        soname: "libEGL_mesa.so.0",
+        basename: "libEGL_mesa.so.0.0.0",
+        bytes: 288_248,
+        sha256: "5".repeat(64),
+      },
+      {
+        package: "libglvnd0",
+        soname: "libGLdispatch.so.0",
+        basename: "libGLdispatch.so.0.0.0",
+        bytes: 718_032,
+        sha256: "6".repeat(64),
+      },
+    ],
+  };
+}
 
 function identity() {
   const host = {
@@ -74,6 +113,7 @@ function identity() {
       sdkArchiveSha256: "b".repeat(64),
       executableSha256: "c".repeat(64),
       runtimeManifestSha256: "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4",
+      eglRuntime: eglRuntimeEvidence(),
       hostClassDigest: identityDigest,
     },
   };
@@ -584,6 +624,9 @@ test("raw schema rejects host, order, timing, and authority mutations", async ()
     (value) => { value.identity.corpus.sourceSha256 = "0".repeat(64); },
     (value) => { value.identity.crawlee.hostClassDigest = "0".repeat(64); },
     (value) => { value.identity.crawlee.chromiumExecutableBytes = 0; },
+    (value) => { value.identity.stasis.eglRuntime.libraries[0].sha256 = "0".repeat(63); },
+    (value) => { value.identity.stasis.eglRuntime.libraries[0].basename = "/private/libEGL.so.1"; },
+    (value) => { delete value.identity.stasis.eglRuntime.packages[1].version; },
     (value) => { value.pairs[1].order = "AB"; },
     (value) => { value.pairs[0].observations[0].timing.durationNs = "01"; },
     (value) => { value.pairs[0].observations[0].timing.durationNs = "0"; },

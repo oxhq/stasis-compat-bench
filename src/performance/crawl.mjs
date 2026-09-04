@@ -29,6 +29,7 @@ import {
   serializeError,
 } from "../shared/io.mjs";
 import { assertCleanHarnessWorktreeEvidence } from "./harness-worktree.mjs";
+import { assertLinuxEglRuntimeEvidence } from "./linux-egl-runtime.mjs";
 
 export const crawlPerformanceSchema = "stasis-v0.3.3-performance-crawl-raw-v1";
 export const crawlPerformanceProtocol = "stasis-v0.3.3-performance-crawl-v1";
@@ -903,6 +904,7 @@ function cloneAndAssertIdentity(identity) {
       "sdkArchiveSha256",
       "executableSha256",
       "runtimeManifestSha256",
+      "eglRuntime",
       "hostClassDigest",
     ]) ||
     assertCrawlPerformanceHostIdentity(value?.host) !== value.host ||
@@ -931,7 +933,8 @@ function cloneAndAssertIdentity(identity) {
     value?.stasis?.packageQualificationRunAttempt !== stasisPackageQualificationRunAttempt ||
     !sha256Pattern.test(value?.stasis?.sdkArchiveSha256 ?? "") ||
     !sha256Pattern.test(value?.stasis?.executableSha256 ?? "") ||
-    value?.stasis?.runtimeManifestSha256 !== stasisRuntimeManifestSha256
+    value?.stasis?.runtimeManifestSha256 !== stasisRuntimeManifestSha256 ||
+    assertLinuxEglRuntimeEvidence(value?.stasis?.eglRuntime) !== value.stasis.eglRuntime
   ) {
     throw new TypeError("Invalid Ubuntu crawl performance identity");
   }

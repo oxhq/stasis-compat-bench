@@ -14,8 +14,10 @@ import {
   waitForRwaHostReady,
 } from "../src/performance/run-rwa.mjs";
 import {
+  assertRwaPerformanceLaneResult,
   createRwaPerformanceHostIdentity,
   runRwaPerformanceAuthority,
+  rwaPerformanceSemanticDifferenceDisclosure,
 } from "../src/performance/rwa.mjs";
 import {
   postSupportNodeVersion,
@@ -326,6 +328,47 @@ test("Stasis projection derives launch, seed, and cleanup evidence from checkpoi
     seedCheckpointStatus: "passed",
     seedOrdinal: 1,
   });
+});
+
+test("Stasis projection validates historical differences but emits only active differences", () => {
+  const raw = validStasisResult();
+  const rememberCaseIndex = rwaAuthCases.findIndex(
+    ({ id }) => id === "auth-03-remember-user-thirty-days",
+  );
+  const activeDifferenceIds =
+    rwaPerformanceSemanticDifferenceDisclosure.cases[rememberCaseIndex].semanticDifferenceIds;
+
+  assert.ok(raw.cases[rememberCaseIndex].semanticDifferenceIds.includes(
+    "persistent-cookie-profile-gap",
+  ));
+  assert.ok(!activeDifferenceIds.includes("persistent-cookie-profile-gap"));
+
+  const projected = projectStasisLaneResult(raw, {
+    host,
+    candidate: { identity: candidateIdentity() },
+  });
+  assert.deepEqual(
+    projected.cases.map(({ semanticDifferenceIds }) => semanticDifferenceIds),
+    rwaPerformanceSemanticDifferenceDisclosure.cases.map(
+      ({ semanticDifferenceIds }) => semanticDifferenceIds,
+    ),
+  );
+  assert.doesNotThrow(() => assertRwaPerformanceLaneResult(
+    projected,
+    "stasis-v0.3.3",
+    host.identityDigest,
+    host.instanceDigest,
+  ));
+
+  const alreadyProjected = validStasisResult();
+  alreadyProjected.cases[rememberCaseIndex].semanticDifferenceIds = [...activeDifferenceIds];
+  assert.throws(
+    () => projectStasisLaneResult(alreadyProjected, {
+      host,
+      candidate: { identity: candidateIdentity() },
+    }),
+    /semantic-difference disclosure drifted from the frozen auth track/u,
+  );
 });
 
 test("Stasis projection rejects non-increasing checkpoint sequences", () => {

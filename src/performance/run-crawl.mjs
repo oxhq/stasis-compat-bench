@@ -32,6 +32,10 @@ import {
   runCrawlPerformanceAuthority,
 } from "./crawl.mjs";
 import { createCleanHarnessWorktreeEvidence } from "./harness-worktree.mjs";
+import {
+  assertLinuxEglRuntimeEvidence,
+  observeLinuxEglRuntime,
+} from "./linux-egl-runtime.mjs";
 
 const execFileAsync = promisify(execFile);
 const packageResolver = createRequire(import.meta.url);
@@ -64,6 +68,7 @@ export async function runCrawlPerformanceCommand({
   disposeCandidate = disposeLinuxPerformanceCandidate,
   observeHost = observeCrawlPerformanceHost,
   observeBaseline = observeCrawleePerformanceIdentity,
+  observeEglRuntime = observeLinuxEglRuntime,
   loadProvenance = loadCrawlPerformanceProvenanceFromEnvironment,
   createCrawleeRunner = createCrawleePerformanceRunner,
   createStasisRunner = createStasisPerformanceRunner,
@@ -84,8 +89,13 @@ export async function runCrawlPerformanceCommand({
   try {
     const host = await observeHost({ environment });
     const provenance = await loadProvenance(environment);
+    const eglRuntime = await observeEglRuntime();
     const crawlee = await observeBaseline({ host, environment });
-    const stasis = buildCrawlPerformanceStasisIdentity(verified, host.hostClassDigest);
+    const stasis = buildCrawlPerformanceStasisIdentity(
+      verified,
+      host.hostClassDigest,
+      eglRuntime,
+    );
     const identity = createCrawlPerformanceIdentity({
       host,
       provenance,
@@ -221,7 +231,7 @@ export async function observeCrawleePerformanceIdentity({
   });
 }
 
-export function buildCrawlPerformanceStasisIdentity(verified, hostClassDigest) {
+export function buildCrawlPerformanceStasisIdentity(verified, hostClassDigest, eglRuntime) {
   return Object.freeze({
     runner: "stasis-reference-crawler-v0.3.3",
     nodeVersion: process.version,
@@ -235,6 +245,7 @@ export function buildCrawlPerformanceStasisIdentity(verified, hostClassDigest) {
     sdkArchiveSha256: verified?.identity?.sdk?.archive?.sha256,
     executableSha256: verified?.identity?.linux?.executable?.sha256,
     runtimeManifestSha256: verified?.identity?.release?.runtimeManifest?.sha256,
+    eglRuntime: structuredClone(assertLinuxEglRuntimeEvidence(eglRuntime)),
     hostClassDigest,
   });
 }

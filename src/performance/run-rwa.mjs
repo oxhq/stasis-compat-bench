@@ -9,6 +9,7 @@ import {
   createRwaPerformanceHostIdentity,
   runRwaPerformanceAuthority,
   rwaPerformanceProtocol,
+  rwaPerformanceSemanticDifferenceDisclosure,
   rwaPerformanceTrack,
 } from "./rwa.mjs";
 import { assertPostSupportArtifactPrivacy } from "../post-support/artifact-privacy.mjs";
@@ -463,7 +464,9 @@ export function projectStasisLaneResult(value, { host, candidate } = {}) {
       allOraclesPassed,
       behaviorallySupported,
       stateEvidence,
-      semanticDifferenceIds: [...observed.semanticDifferenceIds],
+      semanticDifferenceIds: [
+        ...rwaPerformanceSemanticDifferenceDisclosure.cases[index].semanticDifferenceIds,
+      ],
     };
   });
   return {

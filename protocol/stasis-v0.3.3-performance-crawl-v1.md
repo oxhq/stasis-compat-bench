@@ -35,6 +35,19 @@ requires no tracked or untracked non-ignored changes. Ignored dependency,
 candidate-input, and generated-artifact directories stay outside the source
 checkout identity and are governed by their own byte/fresh-output checks.
 
+Before retained benchmark artifact-root creation, warm-up, or timing, the
+Ubuntu job provisions the Stasis runtime's dynamically loaded EGL prerequisite
+with `libegl1`. The
+preflight first requires installed `libegl1`, `libegl-mesa0`, and `libglvnd0`
+packages, then successfully loads `libEGL.so.1`, `libEGL_mesa.so.0`, and
+`libGLdispatch.so.0` through the system dynamic loader. It retains each exact
+package version and each loader-resolved real regular file's basename, byte
+length, and SHA-256 under the Stasis identity. Package ownership must bind each
+file to its declared package. Absolute library paths and loader diagnostics are
+not retained. Provisioning and inspection finish before both lanes' warm-ups,
+so Crawlee and Stasis observe the same host state and none of this work enters a
+measured boundary.
+
 ## Host binding and privacy
 
 The raw result retains exactly these host facts: `platform: linux`, `arch: x64`,
@@ -132,6 +145,30 @@ worker/iframe controls. Timeouts are failure bounds, not sleeps. The harness
 adds no delay; lifecycle work performed internally by the pinned runners remains
 inside their measured promises.
 
+## Pre-measurement EGL prerequisite correction
+
+Hosted runs `33842085298` and `33845796769` both stopped at the untimed Stasis
+warm-up and therefore established no performance authority. The repeat retained
+exit code `101`, exactly 262 omitted stderr bytes, and stderr SHA-256
+`a3208b7cd3938de389f5b3200851f289168770901a97e920353bac6fbb00e4e5` for the
+exact v0.3.3 Linux executable SHA-256
+`c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37`.
+That byte length and digest reproduce the Rust panic at surfman `0.13.0`
+`base/egl/device.rs:42:5`: `Unable to load the libEGL shared object`. The exact
+released binary contains that source location and message, while the hosted
+Playwright `install --with-deps chromium` transaction did not install
+`libegl1`. No lifecycle phase was expected because this panic precedes Stasis
+engine construction and the first lifecycle checkpoint; it is not evidence
+that the warm-up-only trace environment was lost. Xvfb cannot supply the
+missing dynamically loaded library and is not part of this correction.
+
+The bounded correction is explicit `libegl1` provisioning plus the fail-closed
+package, loader, ownership, and byte-identity preflight above. Both failed runs
+remain invalid and are not revalidated. Because no valid raw-v1 crawl authority
+was published before this pre-measurement correction, the preregistered v1
+schema spelling remains unchanged; older raw values without the exact EGL
+identity do not validate under the corrected schema.
+
 ## Authority rule
 
 The authority is valid only if all of the following are true:
@@ -153,6 +190,8 @@ would otherwise look favorable.
 dependency-injected orchestration returns one immutable raw value containing:
 
 - schema, protocol, track, exact host and runner identity, and frozen rules;
+- the Stasis EGL prerequisite's successful loader probe, exact package
+  versions, and path-free real-library byte identities;
 - untimed warm-up runs and their post-timing oracle results;
 - ordered pair records with lane order, complete raw lane results, canonical
   nanosecond start/end/duration boundaries, and exact-equivalence counts;

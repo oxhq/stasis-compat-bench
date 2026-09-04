@@ -20,6 +20,7 @@ import {
   runCrawlPerformanceCommand,
 } from "../src/performance/run-crawl.mjs";
 import { cleanHarnessWorktreeEvidence } from "../src/performance/harness-worktree.mjs";
+import { linuxEglRuntimeSchema } from "../src/performance/linux-egl-runtime.mjs";
 import {
   expectedPrimaryScheduledUrls,
   origin,
@@ -90,6 +91,44 @@ function successfulRun(lane) {
     result: { pages, scheduledUrls: [...expectedPrimaryScheduledUrls] },
     ...(lane === "crawlee" ? { failures: [], fixtureMisses: [] } : {}),
     cleanup: { status: "passed", phase: "test_cleanup" },
+  };
+}
+
+function eglRuntimeEvidence() {
+  return {
+    schema: linuxEglRuntimeSchema,
+    dlopen: {
+      method: "python3_ctypes_cdll_proc_maps_v1",
+      status: "passed",
+    },
+    packages: [
+      { name: "libegl1", version: "1.4.0-1" },
+      { name: "libegl-mesa0", version: "22.0.5-0ubuntu0.1~22.04.1" },
+      { name: "libglvnd0", version: "1.4.0-1" },
+    ],
+    libraries: [
+      {
+        package: "libegl1",
+        soname: "libEGL.so.1",
+        basename: "libEGL.so.1.1.0",
+        bytes: 84_992,
+        sha256: "1".repeat(64),
+      },
+      {
+        package: "libegl-mesa0",
+        soname: "libEGL_mesa.so.0",
+        basename: "libEGL_mesa.so.0.0.0",
+        bytes: 288_248,
+        sha256: "2".repeat(64),
+      },
+      {
+        package: "libglvnd0",
+        soname: "libGLdispatch.so.0",
+        basename: "libGLdispatch.so.0.0.0",
+        bytes: 718_032,
+        sha256: "3".repeat(64),
+      },
+    ],
   };
 }
 
@@ -252,6 +291,10 @@ test("command preflight builds the exact identity, writes raw, and disposes the 
       events.push("load-provenance");
       return provenance;
     },
+    observeEglRuntime: async () => {
+      events.push("observe-egl-runtime");
+      return eglRuntimeEvidence();
+    },
     observeBaseline: async ({ host: observedHost }) => {
       events.push("observe-baseline");
       return {
@@ -284,6 +327,7 @@ test("command preflight builds the exact identity, writes raw, and disposes the 
       assert.equal(identity.host.bootInstanceDigest, "d".repeat(64));
       assert.equal(identity.crawlee.hostClassDigest, host.hostClassDigest);
       assert.equal(identity.stasis.hostClassDigest, host.hostClassDigest);
+      assert.deepEqual(identity.stasis.eglRuntime, eglRuntimeEvidence());
       return runCrawlPerformanceAuthority({
         identity,
         runners,
@@ -312,6 +356,7 @@ test("command preflight builds the exact identity, writes raw, and disposes the 
     "assert-candidate",
     "observe-host",
     "load-provenance",
+    "observe-egl-runtime",
     "observe-baseline",
     "assert-fresh-root",
     "create-crawlee-runner",
@@ -364,6 +409,7 @@ test("candidate disposal still runs when command execution fails after verificat
         harnessCheckoutTree: "c".repeat(40),
         harnessCheckoutWorktree: structuredClone(cleanHarnessWorktreeEvidence),
       }),
+      observeEglRuntime: async () => eglRuntimeEvidence(),
       observeBaseline: async ({ host }) => ({
         runner: "crawlee-playwrightcrawler",
         nodeVersion: "v22.20.0",
@@ -388,6 +434,93 @@ test("candidate disposal still runs when command execution fails after verificat
     /planned failure/u,
   );
   assert.equal(disposed, 1);
+});
+
+test("EGL preflight failure disposes the candidate before any benchmark setup or execution", async () => {
+  const events = [];
+  const unexpected = (name) => () => {
+    events.push(name);
+    throw new Error(`unexpected call: ${name}`);
+  };
+  const verified = {
+    identity: linuxPerformanceCandidateIdentity,
+    sdk: {
+      crawlWithStasis() {},
+      createStasisSessionPool() {},
+      CONTROLLED_WEB_SESSION_V2_PROFILE: linuxPerformanceCandidateIdentity.profile,
+    },
+  };
+
+  await assert.rejects(
+    runCrawlPerformanceCommand({
+      environment: baseEnvironment(),
+      loadCandidateSpec: () => {
+        events.push("load-spec");
+        return { identity: linuxPerformanceCandidateIdentity };
+      },
+      verifyCandidate: async () => {
+        events.push("verify-candidate");
+        return verified;
+      },
+      assertCandidate: () => {
+        events.push("assert-candidate");
+      },
+      candidateExecutablePath: unexpected("candidate-executable-path"),
+      disposeCandidate: async () => {
+        events.push("dispose-candidate");
+      },
+      observeHost: async () => {
+        events.push("observe-host");
+        return createCrawlPerformanceHostIdentity({
+          platform: "linux",
+          arch: "x64",
+          runnerOs: "Linux",
+          imageOs: "ubuntu22",
+          imageVersion: "20260824.1.0",
+          cpuModel: "Example Hosted CPU",
+          logicalCpuCount: 4,
+          bootInstanceDigest: "d".repeat(64),
+        });
+      },
+      loadProvenance: async () => {
+        events.push("load-provenance");
+        return createCrawlPerformanceGithubProvenance({
+          provider: "github-actions",
+          repository: "oxhq/stasis",
+          workflow: "Stasis v0.3.3 performance evidence",
+          job: "ubuntu-crawl",
+          runId: "33599999999",
+          runAttempt: "1",
+          workflowSourceSha: "a".repeat(40),
+          workflowSourceRef: "refs/heads/post-v033-performance-evidence",
+          harnessCheckoutRevision: "b".repeat(40),
+          harnessCheckoutTree: "c".repeat(40),
+          harnessCheckoutWorktree: structuredClone(cleanHarnessWorktreeEvidence),
+        });
+      },
+      observeEglRuntime: async () => {
+        events.push("observe-egl-runtime");
+        throw new Error("planned EGL preflight failure");
+      },
+      observeBaseline: unexpected("observe-baseline"),
+      assertFreshArtifactRoot: unexpected("assert-fresh-root"),
+      createCrawleeRunner: unexpected("create-crawlee-runner"),
+      createStasisRunner: unexpected("create-stasis-runner"),
+      runAuthority: unexpected("run-authority"),
+      writeRaw: unexpected("write-raw"),
+    }),
+    /planned EGL preflight failure/u,
+  );
+
+  assert.deepEqual(events, [
+    "load-spec",
+    "verify-candidate",
+    "assert-candidate",
+    "observe-host",
+    "load-provenance",
+    "observe-egl-runtime",
+    "dispose-candidate",
+  ]);
 });
 
 test("baseline identity observation attests exact package versions and Chromium bytes", async () => {
@@ -425,6 +558,7 @@ test("Stasis identity builder projects the verified Linux release binding into t
   const built = buildCrawlPerformanceStasisIdentity(
     { identity: linuxPerformanceCandidateIdentity },
     "f".repeat(64),
+    eglRuntimeEvidence(),
   );
   assert.deepEqual(built, {
     runner: "stasis-reference-crawler-v0.3.3",
@@ -439,6 +573,7 @@ test("Stasis identity builder projects the verified Linux release binding into t
     sdkArchiveSha256: "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
     executableSha256: "c6a37995cde25275454d7f1ee61c2803964b04bf0d35f8fde7c78e9575c74c37",
     runtimeManifestSha256: "4e466dbd269fb08738c265133aa5bed2d139d2750db6a5060230e63527ee39a4",
+    eglRuntime: eglRuntimeEvidence(),
     hostClassDigest: "f".repeat(64),
   });
 });
