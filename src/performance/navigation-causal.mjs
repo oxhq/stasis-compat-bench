@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 
 import {
+  fixtureFor,
   origin,
   stasisNetwork,
 } from "../crawl/corpus.mjs";
@@ -48,6 +49,10 @@ const urls = deepFreeze({
   final: `${origin}/navigation-final`,
   link: `${origin}/leaf/navigation`,
 });
+const finalFixture = fixtureFor("GET", urls.final);
+if (finalFixture === undefined) {
+  throw new Error("The frozen navigation-final fixture is unavailable");
+}
 
 const settlePolicy = Object.freeze({
   persistentWork: "report",
@@ -97,6 +102,16 @@ export const navigationCausalRules = deepFreeze({
     statusState: "complete",
     firstLink: urls.link,
     exactDocumentHtmlEqualWithinEveryPair: true,
+    exactDocumentHtmlEqualAcrossEveryObservationPerHost: true,
+    exactDocumentHtmlEqualAcrossHosts: true,
+    fixture: {
+      method: "GET",
+      status: finalFixture.status,
+      cacheControl: finalFixture.headers.find(([name]) =>
+        name.toLowerCase() === "cache-control")?.[1],
+      bodyBytes: Buffer.byteLength(finalFixture.body, "utf8"),
+      bodySha256: createHash("sha256").update(finalFixture.body, "utf8").digest("hex"),
+    },
   },
   processOwnership: {
     freshNativeProcessPerObservation: true,
@@ -430,6 +445,12 @@ export function computeNavigationCausalHostStatistics(pairs) {
   if (!Array.isArray(pairs) || pairs.length !== pairCount) {
     throw new TypeError("Navigation causal statistics require exactly 10 pairs");
   }
+  const observations = pairs.flatMap((pair) => pair.observations);
+  const documentHtml = observations[0]?.result?.documentHtml;
+  if (typeof documentHtml !== "string" || documentHtml.length === 0 ||
+    observations.some((entry) => entry?.result?.documentHtml !== documentHtml)) {
+    throw new TypeError("Navigation causal timed observations must retain one exact final DOM");
+  }
   const deltas = pairs.map((pair) => {
     const replay = replayPair(pair);
     if (!replay.equivalence.valid || replay.deltasNs === null) {
@@ -466,6 +487,8 @@ export function computeNavigationCausalHostStatistics(pairs) {
     pairing: "within_host_adjacent_only",
     pairCount,
     crossHostPooling: false,
+    exactDocumentHtmlAcrossTimedObservations: true,
+    documentHtmlSha256: createHash("sha256").update(documentHtml, "utf8").digest("hex"),
     deltasNs: structuredClone(deltas),
     mediansNs: medians,
     criteria,
@@ -479,7 +502,7 @@ export function createNavigationCausalHostOutcome(raw) {
     ? raw.statistics.effect === "host_effect_rule_met"
       ? "VALID_HOST_EFFECT"
       : "VALID_HOST_NO_EFFECT"
-    : "INVALID_HOST_MEASUREMENT";
+    : invalidHostOutcomeStatus(raw.authority.code);
   return deepFreeze({
     schema: navigationCausalHostOutcomeSchema,
     protocol: navigationCausalProtocol,
@@ -598,16 +621,17 @@ async function runOneObservation({
   }
   const complete = failure === null && cleanup.status === "passed" && boundaries.length === 6;
   const lifecycle = materializeLifecycle(boundaries, complete);
+  const oracle = complete ? validateResult(result, job) : {
+    valid: false,
+    reasons: ["observation_failed"],
+  };
   const observation = {
     job: structuredClone(job),
-    status: complete ? "completed" : "failed",
-    timingEligible: complete && job.phase === "sample",
+    status: complete ? oracle.valid ? "completed" : "incorrect" : "failed",
+    timingEligible: complete && oracle.valid && job.phase === "sample",
     lifecycle,
     result: complete ? result : null,
-    oracle: complete ? validateResult(result, job) : {
-      valid: false,
-      reasons: ["observation_failed"],
-    },
+    oracle,
     cleanup,
     error: failure,
   };
@@ -711,6 +735,14 @@ function assertObservation(value, expectedJob) {
       !value.oracle?.valid || !isDeepStrictEqual(value.oracle, validateResult(value.result, expectedJob))
     ) throw new TypeError("Completed navigation causal observation is invalid");
     assertCompleteLifecycle(value.lifecycle);
+  } else if (value.status === "incorrect") {
+    if (value.timingEligible !== false || value.error !== null || value.cleanup?.status !== "passed" ||
+      value.cleanup?.mode !== "graceful_session_close" || value.oracle?.valid !== false ||
+      !isPlainRecord(value.result) ||
+      !isDeepStrictEqual(value.oracle, validateResult(value.result, expectedJob))) {
+      throw new TypeError("Incorrect navigation causal observation is invalid");
+    }
+    assertCompleteLifecycle(value.lifecycle);
   } else if (value.status === "failed") {
     if (value.timingEligible !== false || value.result !== null || value.oracle?.valid !== false ||
       !isPlainRecord(value.lifecycle) || value.lifecycle.status !== "incomplete" ||
@@ -798,7 +830,13 @@ function replayHostConclusion(raw) {
     const replay = replayPair(pair);
     return replay.equivalence.valid && replay.deltasNs !== null;
   });
-  const valid = completeWarmups && completePairs;
+  const observations = [
+    ...raw.warmups,
+    ...raw.pairs.flatMap((pair) => pair.observations),
+  ];
+  const exactDocumentHtmlAcrossHost = completeWarmups && completePairs &&
+    oneExactDocumentHtml(observations);
+  const valid = completeWarmups && completePairs && exactDocumentHtmlAcrossHost;
   const statistics = valid ? computeNavigationCausalHostStatistics(raw.pairs) : null;
   const failure = valid ? null : firstFailure(raw);
   return {
@@ -823,7 +861,13 @@ function firstFailure(raw) {
   ];
   const invalid = observations.find((entry) => !observationIsCorrect(entry));
   if (invalid !== undefined) {
-    return { code: "OBSERVATION_INVALID", ordinal: invalid.job.ordinal };
+    if (invalid?.error?.phase === "physicalClose" || invalid?.cleanup?.status === "failed") {
+      return { code: "CLEAN_EXIT_INVALID", ordinal: invalid.job.ordinal };
+    }
+    if (invalid?.status === "incorrect" && invalid?.oracle?.valid === false) {
+      return { code: "CORRECTNESS_INVALID", ordinal: invalid.job.ordinal };
+    }
+    return { code: "OPERATION_INVALID", ordinal: invalid.job.ordinal };
   }
   const nonEquivalentWarmups = raw.warmups.length === 2 &&
     !compareObservationResults(raw.warmups[0], raw.warmups[1]).valid;
@@ -836,7 +880,30 @@ function firstFailure(raw) {
       ordinal: pair.observations[1]?.job?.ordinal ?? null,
     };
   }
+  if (observations.length === 22 && observations.every(observationIsCorrect) &&
+    !oneExactDocumentHtml(observations)) {
+    return { code: "DOCUMENT_DOM_NOT_STABLE", ordinal: null };
+  }
   return { code: "MEASUREMENT_INCOMPLETE", ordinal: null };
+}
+
+function invalidHostOutcomeStatus(code) {
+  if ([
+    "CORRECTNESS_INVALID",
+    "WARMUP_NOT_EQUIVALENT",
+    "PAIR_NOT_EQUIVALENT",
+    "DOCUMENT_DOM_NOT_STABLE",
+  ].includes(code)) return "INVALID_CORRECTNESS";
+  if (code === "CLEAN_EXIT_INVALID") return "INVALID_CLEAN_EXIT";
+  if (code === "OPERATION_INVALID") return "INVALID_RUNTIME_OPERATION";
+  return "INVALID_INCOMPLETE";
+}
+
+function oneExactDocumentHtml(observations) {
+  if (!Array.isArray(observations) || observations.length === 0) return false;
+  const expected = observations[0]?.result?.documentHtml;
+  return typeof expected === "string" && expected.length > 0 &&
+    observations.every((entry) => entry?.result?.documentHtml === expected);
 }
 
 function comparableResult(value) {

@@ -110,7 +110,7 @@ test("a physical-close failure is retained once and fail-stops without retry", a
   });
   assertNavigationCausalHostRaw(raw);
   assert.equal(raw.authority.valid, false);
-  assert.equal(raw.authority.code, "OBSERVATION_INVALID");
+  assert.equal(raw.authority.code, "CLEAN_EXIT_INVALID");
   assert.equal(raw.authority.firstInvalidOrdinal, 3);
   assert.equal(raw.pairs.length, 1);
   assert.equal(raw.pairs[0].observations.length, 1);
@@ -119,9 +119,32 @@ test("a physical-close failure is retained once and fail-stops without retry", a
   assert.equal(fixture.sessionCloseCount(), 3);
   assert.equal(fixture.runtimeCloseCount(), 1);
   const outcome = createNavigationCausalHostOutcome(raw);
-  assert.equal(outcome.status, "INVALID_HOST_MEASUREMENT");
+  assert.equal(outcome.status, "INVALID_CLEAN_EXIT");
   assert.equal(outcome.publishable, false);
   assert.equal(outcome.workflowSuccess, false);
+});
+
+test("a real final-URL oracle mismatch retains lifecycle and result as typed correctness invalid", async () => {
+  const fixture = successfulRunnerFixture("host-a", {
+    openDeltaNs: 70n,
+    wrongFinalAtObservation: 3,
+  });
+  const raw = await runNavigationCausalHost({
+    identity: identity("host-a"),
+    runner: fixture.runner,
+  });
+  assertNavigationCausalHostRaw(raw);
+  const observation = raw.pairs[0].observations[0];
+  assert.equal(observation.status, "incorrect");
+  assert.equal(observation.lifecycle.status, "complete");
+  assert.equal(observation.cleanup.status, "passed");
+  assert.equal(observation.result.finalUrl, `${origin}/wrong-final`);
+  assert.deepEqual(observation.oracle.reasons, ["final_url_mismatch"]);
+  assert.equal(raw.authority.code, "CORRECTNESS_INVALID");
+  assert.equal(createNavigationCausalHostOutcome(raw).status, "INVALID_CORRECTNESS");
+  assert.equal(fixture.launchCount(), 3);
+  assert.equal(fixture.sessionCloseCount(), 3);
+  assert.equal(fixture.runtimeCloseCount(), 0);
 });
 
 test("raw replay rejects changed final correctness, phase continuity, and effect statistics", async () => {
@@ -135,6 +158,16 @@ test("raw replay rejects changed final correctness, phase continuity, and effect
     },
     (value) => { value.statistics.effect = "host_effect_rule_not_met"; },
     (value) => { value.rules.retries = true; },
+    (value) => {
+      for (const observation of value.pairs[1].observations) {
+        observation.result.documentHtml = "<head></head><body>different</body>";
+      }
+      value.pairs[1].equivalence = {
+        evaluated: true,
+        valid: true,
+        differingFields: [],
+      };
+    },
   ];
   for (const mutate of mutations) {
     const changed = structuredClone(raw);
@@ -169,6 +202,7 @@ async function validRaw(hostLane) {
 function successfulRunnerFixture(hostLane, {
   openDeltaNs,
   failCloseAtObservation = null,
+  wrongFinalAtObservation = null,
 }) {
   const jobs = expectedJobs(hostLane);
   const clockValues = clockValuesFor(jobs, openDeltaNs);
@@ -190,7 +224,9 @@ function successfulRunnerFixture(hostLane, {
           assert.ok(Array.isArray(openOptions.network.routes));
           return {
             requestedUrl,
-            url: `${origin}/navigation-final`,
+            url: observation === wrongFinalAtObservation
+              ? `${origin}/wrong-final`
+              : `${origin}/navigation-final`,
             boundary: "controlled_ready",
             profile: "controlled-web-session-v2",
             stateToken: `open-${observation}`,
