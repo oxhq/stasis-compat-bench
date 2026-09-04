@@ -54,6 +54,30 @@ test("RWA hosted wrapper binds its identity, host, continuity, and valid raw aut
   assert.equal(result, raw);
 });
 
+test("RWA hosted wrapper accepts one runtime-discovered build identity and rejects postflight drift", () => {
+  const raw = rwaRawStub();
+  const artifact = rwaArtifactStub(raw);
+  artifact.identities.rwa.buildTree = {
+    sha256: "7".repeat(64),
+    fileCount: rwaBaselineExpected.buildTree.fileCount,
+    totalBytes: rwaBaselineExpected.buildTree.totalBytes + 1_337,
+  };
+  artifact.identities.rwa.serverBodies.frontend.sha256 = "8".repeat(64);
+  for (const phase of [artifact.sealedRuntime.startup, artifact.sealedRuntime.postflight]) {
+    phase.servers[0].servedBuildTree = structuredClone(artifact.identities.rwa.buildTree);
+    phase.servers[0].bodySha256 = artifact.identities.rwa.serverBodies.frontend.sha256;
+  }
+  assert.doesNotThrow(
+    () => assertRwaPerformanceArtifact(artifact, { assertRaw: (value) => value }),
+  );
+
+  artifact.sealedRuntime.postflight.servers[0].servedBuildTree.sha256 = "9".repeat(64);
+  assert.throws(
+    () => assertRwaPerformanceArtifact(artifact, { assertRaw: (value) => value }),
+    /servers differ from their frozen identity|sealed runtime continuity/u,
+  );
+});
+
 test("RWA hosted wrapper rejects schema, raw, host, continuity, and privacy drift", () => {
   const cases = [
     {

@@ -13,7 +13,10 @@ import {
   postSupportVersion,
 } from "../post-support/candidate-identity.mjs";
 import { rwaAuthSource } from "../rwa/cases.mjs";
-import { rwaBaselineExpected } from "../rwa/run-cypress.mjs";
+import {
+  assertRwaServerRuntimeIdentityValue,
+  rwaBaselineExpected,
+} from "../rwa/run-cypress.mjs";
 import {
   RWA_AMBIENT_OVERRIDE_IDENTITY,
   RWA_GENERATED_RUNTIME_IDENTITY,
@@ -279,17 +282,25 @@ function assertRwaArtifactIdentities(value) {
     seedBlobOid: rwaBaselineExpected.seed.blobOid,
     seedBlobSha256: rwaBaselineExpected.seed.blobSha256,
     seedWorktreeSha256: rwaBaselineExpected.seed.worktreeSha256,
-    buildTree: rwaBaselineExpected.buildTree,
-    serverBodies: rwaBaselineExpected.serverBodies,
     endpoints: {
       appOrigin: rwaBaselineExpected.baseUrl,
       apiOrigin: rwaBaselineExpected.apiUrl,
     },
   };
-  exactKeys(value.rwa, Object.keys(expectedRwa), "RWA checkout identity");
-  if (!isDeepStrictEqual(value.rwa, expectedRwa)) {
+  exactKeys(
+    value.rwa,
+    [...Object.keys(expectedRwa), "buildTree", "serverBodies"],
+    "RWA checkout identity",
+  );
+  const {
+    buildTree,
+    serverBodies,
+    ...actualFrozenRwaIdentity
+  } = value.rwa;
+  if (!isDeepStrictEqual(actualFrozenRwaIdentity, expectedRwa)) {
     throw new TypeError("RWA checkout identity differs from the frozen baseline");
   }
+  assertRwaServerRuntimeIdentityValue({ buildTree, serverBodies });
 
   exactKeys(value.stasis, ["candidate", "runtime"], "RWA Stasis identity");
   assertCandidateIdentity(value.stasis.candidate);

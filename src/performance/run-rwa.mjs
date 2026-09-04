@@ -23,6 +23,7 @@ import {
 } from "../post-support/candidate-identity.mjs";
 import {
   buildCypressRunOptions,
+  createRwaServerRuntimeIdentity,
   inspectRwaCheckout,
   loadCypressFromCheckout,
   probeRwaServers,
@@ -134,14 +135,14 @@ export async function runSealedRwaPerformance({
           upstreamRoot,
         });
         try {
-          const roles = await waitForRwaHostReady(child);
-          const servers = await probeServers({ upstreamRoot });
-          lifecycleEvidence.startup = {
-            checkout: await inspectCheckout(upstreamRoot),
-            servers,
-            roles,
-          };
-          return { child, roles };
+          const startup = await admitRwaServerStartup({
+            child,
+            inspectCheckout,
+            probeServers,
+            upstreamRoot,
+          });
+          lifecycleEvidence.startup = startup;
+          return { child, roles: startup.roles };
         } catch (error) {
           await stopRwaServerHostNow(child);
           throw error;
@@ -152,9 +153,12 @@ export async function runSealedRwaPerformance({
         if (child === undefined) return;
         try {
           if (startupComplete) {
+            const expectedRuntimeIdentity = createRwaServerRuntimeIdentity(
+              lifecycleEvidence.startup?.servers,
+            );
             lifecycleEvidence.postflight = {
               checkout: await inspectCheckout(upstreamRoot),
-              servers: await probeServers({ upstreamRoot }),
+              servers: await probeServers({ upstreamRoot, expectedRuntimeIdentity }),
             };
           }
           lifecycleEvidence.shutdownSignal = await requestRwaHostStop(child);
@@ -187,6 +191,29 @@ export async function runSealedRwaPerformance({
   } finally {
     await disposePostSupportCandidate(candidate);
   }
+}
+
+export async function admitRwaServerStartup({
+  child,
+  upstreamRoot,
+  inspectCheckout = inspectRwaCheckout,
+  probeServers = probeRwaServers,
+  waitForReady = waitForRwaHostReady,
+} = {}) {
+  const roles = await waitForReady(child);
+  const servers = await probeServers({
+    upstreamRoot,
+    expectedRuntimeIdentity: null,
+  });
+  const checkout = await inspectCheckout(upstreamRoot);
+  if (
+    checkout?.valid !== true ||
+    !Array.isArray(checkout.violations) ||
+    checkout.violations.length !== 0
+  ) {
+    throw new Error("RWA checkout changed during sealed server startup");
+  }
+  return { checkout, servers, roles };
 }
 
 export function spawnRwaServerHost({
@@ -474,6 +501,7 @@ export function createRwaPerformanceArtifact({
 }) {
   const startup = lifecycleEvidence.startup;
   const postflight = lifecycleEvidence.postflight;
+  const runtimeIdentity = createRwaServerRuntimeIdentity(startup?.servers);
   const artifact = {
     schema: artifactSchema,
     protocol: rwaPerformanceProtocol,
@@ -517,8 +545,8 @@ export function createRwaPerformanceArtifact({
         seedBlobOid: rwaBaselineExpected.seed.blobOid,
         seedBlobSha256: rwaBaselineExpected.seed.blobSha256,
         seedWorktreeSha256: rwaBaselineExpected.seed.worktreeSha256,
-        buildTree: structuredClone(rwaBaselineExpected.buildTree),
-        serverBodies: structuredClone(rwaBaselineExpected.serverBodies),
+        buildTree: structuredClone(runtimeIdentity.buildTree),
+        serverBodies: structuredClone(runtimeIdentity.serverBodies),
         endpoints: {
           appOrigin: rwaBaselineExpected.baseUrl,
           apiOrigin: rwaBaselineExpected.apiUrl,

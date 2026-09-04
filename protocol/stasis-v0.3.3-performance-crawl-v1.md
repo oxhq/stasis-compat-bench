@@ -75,6 +75,14 @@ backoff, harness sleep, sample removal, or outlier removal.
 4. After a valid ten-pair schedule, run the worker and iframe controls once in
    each lane, untimed and outside the primary denominator.
 
+The Stasis warm-up copies the complete inherited child-process environment and
+forces `STASIS_LIFECYCLE_TRACE_V1=1`. Every timed Stasis sample and both Stasis
+controls receive a fresh copy with that key explicitly absent, even if it was
+present in the harness environment. The harness never mutates `process.env`.
+Consequently fixed-vocabulary native lifecycle tracing can diagnose a failed
+untimed warm-up without adding stderr work to either the measured Stasis lane or
+the controls.
+
 Warm-ups must independently pass the twenty-page oracle and be exact-equivalent.
 They are never timed or included in statistics. The first failed runner,
 cleanup, page oracle, or pair-equivalence observation is retained and marks the
@@ -155,3 +163,18 @@ dependency-injected orchestration returns one immutable raw value containing:
 Thrown runner errors and cleanup failures are serialized, retained, and
 invalidating. The schema accepts a fail-stopped prefix only when the verdict is
 invalid and disallows presenting that prefix as a completed authority.
+For a `StasisProcessError` with code `process_exit`, the retained projection
+contains a nullable nonnegative safe-integer exit code, a nullable allow-listed
+signal, the omitted stderr tail's UTF-8 byte count and SHA-256, fixed allow-listed
+crash markers, and unique fixed-vocabulary phases found only in exact
+`stasis_lifecycle_v1 phase=` tokens. Raw stderr, messages, paths, URLs, and
+environment values remain excluded. A harness-owned `failurePhase` can identify
+only the coarse `crawl` or `pool_close` catch boundary; it never invents a page
+ordinal or a more precise SDK operation.
+
+This is a pre-measurement correction to raw schema v1. Hosted run `33842085298`
+failed during the untimed Stasis warm-up and never established a performance
+authority; its older diagnostic projection intentionally does not validate
+under this corrected exact schema and is not reclassified. Because no valid v1
+authority was published before this correction, the v1 schema spelling remains
+the preregistered spelling for the first authoritative execution.

@@ -14,6 +14,7 @@ import {
   crawlPerformanceTrack,
   runCrawlPerformanceAuthority,
 } from "../src/performance/crawl.mjs";
+import { runStasisV03Case } from "../src/crawl-v03/stasis-lane.mjs";
 import {
   expectedPrimaryScheduledUrls,
   origin,
@@ -149,6 +150,16 @@ function incrementalClock(events) {
   };
 }
 
+function stasisProcessExitError(stderrTail, { exitCode = null, signal = "SIGABRT" } = {}) {
+  const error = new Error("private Stasis process message");
+  error.name = "StasisProcessError";
+  error.code = "process_exit";
+  error.stderrTail = stderrTail;
+  error.exitCode = exitCode;
+  error.signal = signal;
+  return error;
+}
+
 test("crawl authority runs one untimed warm-up and ten alternating AB/BA pairs", async () => {
   const calls = [];
   let clockReads = 0;
@@ -247,6 +258,101 @@ test("the external end clock is read only after the lane runner cleanup resolves
   ]);
 });
 
+test("the Stasis lane retains coarse crawl and pool-close phases without inventing a page", async () => {
+  const stderrTail = [
+    "stasis_lifecycle_v1 phase=close_accepted",
+    "Redirecting call to abort() to mozalloc_abort",
+  ].join("\n");
+  const crawlFailure = await runStasisV03Case({
+    sdk: {
+      createStasisSessionPool() {
+        return { async close() {} };
+      },
+      async crawlWithStasis() {
+        throw stasisProcessExitError(stderrTail);
+      },
+    },
+    start: origin,
+    pageLimit: 20,
+    depthLimit: 2,
+    executablePath: "/opt/stasis-v0.3.3/stasis",
+    recordWallTime: false,
+    retainFailurePhase: true,
+  });
+  assert.equal(crawlFailure.error.failurePhase, "crawl");
+  assert.equal(crawlFailure.error.signal, "SIGABRT");
+  assert.deepEqual(crawlFailure.error.crashMarkers, ["mozalloc_abort"]);
+  assert.deepEqual(crawlFailure.error.lifecyclePhases, ["close_accepted"]);
+  assert.equal(Object.hasOwn(crawlFailure.error, "pageOrdinal"), false);
+
+  const cleanupFailure = await runStasisV03Case({
+    sdk: {
+      createStasisSessionPool() {
+        return {
+          async close() {
+            throw stasisProcessExitError(stderrTail, { exitCode: 134, signal: null });
+          },
+        };
+      },
+      async crawlWithStasis() {
+        return { pages: [], scheduledUrls: [] };
+      },
+    },
+    start: origin,
+    pageLimit: 20,
+    depthLimit: 2,
+    executablePath: "/opt/stasis-v0.3.3/stasis",
+    recordWallTime: false,
+    retainFailurePhase: true,
+  });
+  assert.equal(cleanupFailure.cleanup.error.failurePhase, "pool_close");
+  assert.equal(cleanupFailure.cleanup.error.exitCode, 134);
+  assert.equal(cleanupFailure.cleanup.error.signal, null);
+  assert.equal(Object.hasOwn(cleanupFailure.cleanup.error, "pageOrdinal"), false);
+});
+
+test("only the untimed Stasis warm-up receives lifecycle tracing in an inherited env copy", async () => {
+  const launchEnvironments = [];
+  const inherited = {
+    KEEP_ME: "inherited-value",
+    ANOTHER_VALUE: "also-retained",
+    STASIS_LIFECYCLE_TRACE_V1: "ambient-value-must-not-leak",
+  };
+  const runner = createStasisPerformanceRunner({
+    sdkVersion: "0.3.3",
+    executablePath: "/opt/stasis-v0.3.3/stasis",
+    environment: inherited,
+    sdk: {
+      CONTROLLED_WEB_SESSION_V2_PROFILE: "controlled-web-session-v2",
+      createStasisSessionPool(options) {
+        launchEnvironments.push(options.launch.env);
+        return { async close() {} };
+      },
+      async crawlWithStasis() {
+        return successfulRun("stasis").result;
+      },
+    },
+  });
+  const crawl = { start: origin, pageLimit: 20, depthLimit: 2 };
+  await runner({ phase: "warmup", crawl });
+  await runner({ phase: "sample", crawl });
+  await runner({ phase: "control", crawl });
+
+  assert.equal(launchEnvironments.length, 3);
+  assert.equal(launchEnvironments.every((value) => value.KEEP_ME === "inherited-value"), true);
+  assert.equal(launchEnvironments.every((value) => value.ANOTHER_VALUE === "also-retained"), true);
+  assert.equal(launchEnvironments[0].STASIS_LIFECYCLE_TRACE_V1, "1");
+  assert.equal(Object.hasOwn(launchEnvironments[1], "STASIS_LIFECYCLE_TRACE_V1"), false);
+  assert.equal(Object.hasOwn(launchEnvironments[2], "STASIS_LIFECYCLE_TRACE_V1"), false);
+  assert.notEqual(launchEnvironments[0], launchEnvironments[1]);
+  assert.notEqual(launchEnvironments[1], launchEnvironments[2]);
+  assert.deepEqual(inherited, {
+    KEEP_ME: "inherited-value",
+    ANOTHER_VALUE: "also-retained",
+    STASIS_LIFECYCLE_TRACE_V1: "ambient-value-must-not-leak",
+  });
+});
+
 test("clock failures are retained as typed terminal observations and never discarded", async () => {
   const scenarios = [
     {
@@ -343,6 +449,93 @@ test("one invalid timed observation is retained, invalidates all authority, and 
   ]);
   assert.equal(raw.controls.status, "not_run");
   assert.equal(assertCrawlPerformanceRaw(raw), raw);
+});
+
+test("crawl raw validation rejects forged Stasis process diagnostics at every retained error site", async () => {
+  const stderrTail = [
+    `private ${["", "home", "runner", "work"].join("/")} path`,
+    "stasis_lifecycle_v1 phase=close_accepted",
+    "Redirecting call to abort() to mozalloc_abort",
+  ].join("\n");
+  const failedRun = await runStasisV03Case({
+    sdk: {
+      createStasisSessionPool() {
+        return { async close() {} };
+      },
+      async crawlWithStasis() {
+        throw stasisProcessExitError(stderrTail);
+      },
+    },
+    start: origin,
+    pageLimit: 20,
+    depthLimit: 2,
+    executablePath: "/opt/stasis-v0.3.3/stasis",
+    recordWallTime: false,
+    retainFailurePhase: true,
+  });
+  const injected = runners();
+  injected.stasis = async () => structuredClone(failedRun);
+  const raw = await runCrawlPerformanceAuthority({
+    identity: identity(),
+    runners: injected,
+    now: incrementalClock(),
+  });
+  assert.equal(raw.authority.valid, false);
+  assert.equal(raw.warmups.length, 2);
+  assert.equal(assertCrawlPerformanceRaw(raw), raw);
+
+  const mutations = [
+    (error) => { error.extra = "forged"; },
+    (error) => { delete error.stderrTailSha256; },
+    (error) => { delete error.failurePhase; },
+    (error) => { error.exitCode = -1; },
+    (error) => { error.signal = "PRIVATE_SIGNAL"; },
+    (error) => { error.crashMarkers.push("private_marker"); },
+    (error) => { error.lifecyclePhases.push("hostile_secret"); },
+    (error) => { error.failurePhase = "page_19"; },
+  ];
+  for (const mutate of mutations) {
+    const changed = structuredClone(raw);
+    mutate(changed.warmups[1].run.error);
+    assert.throws(
+      () => assertCrawlPerformanceRaw(changed),
+      /Invalid|unknown/u,
+    );
+  }
+
+  const cleanupFailedRun = await runStasisV03Case({
+    sdk: {
+      createStasisSessionPool() {
+        return {
+          async close() {
+            throw stasisProcessExitError(stderrTail);
+          },
+        };
+      },
+      async crawlWithStasis() {
+        return { pages: [], scheduledUrls: [] };
+      },
+    },
+    start: origin,
+    pageLimit: 20,
+    depthLimit: 2,
+    executablePath: "/opt/stasis-v0.3.3/stasis",
+    recordWallTime: false,
+    retainFailurePhase: true,
+  });
+  const cleanupInjected = runners();
+  cleanupInjected.stasis = async () => structuredClone(cleanupFailedRun);
+  const cleanupRaw = await runCrawlPerformanceAuthority({
+    identity: identity(),
+    runners: cleanupInjected,
+    now: incrementalClock(),
+  });
+  const changed = structuredClone(cleanupRaw);
+  changed.warmups[1].run.cleanup.error.extra = "forged";
+  assert.throws(
+    () => assertCrawlPerformanceRaw(changed),
+    /unknown/u,
+  );
 });
 
 test("a 19-of-20 lane cannot contribute a performance sample even when its pair completes", async () => {

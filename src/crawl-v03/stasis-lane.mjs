@@ -127,12 +127,18 @@ export async function runStasisV03Case({
   profile = candidateV03.profile,
   networkOptions = stasisNetwork(),
   recordWallTime = true,
+  launchEnv,
+  retainFailurePhase = false,
 }) {
   const startedAt = recordWallTime ? process.hrtime.bigint() : null;
   const pool = sdk.createStasisSessionPool({
     maxProcesses: concurrency,
     maxQueue: pageLimit,
-    launch: { executablePath, commandTimeoutMs: 30_000 },
+    launch: {
+      executablePath,
+      commandTimeoutMs: 30_000,
+      ...(launchEnv === undefined ? {} : { env: launchEnv }),
+    },
   });
   let terminal;
   try {
@@ -150,16 +156,22 @@ export async function runStasisV03Case({
       result,
     };
   } catch (error) {
+    const serializedError = serializeError(error);
     terminal = {
       success: false,
-      error: serializeError(error),
+      error: retainFailurePhase
+        ? { ...serializedError, failurePhase: "crawl" }
+        : serializedError,
     };
   }
 
   try {
     await pool.close();
   } catch (error) {
-    const cleanupError = serializeError(error);
+    const serializedError = serializeError(error);
+    const cleanupError = retainFailurePhase
+      ? { ...serializedError, failurePhase: "pool_close" }
+      : serializedError;
     return {
       success: false,
       error: {

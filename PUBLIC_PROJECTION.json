@@ -5,8 +5,8 @@
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
     "fileCount": 304,
-    "totalBytes": 5268125,
-    "sha256": "84da0e4305deeb6b296957899c748bffc11a9a841fb2e1a523092cc8dfb2d2ed",
+    "totalBytes": 5304388,
+    "sha256": "a1848e5a9c05cebe777240cb54ecc9b92b5dc2458d0c0e7e2fcf9bba8d5caaa7",
     "files": [
       {
         "bytes": 19,
@@ -104,14 +104,14 @@
         "sha256": "37cea038762e3d120ad548d0e01f711f48b164a8139428cc9150a4948cde34a9"
       },
       {
-        "bytes": 7674,
+        "bytes": 9205,
         "path": "protocol/stasis-v0.3.3-performance-crawl-v1.md",
-        "sha256": "4f5f69a8430b2d8ee6a6b4f5f7bc6c0c27da8ff785b8aa3fe4e831173274e10d"
+        "sha256": "e324996709cf2d47b6cd4a3132a9e110309e7e31a7e156f7bbc05aadb6b6eeef"
       },
       {
-        "bytes": 13266,
+        "bytes": 14667,
         "path": "protocol/stasis-v0.3.3-performance-rwa-v1.md",
-        "sha256": "e0890b46e5674964465f45ec01dcc29e137893c08fcc9f8be610cc708e6d0ac9"
+        "sha256": "b61d11acba9a11890997a1a6f49c3308127cde019a13c1de75c32131862a9bbc"
       },
       {
         "bytes": 7557,
@@ -164,9 +164,9 @@
         "sha256": "f90b6f5dfb6c372a9ee01a06c125ce8af04ca40c46ac7d878f4d9789d6be38f8"
       },
       {
-        "bytes": 5076,
+        "bytes": 5459,
         "path": "src/crawl-v03/stasis-lane.mjs",
-        "sha256": "0dc67bcc412a4db9e23f86ebe6f917ad4624210308984f423d64cc77af65cb8e"
+        "sha256": "b574bee5cd7d47bbd3128c337698a2868e212e2440e1944558d3390487468b2c"
       },
       {
         "bytes": 17969,
@@ -234,9 +234,9 @@
         "sha256": "49725e698071e17a8f348038c1a3daf722f3fd690bb8c651cfd0bb1ea2a261fc"
       },
       {
-        "bytes": 43049,
+        "bytes": 45134,
         "path": "src/performance/crawl.mjs",
-        "sha256": "133f27717e352860e5cc5d224e0ee18308b186d43b605a99cf52f2979e2f92b7"
+        "sha256": "76140d41de6f710c459983407b22b9b22207a1ac4a509937bd76f76ae4814ec6"
       },
       {
         "bytes": 3001,
@@ -264,9 +264,9 @@
         "sha256": "f7752539787cfccb19e8708cd94d49b406e168185668ae58559c78f27c70a6ef"
       },
       {
-        "bytes": 19676,
+        "bytes": 19844,
         "path": "src/performance/publication.mjs",
-        "sha256": "7be1212539d605c22fdfb6de4b3dec5446da0188cde6b81864d002b1a26a3f96"
+        "sha256": "b3e3d997b6c2c37e50f28ff659a13f7d98d351b47f306f86f414b1fe42310220"
       },
       {
         "bytes": 11460,
@@ -274,9 +274,9 @@
         "sha256": "ba6c133fbb249e03f086fa859a8fa8ac6f13dff41a2e6d6ed4e20aab7b492240"
       },
       {
-        "bytes": 38297,
+        "bytes": 39158,
         "path": "src/performance/run-rwa.mjs",
-        "sha256": "6bb9ba5e8211409cca932ef3b18ac5a87ffb82d7c63fb94729487ef45e2018ff"
+        "sha256": "0971bdded011c22c7ac83496a210eb6720fbaf7b4b80dc445dd46dfd0b7e1a2e"
       },
       {
         "bytes": 2169,
@@ -449,9 +449,9 @@
         "sha256": "ecad0abfabc0142721decb84748b63571395f20371545f037d46ef97adbddfa6"
       },
       {
-        "bytes": 37455,
+        "bytes": 40747,
         "path": "src/rwa/run-cypress.mjs",
-        "sha256": "330819af5a5b79bec54ac1ee4c42a0dc72672ccd0cac17953b6d2595e9473188"
+        "sha256": "2897eb0b4b718cb81ef3c62d7ecec3b40946971743828c5ca866e779d207e3d1"
       },
       {
         "bytes": 523,
@@ -489,9 +489,9 @@
         "sha256": "fb944c9e20e043f23d2a8a2443df4ad9415205f14684802029ab6888b0b48603"
       },
       {
-        "bytes": 14432,
+        "bytes": 24567,
         "path": "src/shared/io.mjs",
-        "sha256": "acb40e07f8b4538b4c870daf2c969d0b62e9bb65565eb22d8906d9b3c3074ad5"
+        "sha256": "2b32559b3a5431b18561390467b5d130ad1d69614f9862e30dfb94be7bc204ca"
       },
       {
         "bytes": 22800,
@@ -1279,9 +1279,9 @@
         "sha256": "f70be3fcfb79eecbba45e74f419d5634a680a0f08d3de01c3861feff8ea0c443"
       },
       {
-        "bytes": 2312,
+        "bytes": 5719,
         "path": "test/io.test.mjs",
-        "sha256": "a741bf4fb01ab59bd299f59b38ec0f571660097977b3aed5e0e4ee10ead974e6"
+        "sha256": "994ceaf7d46546d6da2b8ad561d721453f20d9d2a64728becfaa756e63642dca"
       },
       {
         "bytes": 3963,
@@ -1294,9 +1294,9 @@
         "sha256": "83210a939ef0696e8f4c35b388301d75ab4cfc20e8cebb4eab1c9331631a97cd"
       },
       {
-        "bytes": 16095,
+        "bytes": 22743,
         "path": "test/performance-crawl.test.mjs",
-        "sha256": "0e66922db2b827cb99cb3e22acd6f6ee3d2464ee4b09c35eeac9527c069d5772"
+        "sha256": "6e04b128b91c032df9c4750d51a57c34bcadeaacd417dd73a8959f96b1c57578"
       },
       {
         "bytes": 18503,
@@ -1309,14 +1309,14 @@
         "sha256": "84a957dd7533771f76f58a3401a532ff1942825b355e9c7be5a8111bae81950d"
       },
       {
-        "bytes": 25737,
+        "bytes": 26846,
         "path": "test/performance-publication.test.mjs",
-        "sha256": "857cd4229ac18995b93126ebae89492e838c1dfc5e2b14e23abde2a35def28dc"
+        "sha256": "6d34a008f5249aa0b17c37898bdd07f2832a20dbb408c3f7a16e666aa37bdbea"
       },
       {
-        "bytes": 18195,
+        "bytes": 23438,
         "path": "test/performance-run-rwa.test.mjs",
-        "sha256": "6cdfe4f82a14d7ac9f331ee67a6016943b261b7e71478f61e387723887d1055a"
+        "sha256": "94d8b1a5bb3f1f434e5927b836ad8728afd984716d866b4ac9cbbf048d66238e"
       },
       {
         "bytes": 24402,
@@ -1596,14 +1596,14 @@
       "sha256": "37cea038762e3d120ad548d0e01f711f48b164a8139428cc9150a4948cde34a9"
     },
     {
-      "bytes": 7674,
+      "bytes": 9205,
       "path": "protocol/stasis-v0.3.3-performance-crawl-v1.md",
-      "sha256": "4f5f69a8430b2d8ee6a6b4f5f7bc6c0c27da8ff785b8aa3fe4e831173274e10d"
+      "sha256": "e324996709cf2d47b6cd4a3132a9e110309e7e31a7e156f7bbc05aadb6b6eeef"
     },
     {
-      "bytes": 13266,
+      "bytes": 14667,
       "path": "protocol/stasis-v0.3.3-performance-rwa-v1.md",
-      "sha256": "e0890b46e5674964465f45ec01dcc29e137893c08fcc9f8be610cc708e6d0ac9"
+      "sha256": "b61d11acba9a11890997a1a6f49c3308127cde019a13c1de75c32131862a9bbc"
     }
   ],
   "privacy": {
@@ -1757,10 +1757,10 @@
         "sha256": "9f296e339b6f499afd43cf026d26415a1f33993dc33df8bf890af66680341701"
       },
       {
-        "bytes": 18195,
+        "bytes": 23438,
         "path": "test/performance-run-rwa.test.mjs",
         "reason": "reviewed synthetic path or escaped Windows syntax",
-        "sha256": "6cdfe4f82a14d7ac9f331ee67a6016943b261b7e71478f61e387723887d1055a"
+        "sha256": "94d8b1a5bb3f1f434e5927b836ad8728afd984716d866b4ac9cbbf048d66238e"
       },
       {
         "bytes": 24402,

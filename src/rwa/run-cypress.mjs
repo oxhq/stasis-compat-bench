@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 
 import { listRegularFiles, repositoryRoot, serializeError, writeJson } from "../shared/io.mjs";
 import { rwaAuthCases, rwaAuthSource } from "./cases.mjs";
@@ -67,6 +68,10 @@ const expected = Object.freeze({
 });
 
 export const rwaBaselineExpected = expected;
+export const rwaFrozenServerRuntimeIdentity = Object.freeze({
+  buildTree: expected.buildTree,
+  serverBodies: expected.serverBodies,
+});
 
 export class RwaBaselineInvalidError extends Error {
   constructor(message, artifactPath, artifact) {
@@ -180,6 +185,7 @@ export async function probeRwaServers({
   timeoutMs = 5_000,
   upstreamRoot = process.env.RWA_ROOT ??
     path.resolve("inputs", "cypress-realworld-app-28ca4d0"),
+  expectedRuntimeIdentity = rwaFrozenServerRuntimeIdentity,
 } = {}) {
   const root = path.resolve(upstreamRoot);
   const endpoints = [
@@ -210,7 +216,6 @@ export async function probeRwaServers({
         `${endpoint.name} readiness failed: expected HTTP 200 and the unchanged RWA marker, got ${response.status}`,
       );
     }
-    const bodyIdentity = expected.serverBodies[endpoint.name];
     const listener = listeners.find(({ port }) => port === new URL(endpoint.url).port * 1);
     const observation = {
       name: endpoint.name,
@@ -224,21 +229,100 @@ export async function probeRwaServers({
         ? { servedBuildTree, generatedRuntimeFiles, runtimeCache, localEnvironmentFiles, ambientOverrides }
         : {}),
     };
-    if (
-      observation.contentType !== bodyIdentity.contentType ||
-      observation.bodyBytes !== bodyIdentity.bytes ||
-      observation.bodySha256 !== bodyIdentity.sha256 ||
-      listener === undefined
-    ) {
-      throw new Error(`${endpoint.name} response or listener identity drifted from the frozen RWA server`);
+    if (listener === undefined) {
+      throw new Error(`${endpoint.name} listener identity drifted from the frozen RWA server`);
     }
     observations.push(observation);
   }
+  assertRwaServerRuntimeIdentity(observations, expectedRuntimeIdentity);
   await assertRwaGeneratedRuntimeFiles(root);
   await assertRwaRuntimeCacheEmpty(root);
   await assertRwaLocalEnvironmentFilesAbsent(root);
   assertRwaAmbientOverridesAbsent();
   return observations;
+}
+
+export function createRwaServerRuntimeIdentity(observations) {
+  if (
+    !Array.isArray(observations) ||
+    observations.length !== 2 ||
+    observations[0]?.name !== "frontend" ||
+    observations[1]?.name !== "backend"
+  ) {
+    throw new TypeError("RWA server runtime identity requires the ordered frontend and backend observations");
+  }
+  const frontend = observations[0];
+  const backend = observations[1];
+  const identity = {
+    buildTree: structuredClone(frontend.servedBuildTree),
+    serverBodies: {
+      frontend: {
+        contentType: frontend.contentType,
+        bytes: frontend.bodyBytes,
+        sha256: frontend.bodySha256,
+      },
+      backend: {
+        contentType: backend.contentType,
+        bytes: backend.bodyBytes,
+        sha256: backend.bodySha256,
+      },
+    },
+  };
+  return assertRwaServerRuntimeIdentityValue(identity);
+}
+
+export function assertRwaServerRuntimeIdentityValue(identity) {
+  if (
+    identity === null ||
+    typeof identity !== "object" ||
+    Array.isArray(identity) ||
+    !isDeepStrictEqual(Object.keys(identity).sort(), ["buildTree", "serverBodies"]) ||
+    identity.serverBodies === null ||
+    typeof identity.serverBodies !== "object" ||
+    Array.isArray(identity.serverBodies) ||
+    !isDeepStrictEqual(Object.keys(identity.serverBodies).sort(), ["backend", "frontend"])
+  ) {
+    throw new TypeError("Invalid RWA server runtime identity");
+  }
+  assertBuildTreeIdentity(identity.buildTree);
+  for (const [name, body] of Object.entries(identity.serverBodies)) {
+    if (
+      body === null ||
+      typeof body !== "object" ||
+      Array.isArray(body) ||
+      !isDeepStrictEqual(Object.keys(body).sort(), ["bytes", "contentType", "sha256"]) ||
+      typeof body.contentType !== "string" ||
+      body.contentType.length === 0 ||
+      body.contentType.length > 256 ||
+      !Number.isSafeInteger(body.bytes) ||
+      body.bytes <= 0 ||
+      !/^[a-f0-9]{64}$/u.test(body.sha256 ?? "")
+    ) {
+      throw new TypeError(`Invalid ${name} RWA server body identity`);
+    }
+  }
+  if (
+    identity.buildTree.fileCount !== expected.buildTree.fileCount ||
+    identity.serverBodies.frontend.contentType !== expected.serverBodies.frontend.contentType ||
+    identity.serverBodies.frontend.bytes !== expected.serverBodies.frontend.bytes ||
+    !isDeepStrictEqual(identity.serverBodies.backend, expected.serverBodies.backend)
+  ) {
+    throw new TypeError("RWA server runtime identity violates its frozen structural bounds");
+  }
+  return identity;
+}
+
+export function assertRwaServerRuntimeIdentity(
+  observations,
+  expectedRuntimeIdentity = rwaFrozenServerRuntimeIdentity,
+) {
+  const actual = createRwaServerRuntimeIdentity(observations);
+  if (expectedRuntimeIdentity === null) return actual;
+  assertRwaServerRuntimeIdentityValue(expectedRuntimeIdentity);
+  if (!isDeepStrictEqual(actual, expectedRuntimeIdentity)) {
+    throw new Error("RWA server runtime identity drifted from the expected build and response bytes");
+  }
+  return actual;
 }
 
 async function probeServedBuildTree(root, fetchImpl, timeoutMs) {
@@ -259,7 +343,7 @@ async function probeServedBuildTree(root, fetchImpl, timeoutMs) {
     const served = Buffer.from(await response.arrayBuffer());
     const local = await readFile(path.join(buildRoot, ...relativePath.split("/")));
     if (!served.equals(local)) {
-      throw new Error(`served RWA build file ${relativePath} differs from the frozen build bytes`);
+      throw new Error(`served RWA build file ${relativePath} differs from the locally generated build bytes`);
     }
     const fileSha256 = sha256(served);
     totalBytes += served.length;
@@ -275,14 +359,23 @@ async function probeServedBuildTree(root, fetchImpl, timeoutMs) {
     fileCount: relativePaths.length,
     totalBytes,
   };
-  if (
-    evidence.sha256 !== expected.buildTree.sha256 ||
-    evidence.fileCount !== expected.buildTree.fileCount ||
-    evidence.totalBytes !== expected.buildTree.totalBytes
-  ) {
-    throw new Error("served RWA production build tree differs from the frozen build identity");
-  }
   return evidence;
+}
+
+function assertBuildTreeIdentity(value) {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    !isDeepStrictEqual(Object.keys(value).sort(), ["fileCount", "sha256", "totalBytes"]) ||
+    !/^[a-f0-9]{64}$/u.test(value.sha256 ?? "") ||
+    !Number.isSafeInteger(value.fileCount) ||
+    value.fileCount <= 0 ||
+    !Number.isSafeInteger(value.totalBytes) ||
+    value.totalBytes <= 0
+  ) {
+    throw new TypeError("Invalid RWA build-tree identity");
+  }
 }
 
 function probeWindowsListenerOwners(root) {

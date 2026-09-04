@@ -207,6 +207,10 @@ function serializeErrorAtDepth(error, depth, seen) {
   }
   if (depth >= 4 || seen.has(error)) return { name: "ErrorCauseOmitted", cycleOrDepth: true };
   seen.add(error);
+  const isStasisProcessExit = error.name === "StasisProcessError" && error.code === "process_exit";
+  const stderrTail = typeof error.stderrTail === "string"
+    ? error.stderrTail
+    : isStasisProcessExit ? "" : null;
   const serialized = {
     name: allowlistedValue(error.name, allowedErrorNames, "UnclassifiedError"),
     ...(error.code === undefined
@@ -221,8 +225,22 @@ function serializeErrorAtDepth(error, depth, seen) {
       : { outcome: allowlistedValue(error.outcome, allowedOutcomes, "unknown") }),
     ...(error.limit === undefined ? {} : { limit: safeScalar(error.limit) }),
     ...(typeof error.message === "string" && error.message.length > 0 ? { messageOmitted: true } : {}),
-    ...(typeof error.stderrTail === "string"
-      ? { stderrTailOmitted: true, stderrTailBytes: Buffer.byteLength(error.stderrTail) }
+    ...(stderrTail === null
+      ? {}
+      : {
+          stderrTailOmitted: true,
+          stderrTailBytes: Buffer.byteLength(stderrTail),
+          ...(isStasisProcessExit
+            ? { stderrTailSha256: createHash("sha256").update(stderrTail, "utf8").digest("hex") }
+            : {}),
+        }),
+    ...(isStasisProcessExit
+      ? {
+          exitCode: safeProcessExitCode(error.exitCode),
+          signal: safeProcessSignal(error.signal),
+          crashMarkers: extractStasisCrashMarkers(stderrTail),
+          lifecyclePhases: extractStasisLifecyclePhases(stderrTail),
+        }
       : {}),
     ...("requestId" in error || "sessionId" in error
       ? { opaqueIdentifiersOmitted: true }
@@ -232,6 +250,160 @@ function serializeErrorAtDepth(error, depth, seen) {
     serialized.cause = serializeErrorAtDepth(error.cause, depth + 1, seen);
   }
   return serialized;
+}
+
+export function assertSerializedError(value) {
+  if (!isPlainRecord(value)) throw new TypeError("Invalid serialized error");
+  if (value.name === "NonErrorThrow") {
+    assertOnlyKeys(value, ["name", "thrownType", "valueOmitted", "failurePhase"]);
+    if (
+      value.valueOmitted !== true ||
+      (Object.hasOwn(value, "thrownType") && !allowedThrownTypes.has(value.thrownType))
+    ) {
+      throw new TypeError("Invalid serialized non-error throw");
+    }
+    assertFailurePhase(value);
+    return value;
+  }
+  if (value.name === "ErrorCauseOmitted") {
+    assertOnlyKeys(value, ["name", "cycleOrDepth", "failurePhase"]);
+    if (value.cycleOrDepth !== true) throw new TypeError("Invalid omitted error cause");
+    assertFailurePhase(value);
+    return value;
+  }
+
+  assertOnlyKeys(value, [
+    "name",
+    "code",
+    "fatal",
+    "stateEffect",
+    "outcome",
+    "limit",
+    "messageOmitted",
+    "stderrTailOmitted",
+    "stderrTailBytes",
+    "stderrTailSha256",
+    "opaqueIdentifiersOmitted",
+    "exitCode",
+    "signal",
+    "crashMarkers",
+    "lifecyclePhases",
+    "failurePhase",
+    "cause",
+  ]);
+  if (
+    !allowedErrorNames.has(value.name) ||
+    (Object.hasOwn(value, "code") && !allowedErrorCodes.has(value.code)) ||
+    (Object.hasOwn(value, "fatal") && typeof value.fatal !== "boolean") ||
+    (Object.hasOwn(value, "stateEffect") && !allowedStateEffects.has(value.stateEffect)) ||
+    (Object.hasOwn(value, "outcome") && !allowedOutcomes.has(value.outcome)) ||
+    (Object.hasOwn(value, "limit") && !isSafeSerializedScalar(value.limit)) ||
+    (Object.hasOwn(value, "messageOmitted") && value.messageOmitted !== true) ||
+    (Object.hasOwn(value, "opaqueIdentifiersOmitted") && value.opaqueIdentifiersOmitted !== true)
+  ) {
+    throw new TypeError("Invalid serialized error fields");
+  }
+  const isStasisProcessExit = value.name === "StasisProcessError" && value.code === "process_exit";
+  assertFailurePhase(value);
+  assertSerializedStderr(value, isStasisProcessExit);
+
+  const processKeys = ["exitCode", "signal", "crashMarkers", "lifecyclePhases"];
+  if (isStasisProcessExit) {
+    if (
+      processKeys.some((key) => !Object.hasOwn(value, key)) ||
+      !Object.hasOwn(value, "stderrTailSha256") ||
+      !(value.exitCode === null || (Number.isSafeInteger(value.exitCode) && value.exitCode >= 0)) ||
+      !(value.signal === null || allowedProcessSignals.has(value.signal)) ||
+      !isUniqueAllowlistedArray(value.crashMarkers, allowedCrashMarkers) ||
+      !isUniqueAllowlistedArray(value.lifecyclePhases, allowedLifecyclePhases)
+    ) {
+      throw new TypeError("Invalid serialized Stasis process diagnostics");
+    }
+  } else if (processKeys.some((key) => Object.hasOwn(value, key))) {
+    throw new TypeError("Stasis process diagnostics require a process_exit error");
+  }
+  if (Object.hasOwn(value, "cause")) assertSerializedError(value.cause);
+  return value;
+}
+
+function assertSerializedStderr(value, requireSha256) {
+  const keys = ["stderrTailOmitted", "stderrTailBytes", "stderrTailSha256"];
+  const present = keys.filter((key) => Object.hasOwn(value, key)).length;
+  if (present === 0) return;
+  if (
+    present !== (requireSha256 ? keys.length : keys.length - 1) ||
+    value.stderrTailOmitted !== true ||
+    !Number.isSafeInteger(value.stderrTailBytes) ||
+    value.stderrTailBytes < 0 ||
+    (requireSha256
+      ? !/^[a-f0-9]{64}$/u.test(value.stderrTailSha256)
+      : Object.hasOwn(value, "stderrTailSha256"))
+  ) {
+    throw new TypeError("Invalid serialized stderr diagnostics");
+  }
+}
+
+function assertFailurePhase(value) {
+  if (
+    Object.hasOwn(value, "failurePhase") &&
+    !allowedHarnessFailurePhases.has(value.failurePhase)
+  ) {
+    throw new TypeError("Invalid serialized error failure phase");
+  }
+}
+
+function assertOnlyKeys(value, allowed) {
+  const keySet = new Set(allowed);
+  if (Object.keys(value).some((key) => !keySet.has(key))) {
+    throw new TypeError("Serialized error contains an unknown field");
+  }
+}
+
+function isPlainRecord(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value) &&
+    Object.getPrototypeOf(value) === Object.prototype;
+}
+
+function isSafeSerializedScalar(value) {
+  return value === null ||
+    typeof value === "boolean" ||
+    (typeof value === "number" && Number.isFinite(value)) ||
+    (typeof value === "string" && (value === "omitted" || /^-?[0-9]+$/u.test(value)));
+}
+
+function isUniqueAllowlistedArray(value, allowed) {
+  return Array.isArray(value) &&
+    value.length <= allowed.size &&
+    new Set(value).size === value.length &&
+    value.every((entry) => allowed.has(entry));
+}
+
+function safeProcessExitCode(value) {
+  return Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+function safeProcessSignal(value) {
+  return typeof value === "string" && allowedProcessSignals.has(value) ? value : null;
+}
+
+function extractStasisCrashMarkers(stderrTail) {
+  return crashMarkerNeedles
+    .filter(({ needle }) => stderrTail.includes(needle))
+    .map(({ marker }) => marker);
+}
+
+function extractStasisLifecyclePhases(stderrTail) {
+  const found = [];
+  const retained = new Set();
+  const pattern = /stasis_lifecycle_v1 phase=([a-z_]+)/gu;
+  for (const match of stderrTail.matchAll(pattern)) {
+    const phase = match[1];
+    if (allowedLifecyclePhases.has(phase) && !retained.has(phase)) {
+      retained.add(phase);
+      found.push(phase);
+    }
+  }
+  return found;
 }
 
 function allowlistedValue(value, allowed, fallback) {
@@ -270,6 +442,139 @@ function isSensitiveArtifactKey(key) {
     normalized === "setcookie"
   );
 }
+
+const allowedThrownTypes = new Set([
+  "bigint",
+  "boolean",
+  "function",
+  "number",
+  "object",
+  "string",
+  "symbol",
+  "undefined",
+]);
+
+const allowedHarnessFailurePhases = new Set(["crawl", "pool_close"]);
+
+const allowedProcessSignals = new Set([
+  "SIGABRT",
+  "SIGBUS",
+  "SIGFPE",
+  "SIGILL",
+  "SIGKILL",
+  "SIGSEGV",
+  "SIGTERM",
+  "SIGTRAP",
+]);
+
+const crashMarkerNeedles = Object.freeze([
+  Object.freeze({
+    marker: "mozalloc_abort",
+    needle: "Redirecting call to abort() to mozalloc_abort",
+  }),
+]);
+const allowedCrashMarkers = new Set(crashMarkerNeedles.map(({ marker }) => marker));
+
+// This is the exact compile-time lifecycle vocabulary of the frozen Stasis
+// v0.3.3 revision. Only these values can cross the public artifact boundary.
+const allowedLifecyclePhases = new Set([
+  "paint_pipeline_retirement_owners_observed",
+  "painter_webrender_retirement_send_begin",
+  "painter_webrender_retirement_frame_built_queued",
+  "painter_renderer_retirement_removal_consumed",
+  "painter_webrender_retirement_transaction_failed",
+  "constellation_paint_retirement_callback_observed",
+  "controlled_replacement_reroute_begin",
+  "close_accepted",
+  "engine_close_begin",
+  "webview_drop_begin",
+  "painter_drop_begin",
+  "painter_webrender_shutdown_begin",
+  "painter_webrender_shutdown_ack_observed",
+  "painter_webrender_shutdown_failed",
+  "painter_webrender_threads_join_begin",
+  "painter_webrender_threads_join_end",
+  "painter_webrender_threads_join_failed",
+  "painter_webrender_workers_join_begin",
+  "painter_webrender_workers_join_end",
+  "painter_webrender_workers_join_failed",
+  "painter_renderer_deinit_begin",
+  "painter_renderer_deinit_end",
+  "painter_renderer_deinit_failed",
+  "painter_drop_body_end",
+  "webview_drop_end",
+  "pre_shutdown_spin_begin",
+  "pre_shutdown_spin_end",
+  "servo_owner_drop_begin",
+  "servo_inner_drop_begin",
+  "constellation_exit_send_begin",
+  "script_threads_join_begin",
+  "script_threads_join_end",
+  "script_threads_join_failed",
+  "style_thread_pool_shutdown_begin",
+  "style_thread_pool_shutdown_end",
+  "style_thread_pool_shutdown_failed",
+  "fetch_thread_join_begin",
+  "fetch_thread_join_end",
+  "fetch_thread_join_failed",
+  "canvas_paint_thread_join_begin",
+  "canvas_paint_thread_join_end",
+  "canvas_paint_thread_join_failed",
+  "resource_manager_join_begin",
+  "resource_manager_join_end",
+  "resource_manager_join_failed",
+  "storage_threads_join_begin",
+  "storage_threads_join_end",
+  "storage_threads_join_failed",
+  "global_thread_pool_shutdown_begin",
+  "global_thread_pool_shutdown_end",
+  "global_thread_pool_shutdown_failed",
+  "system_font_service_join_begin",
+  "system_font_service_join_end",
+  "system_font_service_join_failed",
+  "async_runtime_shutdown_begin",
+  "async_runtime_shutdown_end",
+  "async_runtime_shutdown_failed",
+  "subsystems_shutdown_end",
+  "subsystems_shutdown_failed",
+  "constellation_run_end",
+  "constellation_state_drop_begin",
+  "constellation_state_drop_end",
+  "shutdown_complete_send_begin",
+  "shutdown_complete_observed",
+  "constellation_join_begin",
+  "constellation_join_end",
+  "constellation_join_failed",
+  "tls_prewarm_join_begin",
+  "tls_prewarm_join_end",
+  "tls_prewarm_join_failed",
+  "servo_inner_drop_body_end",
+  "memory_profiler_exit_send_begin",
+  "memory_profiler_join_begin",
+  "memory_profiler_join_end",
+  "memory_profiler_join_failed",
+  "js_engine_drop_begin",
+  "js_engine_drop_end",
+  "js_engine_drop_failed",
+  "servo_owner_drop_end",
+  "engine_close_end",
+  "engine_session_drop_begin",
+  "engine_session_drop_end",
+  "rendering_context_owner_drop_begin",
+  "software_rendering_context_drop_begin",
+  "software_rendering_context_drop_body_end",
+  "surfman_rendering_context_drop_begin",
+  "surfman_rendering_context_drop_body_end",
+  "rendering_context_owner_drop_end",
+  "close_response_written",
+  "shell_run_end",
+  "protocol_reader_join_begin",
+  "protocol_reader_join_end",
+  "protocol_reader_join_failed",
+  "shell_drop_begin",
+  "shell_drop_end",
+  "main_body_end",
+]);
 
 const allowedErrorNames = new Set([
   "AbortError",

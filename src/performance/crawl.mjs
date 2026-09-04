@@ -23,7 +23,11 @@ import {
   stasisNetwork,
 } from "../crawl/corpus.mjs";
 import { runStasisV03Case } from "../crawl-v03/stasis-lane.mjs";
-import { canonicalHttpUrl, serializeError } from "../shared/io.mjs";
+import {
+  assertSerializedError,
+  canonicalHttpUrl,
+  serializeError,
+} from "../shared/io.mjs";
 import { assertCleanHarnessWorktreeEvidence } from "./harness-worktree.mjs";
 
 export const crawlPerformanceSchema = "stasis-v0.3.3-performance-crawl-raw-v1";
@@ -44,6 +48,7 @@ const playwrightVersion = "1.62.1";
 const performanceRepository = "oxhq/stasis";
 const performanceWorkflowName = "Stasis v0.3.3 performance evidence";
 const performanceCrawlJobName = "ubuntu-crawl";
+const lifecycleTraceEnvironmentName = "STASIS_LIFECYCLE_TRACE_V1";
 const sha256Pattern = /^[a-f0-9]{64}$/u;
 const gitShaPattern = /^[a-f0-9]{40}$/u;
 const canonicalUnsignedIntegerPattern = /^(?:0|[1-9][0-9]*)$/u;
@@ -94,6 +99,11 @@ export const crawlPerformanceRules = deepFreeze({
       "report_io",
       "worker_and_iframe_controls",
     ],
+  },
+  diagnostics: {
+    stasisLifecycleTrace: "untimed_warmup_only",
+    timedSamplesAndControlsLifecycleTrace: false,
+    rawErrorTextRetained: false,
   },
   invalidObservationPolicy: "retain_then_fail_stop_without_retry",
   controls: {
@@ -274,7 +284,12 @@ export function createCrawleePerformanceRunner({ launcher = chromium } = {}) {
  * externally materialized public runtime. This repository's historical
  * @oxhq/stasis@0.2.1 dependency is never imported by this module.
  */
-export function createStasisPerformanceRunner({ sdk, sdkVersion, executablePath }) {
+export function createStasisPerformanceRunner({
+  sdk,
+  sdkVersion,
+  executablePath,
+  environment = process.env,
+}) {
   if (sdkVersion !== stasisVersion) {
     throw new TypeError(`The crawl performance lane requires @oxhq/stasis@${stasisVersion}`);
   }
@@ -288,9 +303,19 @@ export function createStasisPerformanceRunner({ sdk, sdkVersion, executablePath 
   if (typeof executablePath !== "string" || executablePath.length === 0) {
     throw new TypeError("An externally supplied Stasis v0.3.3 runtime is required");
   }
+  if (environment === null || typeof environment !== "object" || Array.isArray(environment)) {
+    throw new TypeError("The inherited Stasis launch environment must be an object");
+  }
   const networkOptions = deepFreeze(stasisNetwork());
+  const inheritedLaunchEnvironment = { ...environment };
 
   return async (job) => {
+    const launchEnv = { ...inheritedLaunchEnvironment };
+    if (job.phase === "warmup") {
+      launchEnv[lifecycleTraceEnvironmentName] = "1";
+    } else {
+      delete launchEnv[lifecycleTraceEnvironmentName];
+    }
     const result = await runStasisV03Case({
       sdk,
       executablePath,
@@ -300,6 +325,8 @@ export function createStasisPerformanceRunner({ sdk, sdkVersion, executablePath 
       pageLimit: job.crawl.pageLimit,
       depthLimit: job.crawl.depthLimit,
       recordWallTime: false,
+      launchEnv,
+      retainFailurePhase: true,
     });
     const { wallTimeMs: _nonAuthoritativeInnerTiming, ...withoutInnerTiming } = result;
     return withoutInnerTiming;
@@ -1003,6 +1030,7 @@ function assertObservation(value, lane, timed) {
   ) {
     throw new TypeError("Invalid crawl performance observation");
   }
+  assertRunErrorProjections(value.run, lane);
   if (!isDeepStrictEqual(value.oracle, validatePrimaryRun(lane, value.run))) {
     throw new TypeError("Crawl performance oracle replay mismatch");
   }
@@ -1037,6 +1065,7 @@ function assertClockFailureObservation(value) {
   if (!isPlainRecord(value.run) || !isPlainRecord(value.oracle)) {
     throw new TypeError("Invalid crawl performance clock-failure result");
   }
+  assertRunErrorProjections(value.run, value.lane);
   if (!isDeepStrictEqual(value.oracle, validatePrimaryRun(value.lane, value.run))) {
     throw new TypeError("Crawl performance clock-failure oracle replay mismatch");
   }
@@ -1111,7 +1140,41 @@ function assertControls(value) {
       ) {
         throw new TypeError("Invalid untimed control observation");
       }
+      assertRunErrorProjections(observation.run, observation.lane);
     }
+  }
+}
+
+function assertRunErrorProjections(run, lane) {
+  if (Object.hasOwn(run, "error")) {
+    assertSerializedError(run.error);
+    assertStasisProcessFailurePhase(run.error, lane, "crawl");
+  }
+  if (isPlainRecord(run.cleanup) && Object.hasOwn(run.cleanup, "error")) {
+    assertSerializedError(run.cleanup.error);
+    assertStasisProcessFailurePhase(run.cleanup.error, lane, "pool_close");
+  }
+  if (isPlainRecord(run.priorTerminal) && Object.hasOwn(run.priorTerminal, "error")) {
+    assertSerializedError(run.priorTerminal.error);
+    assertStasisProcessFailurePhase(run.priorTerminal.error, lane, "crawl");
+  }
+  if (Array.isArray(run.failures)) {
+    for (const failure of run.failures) {
+      if (isPlainRecord(failure) && Object.hasOwn(failure, "error")) {
+        assertSerializedError(failure.error);
+      }
+    }
+  }
+}
+
+function assertStasisProcessFailurePhase(error, lane, expected) {
+  if (
+    lane === "stasis" &&
+    error?.name === "StasisProcessError" &&
+    error?.code === "process_exit" &&
+    error.failurePhase !== expected
+  ) {
+    throw new TypeError("Invalid Stasis process failure phase");
   }
 }
 
