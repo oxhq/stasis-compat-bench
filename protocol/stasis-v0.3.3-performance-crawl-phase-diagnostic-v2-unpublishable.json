@@ -1,0 +1,141 @@
+{
+  "schema": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2-unpublishable-v1",
+  "status": "unpublishable",
+  "reasonCode": "HOSTED_POST_STEP_ORDINAL_CONTRACT_DEFECT",
+  "v2Contract": {
+    "repository": "oxhq/stasis-compat-bench",
+    "commitSha": "54a08f2f63718658a2ed60309eba94c9a00efbc3",
+    "parentCommitSha": "58742c0f35939558b334eeb792cbf17ae8ab3426",
+    "treeSha": "f4d02631892cee126970a3fa3485aef37f1aee35",
+    "tag": "stasis-v0.3.3-performance-crawl-phase-diagnostic-contract-v2",
+    "releaseId": 382863604,
+    "createdAt": "2026-09-04T16:07:49Z",
+    "publishedAt": "2026-09-04T16:12:51Z",
+    "immutable": true,
+    "assets": [
+      {
+        "id": 544579433,
+        "name": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2-preflight.json",
+        "bytes": 9825,
+        "sha256": "19e7546167ffa4155f8112241b0c573e8d79e6ac6251561154a5f670981eade2"
+      },
+      {
+        "id": 544579435,
+        "name": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2-workflow.yml",
+        "bytes": 63031,
+        "sha256": "43d4dee4df84277b99cb680056705b8ed77d2e6cb5de6c37a6f6cba34a8cdc91"
+      },
+      {
+        "id": 544579432,
+        "name": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v2.md",
+        "bytes": 12602,
+        "sha256": "5ce74846500a0c273ec1761e37e9dc920c0fa55fe240bf57eba890b6f2ea0914"
+      }
+    ]
+  },
+  "workflowSource": {
+    "repository": "oxhq/stasis",
+    "branch": "codex/stasis-v033-crawl-phase-diagnostic-v2",
+    "commitSha": "6dbe0cafd261e7a171c84929233bb9131b9d4b3e",
+    "parentCommitSha": "6c142d18631b910ab9e7ce842b52ed817b46ecc5",
+    "treeSha": "f7fc355e14eab45e74710521d7e13b16d4b4a922",
+    "workflowPath": ".github/workflows/stasis-v0.3.3-performance-crawl-phase-diagnostic-v2.yml",
+    "workflowBlobSha": "0de4bb7e6d7f623ccf38633991f999e1dc38bc45"
+  },
+  "hostedObservation": {
+    "runId": 33893969529,
+    "runAttempt": 1,
+    "jobId": 101092105779,
+    "createdAt": "2026-09-04T16:13:58Z",
+    "runStartedAt": "2026-09-04T16:13:58Z",
+    "completedAt": "2026-09-04T16:15:23Z",
+    "conclusion": "success",
+    "invocationCount": 1,
+    "rerunCount": 0,
+    "artifact": {
+      "id": 9945005103,
+      "name": "stasis-v0.3.3-crawl-phase-diagnostic-v2-bundle-attempt-1",
+      "bytes": 24466,
+      "sha256": "388572d4e90a6d6aa30ec208cb4d34e0f1ce2d5dba30b246a61488c54653675c",
+      "unexpiredAtFreeze": true
+    },
+    "coreStepCount": 23,
+    "lastCoreStepNumber": 23,
+    "observedPostSteps": [
+      {
+        "number": 45,
+        "name": "Post Set up exact Node 22.20.0 x64"
+      },
+      {
+        "number": 46,
+        "name": "Post Check out the exact diagnostic harness"
+      },
+      {
+        "number": 47,
+        "name": "Complete job"
+      }
+    ],
+    "v2VerifierFrozenPostSteps": [
+      {
+        "number": 44,
+        "name": "Post Set up exact Node 22.20.0 x64"
+      },
+      {
+        "number": 45,
+        "name": "Post Check out the exact diagnostic harness"
+      },
+      {
+        "number": 46,
+        "name": "Complete job"
+      }
+    ],
+    "v2VerifierError": "Diagnostic hosted job step topology changed"
+  },
+  "captureManifest": [
+    {
+      "name": "workflow-run.json",
+      "bytes": 12689,
+      "sha256": "715d1a635c78e76ae3d2bee09abf60446a9d4ce01d483cca8aa5a162dda151ee"
+    },
+    {
+      "name": "workflow-runs.json",
+      "bytes": 13630,
+      "sha256": "7450250c3064b849e86ad8ad5a1d306b83f5dcf40ef499547819448b428d7c79"
+    },
+    {
+      "name": "workflow-jobs.json",
+      "bytes": 8322,
+      "sha256": "aee7ab5e447b1d29e693aa87a1df8293f8ac2076c7fbba3a7aaaf4dcdba80334"
+    },
+    {
+      "name": "workflow-artifacts.json",
+      "bytes": 945,
+      "sha256": "5063a43b9ace1bcebcb3b41fc22f6274b70248c8558146d874244b705b9ae570"
+    },
+    {
+      "name": "actions-diagnostic-bundle.zip",
+      "bytes": 24466,
+      "sha256": "388572d4e90a6d6aa30ec208cb4d34e0f1ce2d5dba30b246a61488c54653675c"
+    }
+  ],
+  "exclusion": {
+    "artifactPayloadConsumedByMotivationVerifier": false,
+    "rawTimingImportedIntoV3ContractOrVerifier": false,
+    "diagnosticOutcomeImportedIntoV3ContractOrVerifier": false,
+    "comparisonValueImportedIntoV3ContractOrVerifier": false,
+    "v2EvidenceReleaseAuthorized": false,
+    "v2RerunAuthorized": false,
+    "postHocVerifierRepairAuthorized": false,
+    "replacementProtocol": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v3"
+  },
+  "claimBoundary": {
+    "authorityEligible": false,
+    "timingEligible": false,
+    "statisticsEligible": false,
+    "comparisonEligible": false,
+    "optimizationEligible": false,
+    "generalizedSpeedClaimAuthorized": false,
+    "implementationWorkAuthorized": false,
+    "decisionState": "STAY_0_4_UNASSIGNED"
+  }
+}
