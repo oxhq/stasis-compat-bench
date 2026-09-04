@@ -68,8 +68,12 @@ test("public projection freezes every corpus and protocol byte", async () => {
     "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v2-workflow.yml",
     "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v2.md",
     "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v3-preflight.json",
+    "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v3-unpublishable.json",
     "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v3-workflow.yml",
     "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v3.md",
+    "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v4-preflight.json",
+    "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v4-workflow.yml",
+    "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v4.md",
     "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-workflow.yml",
     "protocol/stasis-v0.3.3-performance-crawl-v1.md",
     "protocol/stasis-v0.3.3-performance-replication-v1.md",
@@ -199,7 +203,7 @@ test("prepared projection tree reports the remaining fresh-root operation explic
     !result.sourceHistoryExcluded || !result.sourceExclusionsAbsent,
   );
   if (!result.sourceHistoryExcluded) assert.equal(result.sourceSnapshotVerified, true);
-  assert.equal(result.unchangedInputCount, 22);
+  assert.equal(result.unchangedInputCount, 26);
   assert.equal(result.pathProjectionReceiptVerified, true);
   assert.equal(result.pathProjectionJsonPointerCount, 4);
   assert.equal(result.pathProjectionLogLineCount, 1);
