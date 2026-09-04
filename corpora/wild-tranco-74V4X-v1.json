@@ -1,0 +1,977 @@
+{
+  "schema": "stasis-wild-corpus-v1",
+  "protocol": "stasis-post-0.3-census-v1",
+  "preregistrationCommit": "b00855fcd9e716ac3e6afba978990a0c094d81c6",
+  "source": {
+    "listId": "74V4X",
+    "createdOn": "2026-08-25T22:00:02.381111",
+    "downloadUrl": "https://tranco-list.eu/download/74V4X/1000000",
+    "bytes": 22695497,
+    "sha256": "23f4686d95c1287765d43b4219eccb62a9575bbd5dbbd20d44fc280403135118",
+    "rowCount": 1000000,
+    "metadataFile": "tranco-74V4X-source.json",
+    "metadataSha256": "fe121ea509b650659d272b6050e6065ecdf428dd9350801ee28a6859b09d2795"
+  },
+  "selection": {
+    "seed": "stasis-post-0.3-census-v1|tranco:74V4X",
+    "algorithm": "sha256-u64be-offset-coprime-stride-full-cycle-v1",
+    "eligibility": "baseline-preflight-v2",
+    "preflightLedger": "wild-tranco-74V4X-v1-preflight.json",
+    "preflightLedgerSha256": "7255c2804329d5fff857b1f1d0695d733a09842eeb2317e17b83b5ada3e8e4c6",
+    "strata": [
+      {
+        "stratumId": "rank-1-1000",
+        "minRank": 1,
+        "maxRank": 1000,
+        "quota": 20,
+        "maxAttempts": 250,
+        "offset": 933,
+        "stride": 879,
+        "length": 1000
+      },
+      {
+        "stratumId": "rank-1001-10000",
+        "minRank": 1001,
+        "maxRank": 10000,
+        "quota": 20,
+        "maxAttempts": 250,
+        "offset": 8934,
+        "stride": 1073,
+        "length": 9000
+      },
+      {
+        "stratumId": "rank-10001-100000",
+        "minRank": 10001,
+        "maxRank": 100000,
+        "quota": 20,
+        "maxAttempts": 250,
+        "offset": 74939,
+        "stride": 31619,
+        "length": 90000
+      },
+      {
+        "stratumId": "rank-100001-500000",
+        "minRank": 100001,
+        "maxRank": 500000,
+        "quota": 20,
+        "maxAttempts": 250,
+        "offset": 242758,
+        "stride": 169269,
+        "length": 400000
+      },
+      {
+        "stratumId": "rank-500001-1000000",
+        "minRank": 500001,
+        "maxRank": 1000000,
+        "quota": 20,
+        "maxAttempts": 250,
+        "offset": 337071,
+        "stride": 72859,
+        "length": 500000
+      }
+    ]
+  },
+  "count": 100,
+  "urls": [
+    {
+      "slot": 1,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 1,
+      "permutationIndex": 19,
+      "rank": 635,
+      "domain": "dyndns.org",
+      "requestedUrl": "https://dyndns.org/"
+    },
+    {
+      "slot": 2,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 2,
+      "permutationIndex": 20,
+      "rank": 514,
+      "domain": "blogger.com",
+      "requestedUrl": "https://blogger.com/"
+    },
+    {
+      "slot": 3,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 3,
+      "permutationIndex": 22,
+      "rank": 272,
+      "domain": "springer.com",
+      "requestedUrl": "https://springer.com/"
+    },
+    {
+      "slot": 4,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 4,
+      "permutationIndex": 26,
+      "rank": 788,
+      "domain": "visma.com",
+      "requestedUrl": "https://visma.com/"
+    },
+    {
+      "slot": 5,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 5,
+      "permutationIndex": 28,
+      "rank": 546,
+      "domain": "cloudflareinsights.com",
+      "requestedUrl": "https://cloudflareinsights.com/"
+    },
+    {
+      "slot": 6,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 6,
+      "permutationIndex": 31,
+      "rank": 183,
+      "domain": "example.com",
+      "requestedUrl": "https://example.com/"
+    },
+    {
+      "slot": 7,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 7,
+      "permutationIndex": 35,
+      "rank": 699,
+      "domain": "id5-sync.com",
+      "requestedUrl": "https://id5-sync.com/"
+    },
+    {
+      "slot": 8,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 8,
+      "permutationIndex": 40,
+      "rank": 94,
+      "domain": "blogspot.com",
+      "requestedUrl": "https://blogspot.com/"
+    },
+    {
+      "slot": 9,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 9,
+      "permutationIndex": 52,
+      "rank": 642,
+      "domain": "ovh.net",
+      "requestedUrl": "https://ovh.net/"
+    },
+    {
+      "slot": 10,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 10,
+      "permutationIndex": 60,
+      "rank": 674,
+      "domain": "cnet.com",
+      "requestedUrl": "https://cnet.com/"
+    },
+    {
+      "slot": 11,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 11,
+      "permutationIndex": 73,
+      "rank": 101,
+      "domain": "capgemini.com",
+      "requestedUrl": "https://capgemini.com/"
+    },
+    {
+      "slot": 12,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 12,
+      "permutationIndex": 77,
+      "rank": 617,
+      "domain": "anthropic.com",
+      "requestedUrl": "https://anthropic.com/"
+    },
+    {
+      "slot": 13,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 13,
+      "permutationIndex": 95,
+      "rank": 439,
+      "domain": "claude.ai",
+      "requestedUrl": "https://claude.ai/"
+    },
+    {
+      "slot": 14,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 14,
+      "permutationIndex": 118,
+      "rank": 656,
+      "domain": "stackadapt.com",
+      "requestedUrl": "https://stackadapt.com/"
+    },
+    {
+      "slot": 15,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 15,
+      "permutationIndex": 121,
+      "rank": 293,
+      "domain": "debian.org",
+      "requestedUrl": "https://debian.org/"
+    },
+    {
+      "slot": 16,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 16,
+      "permutationIndex": 123,
+      "rank": 51,
+      "domain": "googledomains.com",
+      "requestedUrl": "https://googledomains.com/"
+    },
+    {
+      "slot": 17,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 17,
+      "permutationIndex": 163,
+      "rank": 211,
+      "domain": "t-online.de",
+      "requestedUrl": "https://t-online.de/"
+    },
+    {
+      "slot": 18,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 18,
+      "permutationIndex": 170,
+      "rank": 364,
+      "domain": "google.cn",
+      "requestedUrl": "https://google.cn/"
+    },
+    {
+      "slot": 19,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 19,
+      "permutationIndex": 184,
+      "rank": 670,
+      "domain": "shop.app",
+      "requestedUrl": "https://shop.app/"
+    },
+    {
+      "slot": 20,
+      "stratumId": "rank-1-1000",
+      "stratumSlot": 20,
+      "permutationIndex": 188,
+      "rank": 186,
+      "domain": "w3.org",
+      "requestedUrl": "https://w3.org/"
+    },
+    {
+      "slot": 21,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 1,
+      "permutationIndex": 8,
+      "rank": 9519,
+      "domain": "ssrchat.com",
+      "requestedUrl": "https://ssrchat.com/"
+    },
+    {
+      "slot": 22,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 2,
+      "permutationIndex": 15,
+      "rank": 8030,
+      "domain": "oikotie.fi",
+      "requestedUrl": "https://oikotie.fi/"
+    },
+    {
+      "slot": 23,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 3,
+      "permutationIndex": 30,
+      "rank": 6125,
+      "domain": "trustedshops.com",
+      "requestedUrl": "https://trustedshops.com/"
+    },
+    {
+      "slot": 24,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 4,
+      "permutationIndex": 42,
+      "rank": 1001,
+      "domain": "onesignal.com",
+      "requestedUrl": "https://onesignal.com/"
+    },
+    {
+      "slot": 25,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 5,
+      "permutationIndex": 45,
+      "rank": 4220,
+      "domain": "steaminventoryhelper.com",
+      "requestedUrl": "https://steaminventoryhelper.com/"
+    },
+    {
+      "slot": 26,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 6,
+      "permutationIndex": 46,
+      "rank": 5293,
+      "domain": "csmonitor.com",
+      "requestedUrl": "https://csmonitor.com/"
+    },
+    {
+      "slot": 27,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 7,
+      "permutationIndex": 48,
+      "rank": 7439,
+      "domain": "ksyun.com",
+      "requestedUrl": "https://ksyun.com/"
+    },
+    {
+      "slot": 28,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 8,
+      "permutationIndex": 53,
+      "rank": 3804,
+      "domain": "adscale.de",
+      "requestedUrl": "https://adscale.de/"
+    },
+    {
+      "slot": 29,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 9,
+      "permutationIndex": 66,
+      "rank": 8753,
+      "domain": "nobat.ir",
+      "requestedUrl": "https://nobat.ir/"
+    },
+    {
+      "slot": 30,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 10,
+      "permutationIndex": 70,
+      "rank": 4045,
+      "domain": "nhl.com",
+      "requestedUrl": "https://nhl.com/"
+    },
+    {
+      "slot": 31,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 11,
+      "permutationIndex": 76,
+      "rank": 1483,
+      "domain": "markt.de",
+      "requestedUrl": "https://markt.de/"
+    },
+    {
+      "slot": 32,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 12,
+      "permutationIndex": 121,
+      "rank": 4768,
+      "domain": "vrfy.shop",
+      "requestedUrl": "https://vrfy.shop/"
+    },
+    {
+      "slot": 33,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 13,
+      "permutationIndex": 125,
+      "rank": 9060,
+      "domain": "sberkassa.site",
+      "requestedUrl": "https://sberkassa.site/"
+    },
+    {
+      "slot": 34,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 14,
+      "permutationIndex": 138,
+      "rank": 5009,
+      "domain": "spec.org",
+      "requestedUrl": "https://spec.org/"
+    },
+    {
+      "slot": 35,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 15,
+      "permutationIndex": 139,
+      "rank": 6082,
+      "domain": "vdsina.ru",
+      "requestedUrl": "https://vdsina.ru/"
+    },
+    {
+      "slot": 36,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 16,
+      "permutationIndex": 141,
+      "rank": 8228,
+      "domain": "kavak.com",
+      "requestedUrl": "https://kavak.com/"
+    },
+    {
+      "slot": 37,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 17,
+      "permutationIndex": 149,
+      "rank": 7812,
+      "domain": "starfieldtech.com",
+      "requestedUrl": "https://starfieldtech.com/"
+    },
+    {
+      "slot": 38,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 18,
+      "permutationIndex": 151,
+      "rank": 9958,
+      "domain": "hef.co.ke",
+      "requestedUrl": "https://hef.co.ke/"
+    },
+    {
+      "slot": 39,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 19,
+      "permutationIndex": 158,
+      "rank": 8469,
+      "domain": "hot-sex-tube.com",
+      "requestedUrl": "https://hot-sex-tube.com/"
+    },
+    {
+      "slot": 40,
+      "stratumId": "rank-1001-10000",
+      "stratumSlot": 20,
+      "permutationIndex": 162,
+      "rank": 3761,
+      "domain": "js.org",
+      "requestedUrl": "https://js.org/"
+    },
+    {
+      "slot": 41,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 1,
+      "permutationIndex": 6,
+      "rank": 94654,
+      "domain": "infotel.ru",
+      "requestedUrl": "https://infotel.ru/"
+    },
+    {
+      "slot": 42,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 2,
+      "permutationIndex": 27,
+      "rank": 38653,
+      "domain": "techstars.com",
+      "requestedUrl": "https://techstars.com/"
+    },
+    {
+      "slot": 43,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 3,
+      "permutationIndex": 28,
+      "rank": 70272,
+      "domain": "gardenia.net",
+      "requestedUrl": "https://gardenia.net/"
+    },
+    {
+      "slot": 44,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 4,
+      "permutationIndex": 36,
+      "rank": 53224,
+      "domain": "omantel.om",
+      "requestedUrl": "https://omantel.om/"
+    },
+    {
+      "slot": 45,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 5,
+      "permutationIndex": 44,
+      "rank": 36176,
+      "domain": "telekom-domains.de",
+      "requestedUrl": "https://telekom-domains.de/"
+    },
+    {
+      "slot": 46,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 6,
+      "permutationIndex": 71,
+      "rank": 79889,
+      "domain": "parallax.fyi",
+      "requestedUrl": "https://parallax.fyi/"
+    },
+    {
+      "slot": 47,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 7,
+      "permutationIndex": 79,
+      "rank": 62841,
+      "domain": "nmdp.org",
+      "requestedUrl": "https://nmdp.org/"
+    },
+    {
+      "slot": 48,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 8,
+      "permutationIndex": 85,
+      "rank": 72555,
+      "domain": "financeads.net",
+      "requestedUrl": "https://financeads.net/"
+    },
+    {
+      "slot": 49,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 9,
+      "permutationIndex": 88,
+      "rank": 77412,
+      "domain": "lekarzebezkolejki.pl",
+      "requestedUrl": "https://lekarzebezkolejki.pl/"
+    },
+    {
+      "slot": 50,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 10,
+      "permutationIndex": 95,
+      "rank": 28745,
+      "domain": "netbeans.org",
+      "requestedUrl": "https://netbeans.org/"
+    },
+    {
+      "slot": 51,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 11,
+      "permutationIndex": 105,
+      "rank": 74935,
+      "domain": "herocoders.com",
+      "requestedUrl": "https://herocoders.com/"
+    },
+    {
+      "slot": 52,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 12,
+      "permutationIndex": 109,
+      "rank": 21411,
+      "domain": "immomo.com",
+      "requestedUrl": "https://immomo.com/"
+    },
+    {
+      "slot": 53,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 13,
+      "permutationIndex": 110,
+      "rank": 53030,
+      "domain": "nao.org.uk",
+      "requestedUrl": "https://nao.org.uk/"
+    },
+    {
+      "slot": 54,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 14,
+      "permutationIndex": 120,
+      "rank": 99220,
+      "domain": "msys2.org",
+      "requestedUrl": "https://msys2.org/"
+    },
+    {
+      "slot": 55,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 15,
+      "permutationIndex": 123,
+      "rank": 14077,
+      "domain": "solarweb.com",
+      "requestedUrl": "https://solarweb.com/"
+    },
+    {
+      "slot": 56,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 16,
+      "permutationIndex": 128,
+      "rank": 82172,
+      "domain": "lmscloud.net",
+      "requestedUrl": "https://lmscloud.net/"
+    },
+    {
+      "slot": 57,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 17,
+      "permutationIndex": 142,
+      "rank": 74838,
+      "domain": "disqueenfrance.com",
+      "requestedUrl": "https://disqueenfrance.com/"
+    },
+    {
+      "slot": 58,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 18,
+      "permutationIndex": 143,
+      "rank": 16457,
+      "domain": "sdu.edu.cn",
+      "requestedUrl": "https://sdu.edu.cn/"
+    },
+    {
+      "slot": 59,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 19,
+      "permutationIndex": 150,
+      "rank": 57790,
+      "domain": "alboompro.com",
+      "requestedUrl": "https://alboompro.com/"
+    },
+    {
+      "slot": 60,
+      "stratumId": "rank-10001-100000",
+      "stratumSlot": 20,
+      "permutationIndex": 152,
+      "rank": 31028,
+      "domain": "huachu.com.cn",
+      "requestedUrl": "https://huachu.com.cn/"
+    },
+    {
+      "slot": 61,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 1,
+      "permutationIndex": 4,
+      "rank": 219835,
+      "domain": "snapplay.io",
+      "requestedUrl": "https://snapplay.io/"
+    },
+    {
+      "slot": 62,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 2,
+      "permutationIndex": 8,
+      "rank": 496911,
+      "domain": "avalonisp.co.za",
+      "requestedUrl": "https://avalonisp.co.za/"
+    },
+    {
+      "slot": 63,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 3,
+      "permutationIndex": 9,
+      "rank": 266180,
+      "domain": "rdoequipment.com",
+      "requestedUrl": "https://rdoequipment.com/"
+    },
+    {
+      "slot": 64,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 4,
+      "permutationIndex": 11,
+      "rank": 204718,
+      "domain": "pnyo.jp",
+      "requestedUrl": "https://pnyo.jp/"
+    },
+    {
+      "slot": 65,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 5,
+      "permutationIndex": 21,
+      "rank": 297408,
+      "domain": "pinskdrev.ru",
+      "requestedUrl": "https://pinskdrev.ru/"
+    },
+    {
+      "slot": 66,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 6,
+      "permutationIndex": 28,
+      "rank": 282291,
+      "domain": "new-exaqz.com",
+      "requestedUrl": "https://new-exaqz.com/"
+    },
+    {
+      "slot": 67,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 7,
+      "permutationIndex": 30,
+      "rank": 220829,
+      "domain": "yb8md.com",
+      "requestedUrl": "https://yb8md.com/"
+    },
+    {
+      "slot": 68,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 8,
+      "permutationIndex": 54,
+      "rank": 283285,
+      "domain": "carnovo.com",
+      "requestedUrl": "https://carnovo.com/"
+    },
+    {
+      "slot": 69,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 9,
+      "permutationIndex": 68,
+      "rank": 253051,
+      "domain": "thisiswaldo.com",
+      "requestedUrl": "https://thisiswaldo.com/"
+    },
+    {
+      "slot": 70,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 10,
+      "permutationIndex": 74,
+      "rank": 468665,
+      "domain": "2prishi.ru",
+      "requestedUrl": "https://2prishi.ru/"
+    },
+    {
+      "slot": 71,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 11,
+      "permutationIndex": 78,
+      "rank": 345741,
+      "domain": "atlasintel.org",
+      "requestedUrl": "https://atlasintel.org/"
+    },
+    {
+      "slot": 72,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 12,
+      "permutationIndex": 103,
+      "rank": 177466,
+      "domain": "ngcloud.ru",
+      "requestedUrl": "https://ngcloud.ru/"
+    },
+    {
+      "slot": 73,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 13,
+      "permutationIndex": 107,
+      "rank": 454542,
+      "domain": "governikus.de",
+      "requestedUrl": "https://governikus.de/"
+    },
+    {
+      "slot": 74,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 14,
+      "permutationIndex": 118,
+      "rank": 316501,
+      "domain": "kow.is",
+      "requestedUrl": "https://kow.is/"
+    },
+    {
+      "slot": 75,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 15,
+      "permutationIndex": 119,
+      "rank": 485770,
+      "domain": "2fa.show",
+      "requestedUrl": "https://2fa.show/"
+    },
+    {
+      "slot": 76,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 16,
+      "permutationIndex": 123,
+      "rank": 362846,
+      "domain": "techbriefly.com",
+      "requestedUrl": "https://techbriefly.com/"
+    },
+    {
+      "slot": 77,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 17,
+      "permutationIndex": 130,
+      "rank": 347729,
+      "domain": "futurice.com",
+      "requestedUrl": "https://futurice.com/"
+    },
+    {
+      "slot": 78,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 18,
+      "permutationIndex": 150,
+      "rank": 133109,
+      "domain": "uniupo.it",
+      "requestedUrl": "https://uniupo.it/"
+    },
+    {
+      "slot": 79,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 19,
+      "permutationIndex": 151,
+      "rank": 302378,
+      "domain": "voprosy-pitaniya.ru",
+      "requestedUrl": "https://voprosy-pitaniya.ru/"
+    },
+    {
+      "slot": 80,
+      "stratumId": "rank-100001-500000",
+      "stratumSlot": 20,
+      "permutationIndex": 156,
+      "rank": 348723,
+      "domain": "meine-gesundheit.de",
+      "requestedUrl": "https://meine-gesundheit.de/"
+    },
+    {
+      "slot": 81,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 1,
+      "permutationIndex": 5,
+      "rank": 701367,
+      "domain": "indianawebhosting.com",
+      "requestedUrl": "https://indianawebhosting.com/"
+    },
+    {
+      "slot": 82,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 2,
+      "permutationIndex": 14,
+      "rank": 857098,
+      "domain": "juhn.com",
+      "requestedUrl": "https://juhn.com/"
+    },
+    {
+      "slot": 83,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 3,
+      "permutationIndex": 18,
+      "rank": 648534,
+      "domain": "lingvisto.org",
+      "requestedUrl": "https://lingvisto.org/"
+    },
+    {
+      "slot": 84,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 4,
+      "permutationIndex": 22,
+      "rank": 939970,
+      "domain": "orsacu.org",
+      "requestedUrl": "https://orsacu.org/"
+    },
+    {
+      "slot": 85,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 5,
+      "permutationIndex": 24,
+      "rank": 585688,
+      "domain": "ticketswap.be",
+      "requestedUrl": "https://ticketswap.be/"
+    },
+    {
+      "slot": 86,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 6,
+      "permutationIndex": 29,
+      "rank": 949983,
+      "domain": "novasolutions.com.ec",
+      "requestedUrl": "https://novasolutions.com.ec/"
+    },
+    {
+      "slot": 87,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 7,
+      "permutationIndex": 39,
+      "rank": 678573,
+      "domain": "mamac.jp",
+      "requestedUrl": "https://mamac.jp/"
+    },
+    {
+      "slot": 88,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 8,
+      "permutationIndex": 48,
+      "rank": 834304,
+      "domain": "snwktavling.se",
+      "requestedUrl": "https://snwktavling.se/"
+    },
+    {
+      "slot": 89,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 9,
+      "permutationIndex": 53,
+      "rank": 698599,
+      "domain": "ucuzkitapal.com",
+      "requestedUrl": "https://ucuzkitapal.com/"
+    },
+    {
+      "slot": 90,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 10,
+      "permutationIndex": 55,
+      "rank": 844317,
+      "domain": "unistore.com.ar",
+      "requestedUrl": "https://unistore.com.ar/"
+    },
+    {
+      "slot": 91,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 11,
+      "permutationIndex": 63,
+      "rank": 927189,
+      "domain": "mairesse.biz",
+      "requestedUrl": "https://mairesse.biz/"
+    },
+    {
+      "slot": 92,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 12,
+      "permutationIndex": 68,
+      "rank": 791484,
+      "domain": "hepmku.com",
+      "requestedUrl": "https://hepmku.com/"
+    },
+    {
+      "slot": 93,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 13,
+      "permutationIndex": 74,
+      "rank": 728638,
+      "domain": "kcbux.ru",
+      "requestedUrl": "https://kcbux.ru/"
+    },
+    {
+      "slot": 94,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 14,
+      "permutationIndex": 79,
+      "rank": 592933,
+      "domain": "travelmaps.ru",
+      "requestedUrl": "https://travelmaps.ru/"
+    },
+    {
+      "slot": 95,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 15,
+      "permutationIndex": 80,
+      "rank": 665792,
+      "domain": "slonk.ing",
+      "requestedUrl": "https://slonk.ing/"
+    },
+    {
+      "slot": 96,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 16,
+      "permutationIndex": 84,
+      "rank": 957228,
+      "domain": "terrazzo-blocks.ru",
+      "requestedUrl": "https://terrazzo-blocks.ru/"
+    },
+    {
+      "slot": 97,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 17,
+      "permutationIndex": 85,
+      "rank": 530087,
+      "domain": "eparhia-saratov.ru",
+      "requestedUrl": "https://eparhia-saratov.ru/"
+    },
+    {
+      "slot": 98,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 18,
+      "permutationIndex": 105,
+      "rank": 987267,
+      "domain": "earthlagoon.is",
+      "requestedUrl": "https://earthlagoon.is/"
+    },
+    {
+      "slot": 99,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 19,
+      "permutationIndex": 118,
+      "rank": 934434,
+      "domain": "spin83qr.com",
+      "requestedUrl": "https://spin83qr.com/"
+    },
+    {
+      "slot": 100,
+      "stratumId": "rank-500001-1000000",
+      "stratumSlot": 20,
+      "permutationIndex": 125,
+      "rank": 944447,
+      "domain": "it-complete.ru",
+      "requestedUrl": "https://it-complete.ru/"
+    }
+  ]
+}

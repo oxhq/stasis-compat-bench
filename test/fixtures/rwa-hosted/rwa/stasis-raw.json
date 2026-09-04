@@ -1,0 +1,2383 @@
+{
+  "schema": "stasis-compat-rwa-stasis-raw-v1",
+  "protocol": "stasis-compat-bench-v1",
+  "track": "rwa-auth",
+  "runner": "stasis-controlled-web-session-v2-exploratory-local-dist",
+  "startedAt": "2026-08-26T14:50:09.099Z",
+  "completedAt": "2026-08-26T14:50:11.857Z",
+  "source": {
+    "repository": "cypress-io/cypress-realworld-app",
+    "revision": "28ca4d03e4c68d366ccdbb25d43e1f37b3c67a4d",
+    "specPath": "cypress/tests/ui/auth.spec.ts",
+    "specBlobOid": "9554bac0826cb996c5bb4cab3c46d3ad81e2603c",
+    "specBlobSha256": "1bdea574f3b9dd6c608522ddf698a72d2295963bb8e400ae27966d1fa011366d",
+    "windowsCrlfWorktreeSha256": "b5e2150c626b7c8e9849f70b25f143759a7fafaba1421e804bb94471fe748966",
+    "worktreeLineEndings": "CRLF",
+    "describeTitle": "User Sign-up and Login",
+    "denominator": 8,
+    "order": "exact source order"
+  },
+  "versions": {
+    "sdk": "@oxhq/stasis@0.3.0-local-dist-uncommitted",
+    "node": "v22.20.0",
+    "expectedNode": "v22.20.0",
+    "nodeIdentityMatches": true,
+    "executablePath": "retained-inputs/stasis-0.3.0-windows-x86_64-ci/stasis.exe",
+    "executableSha256": "bd6715f5cc30ec66ea2d3b9c0889698ecea54373a3c3ab2c1893c934573916d1",
+    "expectedExecutableSha256": "bd6715f5cc30ec66ea2d3b9c0889698ecea54373a3c3ab2c1893c934573916d1",
+    "candidateIdentityMatches": true
+  },
+  "endpoints": {
+    "appOrigin": "http://localhost:3000",
+    "apiOrigin": "http://localhost:3001",
+    "seed": "http://localhost:3001/testData/seed"
+  },
+  "rules": {
+    "retries": 0,
+    "fallback": false,
+    "sleeps": false,
+    "domPolling": false,
+    "businessApiSubstitution": false,
+    "processPerCase": 1,
+    "seedBeforeEveryCase": true
+  },
+  "denominator": 8,
+  "cases": [
+    {
+      "ordinal": 1,
+      "id": "auth-01-unauthenticated-redirect",
+      "title": "should redirect unauthenticated user to signin page",
+      "source": {
+        "title": "should redirect unauthenticated user to signin page",
+        "declarationLine": 20,
+        "endLine": 24,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:20-24"
+      },
+      "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+      "success": true,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "visual-snapshots-excluded"
+      ],
+      "preRegisteredBoundaries": [],
+      "terminal": null,
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": []
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 4,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/personal"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/personal",
+            "url": "http://localhost:3000/signin",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "initial redirect and sign-in render"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "requests",
+            "purpose": "record navigation diagnostics"
+          },
+          "result": {
+            "records": [
+              {
+                "requestKeySha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+                "method": "GET",
+                "url": {
+                  "path": "/personal"
+                }
+              },
+              {
+                "requestKeySha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+                "method": "GET",
+                "url": {
+                  "path": "/favicon.ico"
+                }
+              },
+              {
+                "requestKeySha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+                "method": "GET",
+                "url": {
+                  "path": "/logo192.png"
+                }
+              },
+              {
+                "requestKeySha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+                "method": "GET",
+                "url": {
+                  "path": "/assets/index-C_WHY46m.js"
+                }
+              },
+              {
+                "requestKeySha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+                "method": "GET",
+                "url": {
+                  "path": "/assets/index-BNYCD862.css"
+                }
+              }
+            ],
+            "complete": true,
+            "hasMore": false
+          }
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "evidence",
+            "purpose": "record navigation diagnostics"
+          },
+          "result": {
+            "records": [
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+                "status": 200
+              }
+            ],
+            "complete": true,
+            "hasMore": false
+          }
+        },
+        {
+          "sequence": 8,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "graceful-session-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "final-path",
+          "kind": "top-level-path",
+          "status": "PASS",
+          "expected": "/signin",
+          "observed": "/signin",
+          "source": "Session.url after controlled open plus a quiescent follow-up settle"
+        }
+      ],
+      "wallTimeMs": 312.5482
+    },
+    {
+      "ordinal": 2,
+      "id": "auth-02-login-home-redirect",
+      "title": "should redirect to the home page after login",
+      "source": {
+        "title": "should redirect to the home page after login",
+        "declarationLine": 26,
+        "endLine": 31,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:26-31"
+      },
+      "classification": "PROFILE_UNSUPPORTED",
+      "typedSurface": "storage",
+      "success": false,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "input-replacement-not-key-sequence",
+        "semantic-click-not-actionability",
+        "current-path-sdk-gap",
+        "persistent-cookie-profile-gap"
+      ],
+      "preRegisteredBoundaries": [
+        {
+          "id": "current-path-sdk-gap",
+          "classification": "SDK_GAP",
+          "typedSurface": "current_top_level_url",
+          "code": "current_top_level_path_unobservable"
+        },
+        {
+          "id": "persistent-cookie-profile-gap",
+          "classification": "PROFILE_UNSUPPORTED",
+          "typedSurface": "storage",
+          "code": "unsupported_persistent_cookie"
+        }
+      ],
+      "terminal": {
+        "phase": "settle",
+        "actionIndex": 6,
+        "classification": "PROFILE_UNSUPPORTED",
+        "typedSurface": "storage",
+        "error": {
+          "name": "StasisProtocolError",
+          "code": "unsupported_persistent_cookie",
+          "fatal": false,
+          "stateEffect": "partial",
+          "messageOmitted": true,
+          "stderrTailOmitted": true,
+          "stderrTailBytes": 2640,
+          "opaqueIdentifiersOmitted": true
+        }
+      },
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": [
+            {
+              "id": "current-path-sdk-gap",
+              "classification": "SDK_GAP",
+              "typedSurface": "current_top_level_url",
+              "code": "current_top_level_path_unobservable"
+            },
+            {
+              "id": "persistent-cookie-profile-gap",
+              "classification": "PROFILE_UNSUPPORTED",
+              "typedSurface": "storage",
+              "code": "unsupported_persistent_cookie"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "seeded-user-fixture",
+          "status": "passed",
+          "fixtureIndex": 0,
+          "idPresent": true,
+          "usernamePresent": true
+        },
+        {
+          "sequence": 4,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/signin"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/signin",
+            "url": "http://localhost:3000/signin",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "sign-in form ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueRef": "seededUser.username"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 8,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueLength": 6
+          },
+          "result": {}
+        },
+        {
+          "sequence": 9,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 4,
+          "action": {
+            "op": "check",
+            "selector": "[data-test=\"signin-remember-me\"] input"
+          },
+          "result": {
+            "changed": true,
+            "checked": true
+          }
+        },
+        {
+          "sequence": 10,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 5,
+          "action": {
+            "op": "activate",
+            "selector": "[data-test=\"signin-submit\"]"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 11,
+          "phase": "action",
+          "status": "failed",
+          "actionIndex": 6,
+          "action": {
+            "op": "settle",
+            "stage": "login response and home render"
+          },
+          "error": {
+            "name": "StasisProtocolError",
+            "code": "unsupported_persistent_cookie",
+            "fatal": false,
+            "stateEffect": "partial",
+            "messageOmitted": true,
+            "stderrTailOmitted": true,
+            "stderrTailBytes": 2640,
+            "opaqueIdentifiersOmitted": true
+          }
+        },
+        {
+          "sequence": 12,
+          "phase": "terminal-audit",
+          "status": "failed",
+          "op": "requests",
+          "error": {
+            "name": "StasisProtocolError",
+            "code": "unsupported_persistent_cookie",
+            "fatal": false,
+            "stateEffect": "partial",
+            "messageOmitted": true,
+            "stderrTailOmitted": true,
+            "stderrTailBytes": 2640,
+            "opaqueIdentifiersOmitted": true
+          }
+        },
+        {
+          "sequence": 13,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "fail-stop-runtime-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "final-path",
+          "kind": "top-level-path",
+          "status": "NOT_REACHED",
+          "expected": "/",
+          "reason": "terminal PROFILE_UNSUPPORTED at settle",
+          "preRegisteredClassification": {
+            "classification": "SDK_GAP",
+            "typedSurface": "current_top_level_url",
+            "code": "current_top_level_path_unobservable"
+          }
+        }
+      ],
+      "wallTimeMs": 353.3552
+    },
+    {
+      "ordinal": 3,
+      "id": "auth-03-remember-user-thirty-days",
+      "title": "should remember a user for 30 days after login",
+      "source": {
+        "title": "should remember a user for 30 days after login",
+        "declarationLine": 33,
+        "endLine": 48,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:33-48"
+      },
+      "classification": "PROFILE_UNSUPPORTED",
+      "typedSurface": "storage",
+      "success": false,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "input-replacement-not-key-sequence",
+        "semantic-click-not-actionability",
+        "current-path-sdk-gap",
+        "persistent-cookie-profile-gap",
+        "desktop-viewport-not-configurable",
+        "visual-snapshots-excluded"
+      ],
+      "preRegisteredBoundaries": [
+        {
+          "id": "current-path-sdk-gap",
+          "classification": "SDK_GAP",
+          "typedSurface": "current_top_level_url",
+          "code": "current_top_level_path_unobservable"
+        },
+        {
+          "id": "persistent-cookie-profile-gap",
+          "classification": "PROFILE_UNSUPPORTED",
+          "typedSurface": "storage",
+          "code": "unsupported_persistent_cookie"
+        }
+      ],
+      "terminal": {
+        "phase": "settle",
+        "actionIndex": 6,
+        "classification": "PROFILE_UNSUPPORTED",
+        "typedSurface": "storage",
+        "error": {
+          "name": "StasisProtocolError",
+          "code": "unsupported_persistent_cookie",
+          "fatal": false,
+          "stateEffect": "partial",
+          "messageOmitted": true,
+          "stderrTailOmitted": true,
+          "stderrTailBytes": 2452,
+          "opaqueIdentifiersOmitted": true
+        }
+      },
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": [
+            {
+              "id": "current-path-sdk-gap",
+              "classification": "SDK_GAP",
+              "typedSurface": "current_top_level_url",
+              "code": "current_top_level_path_unobservable"
+            },
+            {
+              "id": "persistent-cookie-profile-gap",
+              "classification": "PROFILE_UNSUPPORTED",
+              "typedSurface": "storage",
+              "code": "unsupported_persistent_cookie"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "seeded-user-fixture",
+          "status": "passed",
+          "fixtureIndex": 0,
+          "idPresent": true,
+          "usernamePresent": true
+        },
+        {
+          "sequence": 4,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/signin"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/signin",
+            "url": "http://localhost:3000/signin",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "sign-in form ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueRef": "seededUser.username"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 8,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueLength": 6
+          },
+          "result": {}
+        },
+        {
+          "sequence": 9,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 4,
+          "action": {
+            "op": "check",
+            "selector": "[data-test=\"signin-remember-me\"] input"
+          },
+          "result": {
+            "changed": true,
+            "checked": true
+          }
+        },
+        {
+          "sequence": 10,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 5,
+          "action": {
+            "op": "activate",
+            "selector": "[data-test=\"signin-submit\"]"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 11,
+          "phase": "action",
+          "status": "failed",
+          "actionIndex": 6,
+          "action": {
+            "op": "settle",
+            "stage": "remember-me login response and authenticated render"
+          },
+          "error": {
+            "name": "StasisProtocolError",
+            "code": "unsupported_persistent_cookie",
+            "fatal": false,
+            "stateEffect": "partial",
+            "messageOmitted": true,
+            "stderrTailOmitted": true,
+            "stderrTailBytes": 2452,
+            "opaqueIdentifiersOmitted": true
+          }
+        },
+        {
+          "sequence": 12,
+          "phase": "terminal-audit",
+          "status": "failed",
+          "op": "requests",
+          "error": {
+            "name": "StasisProtocolError",
+            "code": "unsupported_persistent_cookie",
+            "fatal": false,
+            "stateEffect": "partial",
+            "messageOmitted": true,
+            "stderrTailOmitted": true,
+            "stderrTailBytes": 2640,
+            "opaqueIdentifiersOmitted": true
+          }
+        },
+        {
+          "sequence": 13,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "fail-stop-runtime-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "remember-cookie-expiry",
+          "kind": "cookie-property",
+          "status": "NOT_REACHED",
+          "expected": {
+            "name": "connect.sid",
+            "upstreamProperty": "expiry",
+            "stasisField": "expiresUnixTimeNs",
+            "predicate": "non-null"
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle",
+          "preRegisteredClassification": {
+            "classification": "PROFILE_UNSUPPORTED",
+            "typedSurface": "storage",
+            "code": "unsupported_persistent_cookie"
+          }
+        },
+        {
+          "id": "final-path",
+          "kind": "top-level-path",
+          "status": "NOT_REACHED",
+          "expected": "/signin",
+          "reason": "terminal PROFILE_UNSUPPORTED at settle",
+          "preRegisteredClassification": {
+            "classification": "SDK_GAP",
+            "typedSurface": "current_top_level_url",
+            "code": "current_top_level_path_unobservable"
+          }
+        }
+      ],
+      "wallTimeMs": 336.8395
+    },
+    {
+      "ordinal": 4,
+      "id": "auth-04-signup-login-onboard-logout",
+      "title": "should allow a visitor to sign-up, login, and logout",
+      "source": {
+        "title": "should allow a visitor to sign-up, login, and logout",
+        "declarationLine": 50,
+        "endLine": 109,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:50-109"
+      },
+      "classification": "PROFILE_UNSUPPORTED",
+      "typedSurface": "controlled_profile",
+      "success": false,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "input-replacement-not-key-sequence",
+        "semantic-click-not-actionability",
+        "visibility-reduced-to-semantic-dom",
+        "visual-snapshots-excluded",
+        "substring-selector-specialized-to-exact",
+        "graphql-operation-name-redacted",
+        "current-path-sdk-gap",
+        "persistent-cookie-profile-gap",
+        "desktop-viewport-not-configurable"
+      ],
+      "preRegisteredBoundaries": [
+        {
+          "id": "visibility-reduced-to-semantic-dom",
+          "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+          "typedSurface": "visibility",
+          "code": "semantic_dom_oracle_only"
+        },
+        {
+          "id": "current-path-sdk-gap",
+          "classification": "SDK_GAP",
+          "typedSurface": "current_top_level_url",
+          "code": "current_top_level_path_unobservable"
+        },
+        {
+          "id": "persistent-cookie-profile-gap",
+          "classification": "PROFILE_UNSUPPORTED",
+          "typedSurface": "storage",
+          "code": "unsupported_persistent_cookie"
+        }
+      ],
+      "terminal": {
+        "phase": "settle",
+        "actionIndex": 11,
+        "classification": "PROFILE_UNSUPPORTED",
+        "typedSurface": "controlled_profile",
+        "error": {
+          "name": "RwaSettleTerminalError",
+          "code": "unsupported_rendering",
+          "fatal": false,
+          "stateEffect": "none",
+          "outcome": "unsupported_work",
+          "messageOmitted": true
+        }
+      },
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": [
+            {
+              "id": "visibility-reduced-to-semantic-dom",
+              "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+              "typedSurface": "visibility",
+              "code": "semantic_dom_oracle_only"
+            },
+            {
+              "id": "current-path-sdk-gap",
+              "classification": "SDK_GAP",
+              "typedSurface": "current_top_level_url",
+              "code": "current_top_level_path_unobservable"
+            },
+            {
+              "id": "persistent-cookie-profile-gap",
+              "classification": "PROFILE_UNSUPPORTED",
+              "typedSurface": "storage",
+              "code": "unsupported_persistent_cookie"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 4,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/",
+            "url": "http://localhost:3000/signin",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "unauthenticated app ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "activate",
+            "selector": "[data-test=\"signup\"]"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "settle",
+            "stage": "sign-up form ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 8,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 4,
+          "action": {
+            "op": "text",
+            "selector": "[data-test=\"signup-title\"]"
+          },
+          "result": {
+            "value": "Sign Up"
+          }
+        },
+        {
+          "sequence": 9,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 5,
+          "action": {
+            "op": "fill",
+            "selector": "#firstName",
+            "valueRef": "user.firstName"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 10,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 6,
+          "action": {
+            "op": "fill",
+            "selector": "#lastName",
+            "valueRef": "user.lastName"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 11,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 7,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueRef": "user.username"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 12,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 8,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueRef": "user.password"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 13,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 9,
+          "action": {
+            "op": "fill",
+            "selector": "#confirmPassword",
+            "valueRef": "user.password"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 14,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 10,
+          "action": {
+            "op": "activate",
+            "selector": "[data-test=\"signup-submit\"]"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 15,
+          "phase": "action",
+          "status": "blocked",
+          "actionIndex": 11,
+          "action": {
+            "op": "settle",
+            "stage": "POST /users and sign-in form ready"
+          },
+          "result": {
+            "outcome": "unsupported_work",
+            "unsupportedWorkCount": 1,
+            "failureCodeSha256": "0cb8c49581a2e177bbb4848b084ba93ea08f5061a247d54ef46ce28391c25ee9"
+          },
+          "error": {
+            "name": "RwaSettleTerminalError",
+            "code": "unsupported_rendering",
+            "fatal": false,
+            "stateEffect": "none",
+            "outcome": "unsupported_work",
+            "messageOmitted": true
+          }
+        },
+        {
+          "sequence": 16,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "fail-stop-runtime-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "signup-title",
+          "kind": "dom-text",
+          "status": "NOT_REACHED",
+          "expected": {
+            "selector": "[data-test=\"signup-title\"]",
+            "contains": "Sign Up"
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "signup-response",
+          "kind": "network-response",
+          "status": "NOT_REACHED",
+          "expected": {
+            "method": "POST",
+            "path": "/users",
+            "statusRange": [
+              200,
+              299
+            ]
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "created-user",
+          "kind": "persisted-backend-state",
+          "status": "NOT_REACHED",
+          "expected": {
+            "entity": "user",
+            "matchesFixture": "user",
+            "passwordExcludedFromReport": true
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "onboarding-step-one",
+          "kind": "semantic-dom",
+          "status": "NOT_REACHED",
+          "expected": {
+            "present": [
+              "[data-test=\"user-onboarding-dialog\"]",
+              "[data-test=\"nav-top-notifications-count\"]"
+            ],
+            "absent": [
+              "[data-test=\"list-skeleton\"]"
+            ]
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "onboarding-bank-title",
+          "kind": "dom-text",
+          "status": "NOT_REACHED",
+          "expected": {
+            "selector": "[data-test=\"user-onboarding-dialog-title\"]",
+            "contains": "Create Bank Account"
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "bank-account-response",
+          "kind": "network-response",
+          "status": "NOT_REACHED",
+          "expected": {
+            "method": "POST",
+            "path": "/graphql",
+            "statusRange": [
+              200,
+              299
+            ],
+            "operationIntent": "CreateBankAccount"
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "created-bank-account",
+          "kind": "persisted-backend-state",
+          "status": "NOT_REACHED",
+          "expected": {
+            "entity": "bankAccount",
+            "owner": "created-user",
+            "matchesFixture": "bankAccount"
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "onboarding-finished",
+          "kind": "dom-text-set",
+          "status": "NOT_REACHED",
+          "expected": [
+            {
+              "selector": "[data-test=\"user-onboarding-dialog-title\"]",
+              "contains": "Finished"
+            },
+            {
+              "selector": "[data-test=\"user-onboarding-dialog-content\"]",
+              "contains": "You're all set!"
+            }
+          ],
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "transaction-list",
+          "kind": "semantic-dom",
+          "status": "NOT_REACHED",
+          "expected": {
+            "present": [
+              "[data-test=\"transaction-list\"]"
+            ],
+            "absent": []
+          },
+          "reason": "terminal PROFILE_UNSUPPORTED at settle"
+        },
+        {
+          "id": "final-path",
+          "kind": "top-level-path",
+          "status": "NOT_REACHED",
+          "expected": "/signin",
+          "reason": "terminal PROFILE_UNSUPPORTED at settle",
+          "preRegisteredClassification": {
+            "classification": "SDK_GAP",
+            "typedSurface": "current_top_level_url",
+            "code": "current_top_level_path_unobservable"
+          }
+        }
+      ],
+      "wallTimeMs": 380.4322
+    },
+    {
+      "ordinal": 5,
+      "id": "auth-05-login-validation-errors",
+      "title": "should display login errors",
+      "source": {
+        "title": "should display login errors",
+        "declarationLine": 111,
+        "endLine": 129,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:111-129"
+      },
+      "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+      "success": true,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "input-replacement-not-key-sequence",
+        "blur-via-focus-transfer",
+        "visibility-reduced-to-semantic-dom",
+        "disabled-property-via-attribute",
+        "visual-snapshots-excluded"
+      ],
+      "preRegisteredBoundaries": [
+        {
+          "id": "visibility-reduced-to-semantic-dom",
+          "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+          "typedSurface": "visibility",
+          "code": "semantic_dom_oracle_only"
+        }
+      ],
+      "terminal": null,
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": [
+            {
+              "id": "visibility-reduced-to-semantic-dom",
+              "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+              "typedSurface": "visibility",
+              "code": "semantic_dom_oracle_only"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 4,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/",
+            "url": "http://localhost:3000/signin",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "sign-in form ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "focus",
+            "selector": "#username"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueLength": 4
+          },
+          "result": {}
+        },
+        {
+          "sequence": 8,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 4,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueLength": 0
+          },
+          "result": {}
+        },
+        {
+          "sequence": 9,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 5,
+          "action": {
+            "op": "focus",
+            "selector": "#password",
+            "purpose": "blur username"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 10,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 6,
+          "action": {
+            "op": "settle",
+            "stage": "username validation rendered"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 11,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 7,
+          "action": {
+            "op": "text",
+            "selector": "#username-helper-text"
+          },
+          "result": {
+            "value": "Username is required"
+          }
+        },
+        {
+          "sequence": 12,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 8,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueLength": 3
+          },
+          "result": {}
+        },
+        {
+          "sequence": 13,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 9,
+          "action": {
+            "op": "focus",
+            "selector": "#username",
+            "purpose": "blur password"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 14,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 10,
+          "action": {
+            "op": "settle",
+            "stage": "password validation rendered"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 15,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 11,
+          "action": {
+            "op": "text",
+            "selector": "#password-helper-text"
+          },
+          "result": {
+            "value": "Password must contain at least 4 characters"
+          }
+        },
+        {
+          "sequence": 16,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 12,
+          "action": {
+            "op": "extract",
+            "selector": "[data-test=\"signin-submit\"]",
+            "field": "attribute:disabled"
+          },
+          "result": {
+            "attributePresent": true
+          }
+        },
+        {
+          "sequence": 17,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "graceful-session-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "username-required",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "#username-helper-text",
+            "contains": "Username is required"
+          },
+          "observed": "Username is required"
+        },
+        {
+          "id": "password-too-short",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "#password-helper-text",
+            "contains": "Password must contain at least 4 characters"
+          },
+          "observed": "Password must contain at least 4 characters"
+        },
+        {
+          "id": "signin-submit-disabled",
+          "kind": "native-disabled",
+          "status": "PASS",
+          "expected": {
+            "selector": "[data-test=\"signin-submit\"]",
+            "value": true
+          },
+          "observed": true
+        }
+      ],
+      "wallTimeMs": 307.6171
+    },
+    {
+      "ordinal": 6,
+      "id": "auth-06-signup-validation-errors",
+      "title": "should display signup errors",
+      "source": {
+        "title": "should display signup errors",
+        "declarationLine": 131,
+        "endLine": 165,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:131-165"
+      },
+      "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+      "success": true,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "input-replacement-not-key-sequence",
+        "blur-via-focus-transfer",
+        "visibility-reduced-to-semantic-dom",
+        "disabled-property-via-attribute",
+        "visual-snapshots-excluded",
+        "unused-intercept-has-no-oracle"
+      ],
+      "preRegisteredBoundaries": [
+        {
+          "id": "visibility-reduced-to-semantic-dom",
+          "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+          "typedSurface": "visibility",
+          "code": "semantic_dom_oracle_only"
+        }
+      ],
+      "terminal": null,
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": [
+            {
+              "id": "visibility-reduced-to-semantic-dom",
+              "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+              "typedSurface": "visibility",
+              "code": "semantic_dom_oracle_only"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 4,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/signup"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/signup",
+            "url": "http://localhost:3000/signup",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "sign-up form ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "focus",
+            "selector": "#firstName"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "fill",
+            "selector": "#firstName",
+            "valueLength": 5
+          },
+          "result": {}
+        },
+        {
+          "sequence": 8,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 4,
+          "action": {
+            "op": "fill",
+            "selector": "#firstName",
+            "valueLength": 0
+          },
+          "result": {}
+        },
+        {
+          "sequence": 9,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 5,
+          "action": {
+            "op": "focus",
+            "selector": "#lastName",
+            "purpose": "blur firstName"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 10,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 6,
+          "action": {
+            "op": "fill",
+            "selector": "#lastName",
+            "valueLength": 4
+          },
+          "result": {}
+        },
+        {
+          "sequence": 11,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 7,
+          "action": {
+            "op": "fill",
+            "selector": "#lastName",
+            "valueLength": 0
+          },
+          "result": {}
+        },
+        {
+          "sequence": 12,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 8,
+          "action": {
+            "op": "focus",
+            "selector": "#username",
+            "purpose": "blur lastName"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 13,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 9,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueLength": 4
+          },
+          "result": {}
+        },
+        {
+          "sequence": 14,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 10,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueLength": 0
+          },
+          "result": {}
+        },
+        {
+          "sequence": 15,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 11,
+          "action": {
+            "op": "focus",
+            "selector": "#password",
+            "purpose": "blur username"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 16,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 12,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueLength": 8
+          },
+          "result": {}
+        },
+        {
+          "sequence": 17,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 13,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueLength": 0
+          },
+          "result": {}
+        },
+        {
+          "sequence": 18,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 14,
+          "action": {
+            "op": "focus",
+            "selector": "#confirmPassword",
+            "purpose": "blur password"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 19,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 15,
+          "action": {
+            "op": "fill",
+            "selector": "#confirmPassword",
+            "valueLength": 18
+          },
+          "result": {}
+        },
+        {
+          "sequence": 20,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 16,
+          "action": {
+            "op": "focus",
+            "selector": "#firstName",
+            "purpose": "blur confirmPassword"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 21,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 17,
+          "action": {
+            "op": "settle",
+            "stage": "all validation messages rendered"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 22,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 18,
+          "action": {
+            "op": "text",
+            "selector": "#firstName-helper-text"
+          },
+          "result": {
+            "value": "First Name is required"
+          }
+        },
+        {
+          "sequence": 23,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 19,
+          "action": {
+            "op": "text",
+            "selector": "#lastName-helper-text"
+          },
+          "result": {
+            "value": "Last Name is required"
+          }
+        },
+        {
+          "sequence": 24,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 20,
+          "action": {
+            "op": "text",
+            "selector": "#username-helper-text"
+          },
+          "result": {
+            "value": "Username is required"
+          }
+        },
+        {
+          "sequence": 25,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 21,
+          "action": {
+            "op": "text",
+            "selector": "#password-helper-text"
+          },
+          "result": {
+            "value": "Enter your password"
+          }
+        },
+        {
+          "sequence": 26,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 22,
+          "action": {
+            "op": "text",
+            "selector": "#confirmPassword-helper-text"
+          },
+          "result": {
+            "value": "Password does not match"
+          }
+        },
+        {
+          "sequence": 27,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 23,
+          "action": {
+            "op": "extract",
+            "selector": "[data-test=\"signup-submit\"]",
+            "field": "attribute:disabled"
+          },
+          "result": {
+            "attributePresent": true
+          }
+        },
+        {
+          "sequence": 28,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "graceful-session-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "first-name-required",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "#firstName-helper-text",
+            "contains": "First Name is required"
+          },
+          "observed": "First Name is required"
+        },
+        {
+          "id": "last-name-required",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "#lastName-helper-text",
+            "contains": "Last Name is required"
+          },
+          "observed": "Last Name is required"
+        },
+        {
+          "id": "username-required",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "#username-helper-text",
+            "contains": "Username is required"
+          },
+          "observed": "Username is required"
+        },
+        {
+          "id": "password-required",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "#password-helper-text",
+            "contains": "Enter your password"
+          },
+          "observed": "Enter your password"
+        },
+        {
+          "id": "confirm-password-mismatch",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "#confirmPassword-helper-text",
+            "contains": "Password does not match"
+          },
+          "observed": "Password does not match"
+        },
+        {
+          "id": "signup-submit-disabled",
+          "kind": "native-disabled",
+          "status": "PASS",
+          "expected": {
+            "selector": "[data-test=\"signup-submit\"]",
+            "value": true
+          },
+          "observed": true
+        }
+      ],
+      "wallTimeMs": 366.3412
+    },
+    {
+      "ordinal": 7,
+      "id": "auth-07-invalid-user",
+      "title": "should error for an invalid user",
+      "source": {
+        "title": "should error for an invalid user",
+        "declarationLine": 167,
+        "endLine": 174,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:167-174"
+      },
+      "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+      "success": true,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "input-replacement-not-key-sequence",
+        "semantic-click-not-actionability",
+        "visibility-reduced-to-semantic-dom",
+        "visual-snapshots-excluded"
+      ],
+      "preRegisteredBoundaries": [
+        {
+          "id": "visibility-reduced-to-semantic-dom",
+          "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+          "typedSurface": "visibility",
+          "code": "semantic_dom_oracle_only"
+        }
+      ],
+      "terminal": null,
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": [
+            {
+              "id": "visibility-reduced-to-semantic-dom",
+              "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+              "typedSurface": "visibility",
+              "code": "semantic_dom_oracle_only"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 4,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/signin"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/signin",
+            "url": "http://localhost:3000/signin",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "sign-in form ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueLength": 15
+          },
+          "result": {}
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueLength": 15
+          },
+          "result": {}
+        },
+        {
+          "sequence": 8,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 4,
+          "action": {
+            "op": "activate",
+            "selector": "[data-test=\"signin-submit\"]"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 9,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 5,
+          "action": {
+            "op": "settle",
+            "stage": "invalid-login response and error render"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 10,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 6,
+          "action": {
+            "op": "text",
+            "selector": "[data-test=\"signin-error\"]"
+          },
+          "result": {
+            "value": "Username or password is invalid"
+          }
+        },
+        {
+          "sequence": 11,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 7,
+          "action": {
+            "op": "requests",
+            "purpose": "record POST /login"
+          },
+          "result": {
+            "records": [
+              {
+                "requestKeySha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+                "method": "GET",
+                "url": {
+                  "path": "/signin"
+                }
+              },
+              {
+                "requestKeySha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+                "method": "GET",
+                "url": {
+                  "path": "/favicon.ico"
+                }
+              },
+              {
+                "requestKeySha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+                "method": "GET",
+                "url": {
+                  "path": "/logo192.png"
+                }
+              },
+              {
+                "requestKeySha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+                "method": "GET",
+                "url": {
+                  "path": "/assets/index-C_WHY46m.js"
+                }
+              },
+              {
+                "requestKeySha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+                "method": "GET",
+                "url": {
+                  "path": "/assets/index-BNYCD862.css"
+                }
+              },
+              {
+                "requestKeySha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+                "method": "POST",
+                "url": {
+                  "path": "/login"
+                }
+              }
+            ],
+            "complete": true,
+            "hasMore": false
+          }
+        },
+        {
+          "sequence": 12,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 8,
+          "action": {
+            "op": "evidence",
+            "purpose": "record invalid-login response status"
+          },
+          "result": {
+            "records": [
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+                "status": 401
+              }
+            ],
+            "complete": true,
+            "hasMore": false
+          }
+        },
+        {
+          "sequence": 13,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "graceful-session-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "invalid-credentials-error",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "[data-test=\"signin-error\"]",
+            "exact": "Username or password is invalid"
+          },
+          "observed": "Username or password is invalid"
+        }
+      ],
+      "wallTimeMs": 333.2674
+    },
+    {
+      "ordinal": 8,
+      "id": "auth-08-invalid-password-existing-user",
+      "title": "should error for an invalid password for existing user",
+      "source": {
+        "title": "should error for an invalid password for existing user",
+        "declarationLine": 176,
+        "endLine": 185,
+        "lineIdentity": "cypress/tests/ui/auth.spec.ts:176-185"
+      },
+      "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+      "success": true,
+      "semanticDifferenceIds": [
+        "settle-instead-of-cypress-retry",
+        "input-replacement-not-key-sequence",
+        "semantic-click-not-actionability",
+        "visibility-reduced-to-semantic-dom",
+        "visual-snapshots-excluded"
+      ],
+      "preRegisteredBoundaries": [
+        {
+          "id": "visibility-reduced-to-semantic-dom",
+          "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+          "typedSurface": "visibility",
+          "code": "semantic_dom_oracle_only"
+        }
+      ],
+      "terminal": null,
+      "checkpoints": [
+        {
+          "sequence": 1,
+          "phase": "pre-registered-capability-boundary",
+          "status": "recorded",
+          "boundaries": [
+            {
+              "id": "visibility-reduced-to-semantic-dom",
+              "classification": "PASS_WITH_SEMANTIC_DIFFERENCE",
+              "typedSurface": "visibility",
+              "code": "semantic_dom_oracle_only"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "phase": "seed",
+          "status": "passed",
+          "method": "POST",
+          "path": "/testData/seed",
+          "httpStatus": 200,
+          "serverOwnedRuntimeMutation": "data/database.json"
+        },
+        {
+          "sequence": 3,
+          "phase": "seeded-user-fixture",
+          "status": "passed",
+          "fixtureIndex": 0,
+          "idPresent": true,
+          "usernamePresent": true
+        },
+        {
+          "sequence": 4,
+          "phase": "runtime-launch",
+          "status": "passed",
+          "freshNativeProcess": true
+        },
+        {
+          "sequence": 5,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 0,
+          "action": {
+            "op": "openSession",
+            "path": "/signin"
+          },
+          "result": {
+            "requestedUrl": "http://localhost:3000/signin",
+            "url": "http://localhost:3000/signin",
+            "boundary": "controlled_ready",
+            "clockMode": "controlled",
+            "profile": "controlled-web-session-v2"
+          }
+        },
+        {
+          "sequence": 6,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 1,
+          "action": {
+            "op": "settle",
+            "stage": "sign-in form ready"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 7,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 2,
+          "action": {
+            "op": "fill",
+            "selector": "#username",
+            "valueRef": "seededUser.username"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 8,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 3,
+          "action": {
+            "op": "fill",
+            "selector": "#password",
+            "valueLength": 7
+          },
+          "result": {}
+        },
+        {
+          "sequence": 9,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 4,
+          "action": {
+            "op": "activate",
+            "selector": "[data-test=\"signin-submit\"]"
+          },
+          "result": {}
+        },
+        {
+          "sequence": 10,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 5,
+          "action": {
+            "op": "settle",
+            "stage": "invalid-login response and error render"
+          },
+          "result": {
+            "outcome": "quiescent",
+            "unsupportedWorkCount": 0
+          }
+        },
+        {
+          "sequence": 11,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 6,
+          "action": {
+            "op": "text",
+            "selector": "[data-test=\"signin-error\"]"
+          },
+          "result": {
+            "value": "Username or password is invalid"
+          }
+        },
+        {
+          "sequence": 12,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 7,
+          "action": {
+            "op": "requests",
+            "purpose": "record POST /login"
+          },
+          "result": {
+            "records": [
+              {
+                "requestKeySha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+                "method": "GET",
+                "url": {
+                  "path": "/signin"
+                }
+              },
+              {
+                "requestKeySha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+                "method": "GET",
+                "url": {
+                  "path": "/favicon.ico"
+                }
+              },
+              {
+                "requestKeySha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+                "method": "GET",
+                "url": {
+                  "path": "/logo192.png"
+                }
+              },
+              {
+                "requestKeySha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+                "method": "GET",
+                "url": {
+                  "path": "/assets/index-C_WHY46m.js"
+                }
+              },
+              {
+                "requestKeySha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+                "method": "GET",
+                "url": {
+                  "path": "/assets/index-BNYCD862.css"
+                }
+              },
+              {
+                "requestKeySha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+                "method": "POST",
+                "url": {
+                  "path": "/login"
+                }
+              }
+            ],
+            "complete": true,
+            "hasMore": false
+          }
+        },
+        {
+          "sequence": 13,
+          "phase": "action",
+          "status": "passed",
+          "actionIndex": 8,
+          "action": {
+            "op": "evidence",
+            "purpose": "record invalid-login response status"
+          },
+          "result": {
+            "records": [
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+                "status": 200
+              },
+              {
+                "kind": "response_headers",
+                "requestKeySha256": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+                "status": 401
+              }
+            ],
+            "complete": true,
+            "hasMore": false
+          }
+        },
+        {
+          "sequence": 14,
+          "phase": "cleanup",
+          "status": "passed",
+          "mode": "graceful-session-close"
+        }
+      ],
+      "oracles": [
+        {
+          "id": "invalid-credentials-error",
+          "kind": "dom-text",
+          "status": "PASS",
+          "expected": {
+            "selector": "[data-test=\"signin-error\"]",
+            "exact": "Username or password is invalid"
+          },
+          "observed": "Username or password is invalid"
+        }
+      ],
+      "wallTimeMs": 366.7315
+    }
+  ],
+  "sharedBlocker": null,
+  "summary": {
+    "complete": true,
+    "classified": 8,
+    "passed": 5,
+    "failedOrUnsupported": 3,
+    "classifications": {
+      "PASS_WITH_SEMANTIC_DIFFERENCE": 5,
+      "PROFILE_UNSUPPORTED": 3
+    }
+  }
+}
