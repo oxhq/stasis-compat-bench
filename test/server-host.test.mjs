@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 import path from "node:path";
 import test from "node:test";
 
 import {
+  acknowledgeAndDisconnectRwaServerHost,
   buildRwaServerArguments,
   buildRwaServerEnvironment,
   normalizeRwaServerChildSignal,
@@ -83,4 +85,42 @@ test("child IPC signals are accepted only for exact role and port payloads", () 
     role: "",
     port: "3000",
   }), null);
+});
+
+test("server host flushes its stopped acknowledgement before disconnecting IPC", async () => {
+  class FakeHostProcess extends EventEmitter {
+    connected = true;
+    events = [];
+    sendCallback = null;
+
+    send(message, callback) {
+      this.events.push({ type: "send", message });
+      this.sendCallback = callback;
+    }
+
+    disconnect() {
+      this.events.push({ type: "disconnect" });
+      this.connected = false;
+      this.emit("disconnect");
+    }
+  }
+
+  const hostProcess = new FakeHostProcess();
+  let completed = false;
+  const closing = acknowledgeAndDisconnectRwaServerHost(hostProcess).then(() => {
+    completed = true;
+  });
+  assert.deepEqual(hostProcess.events, [
+    { type: "send", message: { type: "rwa-host-stopped" } },
+  ]);
+  assert.equal(completed, false);
+
+  hostProcess.sendCallback();
+  await closing;
+  assert.equal(completed, true);
+  assert.deepEqual(hostProcess.events, [
+    { type: "send", message: { type: "rwa-host-stopped" } },
+    { type: "disconnect" },
+  ]);
+  assert.equal(hostProcess.connected, false);
 });

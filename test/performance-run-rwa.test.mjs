@@ -278,16 +278,14 @@ test("server-host lifecycle waits on IPC readiness and stop without polling", as
     constructor() {
       super();
       this.exitCode = null;
+      this.signalCode = null;
       this.killed = false;
+      this.connected = true;
       this.sent = [];
     }
 
     send(message) {
       this.sent.push(message);
-      setImmediate(() => {
-        this.exitCode = 0;
-        this.emit("message", { type: "rwa-host-stopped" });
-      });
     }
   }
   const child = new FakeChild();
@@ -302,9 +300,40 @@ test("server-host lifecycle waits on IPC readiness and stop without polling", as
     type: "rwa-host-ready",
     roles: [{ name: "frontend", port: 3000 }, { name: "backend", port: 3001 }],
   });
-  const stopped = await requestRwaHostStop(child, 1000);
+  let stopResolved = false;
+  const stopping = requestRwaHostStop(child, 1000).then((value) => {
+    stopResolved = true;
+    return value;
+  });
   assert.deepEqual(child.sent, [{ type: "rwa-host-stop" }]);
+  child.emit("message", { type: "rwa-host-stopped" });
+  await Promise.resolve();
+  assert.equal(stopResolved, false, "acknowledgement alone must not complete shutdown");
+  child.connected = false;
+  child.emit("disconnect");
+  await Promise.resolve();
+  assert.equal(stopResolved, false, "IPC disconnect alone must not replace physical exit");
+  child.exitCode = 0;
+  child.emit("exit", 0, null);
+  const stopped = await stopping;
   assert.equal(stopped.stopped, true);
+  assert.equal(stopped.status, 0);
+  assert.equal(stopResolved, true);
+});
+
+test("server-host shutdown rejects an acknowledged nonzero physical exit", async () => {
+  class FakeChild extends EventEmitter {
+    exitCode = null;
+    signalCode = null;
+    connected = true;
+    send() {}
+  }
+  const child = new FakeChild();
+  const stopping = requestRwaHostStop(child, 1000);
+  child.emit("message", { type: "rwa-host-stopped" });
+  child.exitCode = 1;
+  child.emit("exit", 1, null);
+  await assert.rejects(stopping, /exited unexpectedly after shutdown acknowledgement/u);
 });
 
 test("the sealed artifact omits local paths and listener PIDs while binding exact identities", () => {

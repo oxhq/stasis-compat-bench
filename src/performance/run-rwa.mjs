@@ -134,16 +134,19 @@ export async function runSealedRwaPerformance({
         }
       },
       stopRwaServers: async ({ serverContext, startupComplete }) => {
-        if (startupComplete && serverContext !== null) {
-          lifecycleEvidence.postflight = {
-            checkout: await inspectCheckout(upstreamRoot),
-            servers: await probeServers({ upstreamRoot }),
-          };
-          lifecycleEvidence.shutdownSignal = await requestRwaHostStop(serverContext.child);
-          return;
-        }
-        if (serverContext?.child !== undefined) {
-          lifecycleEvidence.shutdownSignal = await requestRwaHostStop(serverContext.child);
+        const child = serverContext?.child;
+        if (child === undefined) return;
+        try {
+          if (startupComplete) {
+            lifecycleEvidence.postflight = {
+              checkout: await inspectCheckout(upstreamRoot),
+              servers: await probeServers({ upstreamRoot }),
+            };
+          }
+          lifecycleEvidence.shutdownSignal = await requestRwaHostStop(child);
+        } catch (error) {
+          await forceRwaServerHostExit(child, 5_000);
+          throw error;
         }
       },
       runCypressLane: async () => cypress.run(buildCypressRunOptions(upstreamRoot)),
@@ -194,15 +197,59 @@ export function waitForRwaHostReady(child, timeoutMs = serverHostReadyTimeoutMs)
 }
 
 export async function requestRwaHostStop(child, timeoutMs = serverHostStopTimeoutMs) {
-  if (child.exitCode !== null || child.killed === true) {
-    return { stopped: true, status: child.exitCode ?? 0 };
+  if (child.exitCode !== null || child.signalCode !== null) {
+    throw new Error("The sealed RWA server host exited before the stop handshake");
   }
-  if (typeof child.send !== "function") {
+  if (typeof child.send !== "function" || child.connected === false) {
     throw new TypeError("The sealed RWA server host does not expose an IPC channel");
   }
-  child.send({ type: "rwa-host-stop" });
-  const message = await waitForRwaHostLifecycle(child, "rwa-host-stopped", timeoutMs);
-  return { stopped: true, status: child.exitCode ?? 0, message };
+  return await new Promise((resolve, reject) => {
+    let message = null;
+    let exit = null;
+    const timer = setTimeout(() => {
+      fail(new Error("Timed out waiting for the RWA server host shutdown handshake and exit"));
+    }, timeoutMs);
+    timer.unref?.();
+    const cleanup = () => {
+      clearTimeout(timer);
+      child.off("message", onMessage);
+      child.off("error", onError);
+      child.off("exit", onExit);
+    };
+    const fail = (error) => {
+      cleanup();
+      reject(error);
+    };
+    const finish = () => {
+      if (message === null || exit === null) return;
+      if (exit.code !== 0 || exit.signal !== null) {
+        fail(new Error(
+          `The sealed RWA server host exited unexpectedly after shutdown acknowledgement: ${exit.signal ?? exit.code}`,
+        ));
+        return;
+      }
+      cleanup();
+      resolve({ stopped: true, status: exit.code, message });
+    };
+    const onMessage = (value) => {
+      if (value?.type !== "rwa-host-stopped") return;
+      message = value;
+      finish();
+    };
+    const onError = (error) => fail(error);
+    const onExit = (code, signal) => {
+      exit = { code, signal: signal ?? null };
+      finish();
+    };
+    child.on("message", onMessage);
+    child.once("error", onError);
+    child.once("exit", onExit);
+    try {
+      child.send({ type: "rwa-host-stop" });
+    } catch (error) {
+      fail(error);
+    }
+  });
 }
 
 export function projectCypressLaneResult(value, { upstreamRoot, host } = {}) {
@@ -618,9 +665,14 @@ async function stopRwaServerHostNow(child, timeoutMs = 5_000) {
     await requestRwaHostStop(child, timeoutMs);
     return;
   } catch {
-    terminateProcessTree(child.pid);
-    await waitForChildExit(child, timeoutMs).catch(() => {});
+    await forceRwaServerHostExit(child, timeoutMs);
   }
+}
+
+async function forceRwaServerHostExit(child, timeoutMs) {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  terminateProcessTree(child.pid);
+  await waitForChildExit(child, timeoutMs).catch(() => {});
 }
 
 function projectAuthorityRawForArtifact(raw) {
@@ -882,7 +934,7 @@ function terminateProcessTree(processId) {
 
 function waitForChildExit(child, timeoutMs) {
   return new Promise((resolve, reject) => {
-    if (child.exitCode !== null || child.killed === true) {
+    if (child.exitCode !== null || child.signalCode !== null) {
       resolve();
       return;
     }

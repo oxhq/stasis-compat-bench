@@ -75,6 +75,33 @@ export function normalizeRwaServerChildSignal(value) {
   });
 }
 
+export async function acknowledgeAndDisconnectRwaServerHost(hostProcess = process) {
+  if (
+    typeof hostProcess?.send !== "function" ||
+    typeof hostProcess?.disconnect !== "function"
+  ) {
+    throw new TypeError("The sealed RWA server host requires a connected IPC channel");
+  }
+  await new Promise((resolve, reject) => {
+    try {
+      hostProcess.send({ type: "rwa-host-stopped" }, (error) => {
+        if (error !== null && error !== undefined) {
+          reject(error);
+          return;
+        }
+        try {
+          if (hostProcess.connected !== false) hostProcess.disconnect();
+          resolve();
+        } catch (disconnectError) {
+          reject(disconnectError);
+        }
+      });
+    } catch (sendError) {
+      reject(sendError);
+    }
+  });
+}
+
 async function main() {
   if (process.platform !== "win32" || process.arch !== "x64" || process.version !== "v22.20.0") {
     throw new Error("The sealed RWA server host requires Node v22.20.0 on Windows x64");
@@ -147,11 +174,14 @@ async function main() {
     process.exitCode = exitCode;
     for (const { child } of children) terminateTree(child.pid);
   };
-  process.once("SIGINT", () => stop(130));
-  process.once("SIGTERM", () => stop(143));
-  process.on("message", (message) => {
+  const onSigint = () => stop(130);
+  const onSigterm = () => stop(143);
+  const onHostMessage = (message) => {
     if (message?.type === "rwa-host-stop") stop(0);
-  });
+  };
+  process.once("SIGINT", onSigint);
+  process.once("SIGTERM", onSigterm);
+  process.on("message", onHostMessage);
   const firstExit = Promise.race(exits);
   await Promise.race([
     ready,
@@ -166,7 +196,10 @@ async function main() {
     throw new Error(`sealed RWA ${first.role} server exited unexpectedly`);
   }
   await Promise.allSettled(exits);
-  sendHostMessage("rwa-host-stopped");
+  process.off("message", onHostMessage);
+  process.off("SIGINT", onSigint);
+  process.off("SIGTERM", onSigterm);
+  await acknowledgeAndDisconnectRwaServerHost(process);
 }
 
 function terminateTree(processId) {
