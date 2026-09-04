@@ -1,0 +1,376 @@
+TAP version 13
+# Subtest: an extra candidate scheduled URL invalidates every success and preserves Jaccard evidence
+ok 1 - an extra candidate scheduled URL invalidates every success and preserves Jaccard evidence
+  ---
+  duration_ms: 2.5546
+  type: 'test'
+  ...
+# Subtest: missing, reordered, or extra candidate denominator evidence cannot retain partial passes
+ok 2 - missing, reordered, or extra candidate denominator evidence cannot retain partial passes
+  ---
+  duration_ms: 1.0447
+  type: 'test'
+  ...
+# Subtest: malformed candidate success evidence is an engine failure for the whole denominator
+ok 3 - malformed candidate success evidence is an engine failure for the whole denominator
+  ---
+  duration_ms: 1.3294
+  type: 'test'
+  ...
+# Subtest: baseline success requires exact order, pages, statuses, and empty issue collections
+ok 4 - baseline success requires exact order, pages, statuses, and empty issue collections
+  ---
+  duration_ms: 0.9803
+  type: 'test'
+  ...
+# Subtest: negative baseline success requires its exact one-page result and full control inventory
+ok 5 - negative baseline success requires its exact one-page result and full control inventory
+  ---
+  duration_ms: 2.9023
+  type: 'test'
+  ...
+# Subtest: a structurally valid non-frozen negative candidate cannot pass
+ok 6 - a structurally valid non-frozen negative candidate cannot pass
+  ---
+  duration_ms: 0.426
+  type: 'test'
+  ...
+# Subtest: raw runner identity drift cannot retain a pass
+ok 7 - raw runner identity drift cannot retain a pass
+  ---
+  duration_ms: 0.3459
+  type: 'test'
+  ...
+# Subtest: candidate pages require typed settlement outcomes and the frozen BFS depths
+ok 8 - candidate pages require typed settlement outcomes and the frozen BFS depths
+  ---
+  duration_ms: 0.6281
+  type: 'test'
+  ...
+# Subtest: candidate settlement status and outcome combinations are not self-declared
+ok 9 - candidate settlement status and outcome combinations are not self-declared
+  ---
+  duration_ms: 0.5018
+  type: 'test'
+  ...
+# Subtest: exact paired outcomes classify every primary page as equivalent
+ok 10 - exact paired outcomes classify every primary page as equivalent
+  ---
+  duration_ms: 2.5711
+  type: 'test'
+  ...
+# Subtest: a candidate-wide terminal is visible for the full frozen denominator
+ok 11 - a candidate-wide terminal is visible for the full frozen denominator
+  ---
+  duration_ms: 0.3794
+  type: 'test'
+  ...
+# Subtest: an invalid baseline can never become candidate success
+ok 12 - an invalid baseline can never become candidate success
+  ---
+  duration_ms: 0.3091
+  type: 'test'
+  ...
+# Subtest: a failed negative-control baseline invalidates the crawl track
+ok 13 - a failed negative-control baseline invalidates the crawl track
+  ---
+  duration_ms: 0.3569
+  type: 'test'
+  ...
+# Subtest: the primary denominator is the exact frozen twenty-page BFS contract
+ok 14 - the primary denominator is the exact frozen twenty-page BFS contract
+  ---
+  duration_ms: 0.9642
+  type: 'test'
+  ...
+# Subtest: the root admits ten ordered seeds and rejects duplicates and foreign schemes
+ok 15 - the root admits ten ordered seeds and rejects duplicates and foreign schemes
+  ---
+  duration_ms: 0.34
+  type: 'test'
+  ...
+# Subtest: one immutable fixture manifest mechanically feeds both runners
+ok 16 - one immutable fixture manifest mechanically feeds both runners
+  ---
+  duration_ms: 0.2334
+  type: 'test'
+  ...
+# Subtest: the deterministic primary uses script navigation and contains no HTTP redirect response
+ok 17 - the deterministic primary uses script navigation and contains no HTTP redirect response
+  ---
+  duration_ms: 0.1046
+  type: 'test'
+  ...
+# Subtest: the positive corpus preregisters the current controlled-runtime surfaces
+ok 18 - the positive corpus preregisters the current controlled-runtime surfaces
+  ---
+  duration_ms: 0.2204
+  type: 'test'
+  ...
+# Subtest: link normalization matches the Stasis HTTP policy
+ok 19 - link normalization matches the Stasis HTTP policy
+  ---
+  duration_ms: 0.1536
+  type: 'test'
+  ...
+# Subtest: worker and iframe controls remain isolated from the primary denominator
+ok 20 - worker and iframe controls remain isolated from the primary denominator
+  ---
+  duration_ms: 0.1376
+  type: 'test'
+  ...
+# Subtest: the consolidated report derives the observed crawl and RWA verdicts
+ok 21 - the consolidated report derives the observed crawl and RWA verdicts
+  ---
+  duration_ms: 1.0842
+  type: 'test'
+  ...
+# Subtest: the consolidated verdict, blocker, counts, and controls change with alternate inputs
+ok 22 - the consolidated verdict, blocker, counts, and controls change with alternate inputs
+  ---
+  duration_ms: 0.2454
+  type: 'test'
+  ...
+# Subtest: file and directory hashes are byte-sensitive and path-order deterministic
+ok 23 - file and directory hashes are byte-sensitive and path-order deterministic
+  ---
+  duration_ms: 23.8597
+  type: 'test'
+  ...
+# Subtest: sealed artifact roots and inventories are exact, narrow, and order-independent
+ok 24 - sealed artifact roots and inventories are exact, narrow, and order-independent
+  ---
+  duration_ms: 0.9304
+  type: 'test'
+  ...
+# Subtest: the frozen identity validator rejects a coherently rewritten run manifest
+ok 25 - the frozen identity validator rejects a coherently rewritten run manifest
+  ---
+  duration_ms: 4.1288
+  type: 'test'
+  ...
+# Subtest: frozen identity constants are recursively immutable
+ok 26 - frozen identity constants are recursively immutable
+  ---
+  duration_ms: 0.1083
+  type: 'test'
+  ...
+# Subtest: Cypress invocation pins one unchanged spec to bundled Electron and zero retries
+ok 27 - Cypress invocation pins one unchanged spec to bundled Electron and zero retries
+  ---
+  duration_ms: 1.1835
+  type: 'test'
+  ...
+# Subtest: structured Cypress results preserve the frozen eight-case denominator and order
+ok 28 - structured Cypress results preserve the frozen eight-case denominator and order
+  ---
+  duration_ms: 0.4838
+  type: 'test'
+  ...
+# Subtest: missing, reordered, retried, or failed cases invalidate the baseline
+ok 29 - missing, reordered, retried, or failed cases invalidate the baseline
+  ---
+  duration_ms: 0.3028
+  type: 'test'
+  ...
+# Subtest: runtime, endpoint, retry, and isolation drift invalidate the Cypress baseline
+ok 30 - runtime, endpoint, retry, and isolation drift invalidate the Cypress baseline
+  ---
+  duration_ms: 0.4015
+  type: 'test'
+  ...
+# Subtest: Cypress startup failure objects cannot masquerade as raw test results
+ok 31 - Cypress startup failure objects cannot masquerade as raw test results
+  ---
+  duration_ms: 0.1458
+  type: 'test'
+  ...
+# Subtest: artifact projection omits sentinel secrets from Cypress env and expose
+ok 32 - artifact projection omits sentinel secrets from Cypress env and expose
+  ---
+  duration_ms: 0.5739
+  type: 'test'
+  ...
+# Subtest: artifact projection canonicalizes every retained Cypress slot
+ok 33 - artifact projection canonicalizes every retained Cypress slot
+  ---
+  duration_ms: 0.2196
+  type: 'test'
+  ...
+# Subtest: validation cases retain only the frozen Cypress evidence schema
+ok 34 - validation cases retain only the frozen Cypress evidence schema
+  ---
+  duration_ms: 0.0975
+  type: 'test'
+  ...
+# Subtest: the runtime database exception permits newline encoding and trailing-newline changes only
+ok 35 - the runtime database exception permits newline encoding and trailing-newline changes only
+  ---
+  duration_ms: 0.2896
+  type: 'test'
+  ...
+# Subtest: the runner writes the raw module result only after both checkout inspections pass
+ok 36 - the runner writes the raw module result only after both checkout inspections pass
+  ---
+  duration_ms: 1.6791
+  type: 'test'
+  ...
+# Subtest: a dirty preflight skips Cypress, writes a failure artifact, and throws
+ok 37 - a dirty preflight skips Cypress, writes a failure artifact, and throws
+  ---
+  duration_ms: 0.6625
+  type: 'test'
+  ...
+# Subtest: the RWA auth denominator is pinned to the exact upstream source identity
+ok 38 - the RWA auth denominator is pinned to the exact upstream source identity
+  ---
+  duration_ms: 0.8318
+  type: 'test'
+  ...
+# Subtest: every case has a frozen, pre-registered behavioral oracle and no visual oracle
+ok 39 - every case has a frozen, pre-registered behavioral oracle and no visual oracle
+  ---
+  duration_ms: 0.2881
+  type: 'test'
+  ...
+# Subtest: the action maps contain only public controlled-session operations
+ok 40 - the action maps contain only public controlled-session operations
+  ---
+  duration_ms: 0.3273
+  type: 'test'
+  ...
+# Subtest: known semantic differences are referenced before execution
+ok 41 - known semantic differences are referenced before execution
+  ---
+  duration_ms: 0.1628
+  type: 'test'
+  ...
+# Subtest: all cases inherit the same no-app-modification and isolation constraints
+ok 42 - all cases inherit the same no-app-modification and isolation constraints
+  ---
+  duration_ms: 0.5368
+  type: 'test'
+  ...
+# Subtest: unmet public-surface requirements stay explicit instead of becoming hidden workarounds
+ok 43 - unmet public-surface requirements stay explicit instead of becoming hidden workarounds
+  ---
+  duration_ms: 0.1428
+  type: 'test'
+  ...
+# Subtest: the exported inventory is immutable and changes are review-visible
+ok 44 - the exported inventory is immutable and changes are review-visible
+  ---
+  duration_ms: 0.5866
+  type: 'test'
+  ...
+# Subtest: a valid shared engine terminal remains visible for all eight RWA cases
+ok 45 - a valid shared engine terminal remains visible for all eight RWA cases
+  ---
+  duration_ms: 3.1881
+  type: 'test'
+  ...
+# Subtest: an invalid baseline forces BASELINE_FAILURE across the frozen denominator
+ok 46 - an invalid baseline forces BASELINE_FAILURE across the frozen denominator
+  ---
+  duration_ms: 0.7062
+  type: 'test'
+  ...
+# Subtest: missing candidate cases cannot become a scientific result
+ok 47 - missing candidate cases cannot become a scientific result
+  ---
+  duration_ms: 0.4613
+  type: 'test'
+  ...
+# Subtest: malformed candidate case entries become benchmark-invalid instead of crashing comparison
+ok 48 - malformed candidate case entries become benchmark-invalid instead of crashing comparison
+  ---
+  duration_ms: 0.4314
+  type: 'test'
+  ...
+# Subtest: fabricated supported outcomes without matching observations are rejected
+ok 49 - fabricated supported outcomes without matching observations are rejected
+  ---
+  duration_ms: 2.3224
+  type: 'test'
+  ...
+# Subtest: self-declared passing cases with empty checkpoints and unreached oracles are invalid
+ok 50 - self-declared passing cases with empty checkpoints and unreached oracles are invalid
+  ---
+  duration_ms: 0.6175
+  type: 'test'
+  ...
+# Subtest: baseline validity is derived from frozen source, runtime, retry, and isolation evidence
+ok 51 - baseline validity is derived from frozen source, runtime, retry, and isolation evidence
+  ---
+  duration_ms: 1.2584
+  type: 'test'
+  ...
+# Subtest: candidate envelope, summary, cases, checkpoints, and oracle identities are frozen
+ok 52 - candidate envelope, summary, cases, checkpoints, and oracle identities are frozen
+  ---
+  duration_ms: 2.8258
+  type: 'test'
+  ...
+# Subtest: passing oracle claims require the complete frozen action and observer trail
+ok 53 - passing oracle claims require the complete frozen action and observer trail
+  ---
+  duration_ms: 0.8198
+  type: 'test'
+  ...
+# Subtest: pass and terminal classifications must agree with their material evidence
+ok 54 - pass and terminal classifications must agree with their material evidence
+  ---
+  duration_ms: 1.5459
+  type: 'test'
+  ...
+# Subtest: hostile parsed JSON fails closed without aborting comparison
+ok 55 - hostile parsed JSON fails closed without aborting comparison
+  ---
+  duration_ms: 0.3829
+  type: 'test'
+  ...
+# Subtest: typed Stasis failures map to the frozen result vocabulary
+ok 56 - typed Stasis failures map to the frozen result vocabulary
+  ---
+  duration_ms: 0.7803
+  type: 'test'
+  ...
+# Subtest: one shared open blocker still yields eight classified outcomes without retries
+ok 57 - one shared open blocker still yields eight classified outcomes without retries
+  ---
+  duration_ms: 2.0487
+  type: 'test'
+  ...
+# Subtest: candidate identity drift is classified for the full denominator before execution
+ok 58 - candidate identity drift is classified for the full denominator before execution
+  ---
+  duration_ms: 0.3532
+  type: 'test'
+  ...
+# Subtest: the adapter executes all public mappings and keeps current-path gaps honest
+ok 59 - the adapter executes all public mappings and keeps current-path gaps honest
+  ---
+  duration_ms: 10.5358
+  type: 'test'
+  ...
+# Subtest: the sealed server host invokes absolute unchanged ts-node roles without NYC
+ok 60 - the sealed server host invokes absolute unchanged ts-node roles without NYC
+  ---
+  duration_ms: 0.8938
+  type: 'test'
+  ...
+# Subtest: the sealed server environment removes ambient runtime overrides
+ok 61 - the sealed server environment removes ambient runtime overrides
+  ---
+  duration_ms: 0.2264
+  type: 'test'
+  ...
+1..61
+# tests 61
+# suites 0
+# pass 61
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 705.8262

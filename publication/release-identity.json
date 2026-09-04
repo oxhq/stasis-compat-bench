@@ -1,0 +1,40 @@
+{
+  "schema": "stasis-compat-benchmark-release-identity-v2",
+  "status": "qualified",
+  "release": {
+    "version": "0.3.3",
+    "tag": "v0.3.3",
+    "sourceRevision": "48c5a718a9ddd63f496e45307e1484974ccf8587",
+    "githubReleaseId": "380550511",
+    "githubReleaseUrl": "https://github.com/oxhq/stasis/releases/tag/v0.3.3"
+  },
+  "packageQualification": {
+    "workflowRunId": "33506181780",
+    "workflowRunAttempt": 1,
+    "sdkArchiveSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+    "sdkArchiveBytes": 181292,
+    "provenanceAttestationUrl": "https://github.com/oxhq/stasis/attestations/44426142"
+  },
+  "registry": {
+    "package": "@oxhq/stasis",
+    "version": "0.3.3",
+    "distIntegrity": "sha512-RbBSACeWpxQ6mIl23aOcoiaQF95/RT2fVEOfIh0T5MTkzzcv0lB2V983hjhjtdMiB3GBytnfwfoMw/Hj8ntUeg==",
+    "tarballSha256": "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+    "tarballBytes": 181292,
+    "npmAttestationUrl": "https://registry.npmjs.org/-/npm/v1/attestations/@oxhq%2fstasis@0.3.3",
+    "publicationProducer": {
+      "workflowRunId": "33523312229",
+      "workflowRunAttempt": 1,
+      "workflowRevision": "5eeb51560068566d5035e9e262f9fa7bf4ed33f8"
+    },
+    "anonymousVerification": {
+      "workflowRunId": "33527160165",
+      "workflowRunAttempt": 1,
+      "workflowRevision": "5174958df449aea2b5e6dec9cebefab921097d09",
+      "platforms": [
+        "linux-x86_64",
+        "macos-aarch64"
+      ]
+    }
+  }
+}

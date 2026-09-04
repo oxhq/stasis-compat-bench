@@ -1,0 +1,298 @@
+{
+  "schema": "stasis-post-0.3-deterministic-playwright-raw-v1",
+  "protocol": "stasis-post-0.3-census-v1",
+  "track": "deterministic-crawling",
+  "runner": "crawlee-playwright",
+  "versions": {
+    "node": "v22.20.0",
+    "crawlee": "3.18.1",
+    "playwright": "1.62.1",
+    "chromiumRevisionDirectory": "chromium-1234",
+    "chromiumVersion": "151.0.7922.34",
+    "chromiumExecutable": "retained-browser/chromium-1234/chrome.exe",
+    "chromiumExecutableSha256": "409805a16d6416087e6b2f778df1cf8f7bbb267d6b99f6b5bb0a618eace234f2"
+  },
+  "rules": {
+    "concurrency": 1,
+    "maxRequestRetries": 0,
+    "maxPages": 20,
+    "maxDepth": 2,
+    "persistStorage": false,
+    "useSessionPool": false
+  },
+  "primary": {
+    "success": true,
+    "result": {
+      "pages": [
+        {
+          "requestedUrl": "http://stasis-compat.test/",
+          "url": "http://stasis-compat.test/",
+          "depth": 0,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/static",
+            "http://stasis-compat.test/canonical",
+            "http://stasis-compat.test/microtask",
+            "http://stasis-compat.test/timer",
+            "http://stasis-compat.test/raf",
+            "http://stasis-compat.test/fetch",
+            "http://stasis-compat.test/xhr",
+            "http://stasis-compat.test/state",
+            "http://stasis-compat.test/navigation-start",
+            "http://stasis-compat.test/interval"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/static",
+          "url": "http://stasis-compat.test/static",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/static"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/canonical",
+          "url": "http://stasis-compat.test/canonical",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/canonical"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/microtask",
+          "url": "http://stasis-compat.test/microtask",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/microtask"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/timer",
+          "url": "http://stasis-compat.test/timer",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/timer"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/raf",
+          "url": "http://stasis-compat.test/raf",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/raf"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/fetch",
+          "url": "http://stasis-compat.test/fetch",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/fetch"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/xhr",
+          "url": "http://stasis-compat.test/xhr",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/xhr"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/state",
+          "url": "http://stasis-compat.test/state/ready/",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/state/ready/leaf"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/navigation-start",
+          "url": "http://stasis-compat.test/navigation-final",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/navigation"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/interval",
+          "url": "http://stasis-compat.test/interval",
+          "depth": 1,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": [
+            "http://stasis-compat.test/leaf/static"
+          ]
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/static",
+          "url": "http://stasis-compat.test/leaf/static",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/canonical",
+          "url": "http://stasis-compat.test/leaf/canonical",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/microtask",
+          "url": "http://stasis-compat.test/leaf/microtask",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/timer",
+          "url": "http://stasis-compat.test/leaf/timer",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/raf",
+          "url": "http://stasis-compat.test/leaf/raf",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/fetch",
+          "url": "http://stasis-compat.test/leaf/fetch",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/xhr",
+          "url": "http://stasis-compat.test/leaf/xhr",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/state/ready/leaf",
+          "url": "http://stasis-compat.test/state/ready/leaf",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        },
+        {
+          "requestedUrl": "http://stasis-compat.test/leaf/navigation",
+          "url": "http://stasis-compat.test/leaf/navigation",
+          "depth": 2,
+          "status": "crawled",
+          "responseStatus": 200,
+          "links": []
+        }
+      ],
+      "scheduledUrls": [
+        "http://stasis-compat.test/",
+        "http://stasis-compat.test/static",
+        "http://stasis-compat.test/canonical",
+        "http://stasis-compat.test/microtask",
+        "http://stasis-compat.test/timer",
+        "http://stasis-compat.test/raf",
+        "http://stasis-compat.test/fetch",
+        "http://stasis-compat.test/xhr",
+        "http://stasis-compat.test/state",
+        "http://stasis-compat.test/navigation-start",
+        "http://stasis-compat.test/interval",
+        "http://stasis-compat.test/leaf/static",
+        "http://stasis-compat.test/leaf/canonical",
+        "http://stasis-compat.test/leaf/microtask",
+        "http://stasis-compat.test/leaf/timer",
+        "http://stasis-compat.test/leaf/raf",
+        "http://stasis-compat.test/leaf/fetch",
+        "http://stasis-compat.test/leaf/xhr",
+        "http://stasis-compat.test/state/ready/leaf",
+        "http://stasis-compat.test/leaf/navigation"
+      ]
+    },
+    "failures": [],
+    "fixtureMisses": [],
+    "wallTimeMs": 2334.7477
+  },
+  "negativeControls": [
+    {
+      "id": "worker",
+      "expectedSurface": "worker",
+      "success": true,
+      "result": {
+        "pages": [
+          {
+            "requestedUrl": "http://stasis-compat.test/negative/worker",
+            "url": "http://stasis-compat.test/negative/worker",
+            "depth": 0,
+            "status": "crawled",
+            "responseStatus": 200,
+            "links": [
+              "http://stasis-compat.test/negative/worker-leaf"
+            ]
+          }
+        ],
+        "scheduledUrls": [
+          "http://stasis-compat.test/negative/worker"
+        ]
+      },
+      "failures": [],
+      "fixtureMisses": [],
+      "wallTimeMs": 919.98
+    },
+    {
+      "id": "iframe",
+      "expectedSurface": "iframe",
+      "success": true,
+      "result": {
+        "pages": [
+          {
+            "requestedUrl": "http://stasis-compat.test/negative/iframe",
+            "url": "http://stasis-compat.test/negative/iframe",
+            "depth": 0,
+            "status": "crawled",
+            "responseStatus": 200,
+            "links": [
+              "http://stasis-compat.test/negative/iframe-leaf"
+            ]
+          }
+        ],
+        "scheduledUrls": [
+          "http://stasis-compat.test/negative/iframe"
+        ]
+      },
+      "failures": [],
+      "fixtureMisses": [],
+      "wallTimeMs": 897.4671
+    }
+  ]
+}

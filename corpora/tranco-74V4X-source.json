@@ -1,0 +1,26 @@
+{
+  "schema": "stasis-wild-source-v1",
+  "provider": "Tranco",
+  "listId": "74V4X",
+  "createdOn": "2026-08-25T22:00:02.381111",
+  "permanentListUrl": "https://tranco-list.eu/list/74V4X/full",
+  "downloadUrl": "https://tranco-list.eu/download/74V4X/1000000",
+  "methodologyUrl": "https://tranco-list.eu/methodology",
+  "localIgnoredFile": "inputs/tranco-74V4X-top-1m.csv",
+  "bytes": 22695497,
+  "sha256": "23f4686d95c1287765d43b4219eccb62a9575bbd5dbbd20d44fc280403135118",
+  "rowCount": 1000000,
+  "configuration": {
+    "aggregation": "Dowdall",
+    "filterPayLevelDomain": true,
+    "dateFrom": "2026-07-27",
+    "dateTo": "2026-08-25",
+    "providers": [
+      "crux",
+      "farsight",
+      "majestic",
+      "radar",
+      "umbrella"
+    ]
+  }
+}
