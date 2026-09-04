@@ -1,0 +1,207 @@
+{
+  "schema": "stasis-v0.3.3-performance-crawl-phase-diagnostic-anonymous-release-verification-v1",
+  "status": "passed",
+  "diagnosticStatus": "failed",
+  "outcomeClass": "DIAGNOSTIC_INVALID_WITH_STATUS",
+  "purpose": "anonymous_non_authoritative_diagnostic_release_verification",
+  "release": {
+    "repository": "oxhq/stasis-compat-bench",
+    "tag": "stasis-v0.3.3-performance-crawl-phase-diagnostic-evidence-v1",
+    "releaseId": 382790743,
+    "targetCommitSha": "24242dcbcf652f07ca9ae62e8b48ce35949dda15",
+    "tagBindings": {
+      "comparison": {
+        "ref": "refs/tags/stasis-v0.3.3-performance-replication-evidence-v1",
+        "objectType": "commit",
+        "objectSha": "6c1a0066eb17425628293993fd7312d4cf26e0f5",
+        "lightweight": true
+      },
+      "contract": {
+        "ref": "refs/tags/stasis-v0.3.3-performance-crawl-phase-diagnostic-contract-v1",
+        "objectType": "commit",
+        "objectSha": "24242dcbcf652f07ca9ae62e8b48ce35949dda15",
+        "lightweight": true
+      },
+      "evidence": {
+        "ref": "refs/tags/stasis-v0.3.3-performance-crawl-phase-diagnostic-evidence-v1",
+        "objectType": "commit",
+        "objectSha": "24242dcbcf652f07ca9ae62e8b48ce35949dda15",
+        "lightweight": true
+      }
+    },
+    "publishedAt": "2026-09-04T14:26:45Z",
+    "immutable": true,
+    "draft": false,
+    "prerelease": false
+  },
+  "releaseVerifierSchema": "stasis-v0.3.3-performance-crawl-phase-diagnostic-release-verification-v1",
+  "contract": {
+    "repository": "oxhq/stasis-compat-bench",
+    "tag": "stasis-v0.3.3-performance-crawl-phase-diagnostic-contract-v1",
+    "releaseId": 382739707,
+    "targetCommitSha": "24242dcbcf652f07ca9ae62e8b48ce35949dda15",
+    "publishedAt": "2026-09-04T13:17:34Z",
+    "immutable": true,
+    "draft": false,
+    "prerelease": false,
+    "assetCount": 3,
+    "assets": [
+      {
+        "name": "stasis-v0.3.3-performance-crawl-phase-diagnostic-preflight.json",
+        "assetId": 544367516,
+        "bytes": 5783,
+        "sha256": "79b8a8493610ac1e61d1c7f4335fd1f1d199899ed9ee39092ba0f84b50e51299",
+        "blobSha": "940c5513b8883c9c980735e76f22f47bcc4ece48"
+      },
+      {
+        "name": "stasis-v0.3.3-performance-crawl-phase-diagnostic-v1.md",
+        "assetId": 544367515,
+        "bytes": 20613,
+        "sha256": "dab4a9b28f76389bbe755c7f0256e30be77747206dc057a7610daa693e0056f5",
+        "blobSha": "afac377e4a7c425eb164ebfe67722a9e2e207fa2"
+      },
+      {
+        "name": "stasis-v0.3.3-performance-crawl-phase-diagnostic-workflow.yml",
+        "assetId": 544367518,
+        "bytes": 44356,
+        "sha256": "1cc7eccd1363d9f4e91d2d7860480cc165a59e5d351fce60c28e1bb3130cc58f",
+        "blobSha": "61675d581be0f8d40accadef531ff1a7c71deb76"
+      }
+    ]
+  },
+  "assetByteMap": [
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 1473,
+      "sha256": "ebefc8aad6bdb02051687476e77440e28312332d8c0dbef69467326207546d28"
+    },
+    {
+      "name": "actions-diagnostic-bundle.zip",
+      "bytes": 491,
+      "sha256": "b512db23bd922943606f8c366c144fab99163a0bb2a4a606f53b24c63fb7b676"
+    },
+    {
+      "name": "comparison-artifact-binding.json",
+      "bytes": 5086,
+      "sha256": "78d91f9c12f85d538dff1944e772614bf9b0adc9841d647c93ab8f608f1ba4ad"
+    },
+    {
+      "name": "comparison-evidence-release-commit.json",
+      "bytes": 228009,
+      "sha256": "59981d35875e61909e1a16b3c007baf676d8e49e5e10870999dff588adc1f543"
+    },
+    {
+      "name": "comparison-evidence-release.json",
+      "bytes": 55964,
+      "sha256": "0fa64104de51a28a48eba48e614c2957c9c6ca09a924a8d5a09f3fa3f27b873c"
+    },
+    {
+      "name": "comparison-fresh-crawl-raw.json",
+      "bytes": 221543,
+      "sha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b"
+    },
+    {
+      "name": "contract-commit.json",
+      "bytes": 522778,
+      "sha256": "afd631959a648974098bbcb2569ef15987041777ae3f2e2fb564c296b7a84522"
+    },
+    {
+      "name": "contract-release.json",
+      "bytes": 8289,
+      "sha256": "199788f4efb0ea2b88967850debc0affdba0f35058d99fa8cdb27b70411cc980"
+    },
+    {
+      "name": "diagnostic-artifact-binding.json",
+      "bytes": 3690,
+      "sha256": "0299a900a63ac6a2d8691c49d48a8f2a43a1b34febd2fc8706e0e451843ed766"
+    },
+    {
+      "name": "diagnostic-outcome.json",
+      "bytes": 612,
+      "sha256": "27c81015c1e3e095f9148e71b4fd32039eda1dfc16b7c5be4aedc17caa82cc03"
+    },
+    {
+      "name": "hosted-provenance.json",
+      "bytes": 15477,
+      "sha256": "42ccfa01f80d8c791182d92010c803327af386b4fc08dc63515ccc843bfe10db"
+    },
+    {
+      "name": "privacy-scan.json",
+      "bytes": 8971,
+      "sha256": "9f5b53c152698af2c26e893d4f5aae05ad3694971dc076d60c4f61f9145c3962"
+    },
+    {
+      "name": "workflow-artifacts.json",
+      "bytes": 940,
+      "sha256": "94bca56df03f4d04ff6727a14637b081d06c5669829f18221bda2f8f81bf74b0"
+    },
+    {
+      "name": "workflow-jobs.json",
+      "bytes": 8009,
+      "sha256": "2434e2e55840747cf60d4f7eeb478f336420601fb9bc5c5a35eeea1f4925f5c7"
+    },
+    {
+      "name": "workflow-run.json",
+      "bytes": 12682,
+      "sha256": "6cda62696f3862b441b7a00d1335e550563cb8a0e94687658d509ed9f78f3221"
+    },
+    {
+      "name": "workflow-runs.json",
+      "bytes": 13623,
+      "sha256": "22f6c77a320de3a8402c8d1f5c76f50288854f425d1720300a992c03e3654356"
+    },
+    {
+      "name": "workflow-source-commit.json",
+      "bytes": 51609,
+      "sha256": "c162febf640a41eb8ba1995333a17cdd80e5408fccc9e32187f667ae954c8aae"
+    }
+  ],
+  "transport": {
+    "authentication": "none",
+    "credentials": "omit",
+    "redirects": "manual_https_github_owned_hosts_only",
+    "maximumRedirects": 5,
+    "maximumApiResponseBytes": 8388608,
+    "maximumAssetBytes": 268435456,
+    "maximumTotalAssetBytes": 536870912,
+    "maximumContractAssetBytes": 8388608,
+    "maximumTotalContractAssetBytes": 16777216,
+    "contentEncoding": "identity",
+    "retries": 0
+  },
+  "authorityEligible": false,
+  "timingEligible": false,
+  "statisticsEligible": false,
+  "comparisonEligible": false,
+  "optimizationEligible": false,
+  "generalizedSpeedClaimAuthorized": false,
+  "implementationWorkAuthorized": false,
+  "decisionState": "STAY_0_4_UNASSIGNED",
+  "verification": {
+    "exactOutcomeSpecificAssetInventory": true,
+    "exactUploadedAssetIdsSizesDigestsAndUrls": true,
+    "publicApiFetchedWithoutCredentials": true,
+    "publicAssetsFetchedWithoutCredentials": true,
+    "anonymousBytesMatchOfflineByteMap": true,
+    "offlinePublicationReverifiedFromAnonymousBytes": true,
+    "immutableContractReleaseFetchedWithoutCredentials": true,
+    "exactThreeContractAssetInventory": true,
+    "contractAssetBytesMatchReleaseMetadata": true,
+    "contractAssetGitBlobsMatchDiagnosticTarget": true,
+    "currentContractStateMatchesRetainedEvidence": true,
+    "contractPreflightMatchesHostedEvidence": true,
+    "contractWorkflowAssetMatchesHostedEvidence": true,
+    "targetDirectSuccessorOfComparisonEvidence": true,
+    "comparisonTagRefBoundToComparisonEvidenceTarget": true,
+    "contractTagRefBoundToDiagnosticTarget": true,
+    "evidenceTagRefBoundToDiagnosticTarget": true,
+    "allThreeTagsVerifiedLightweight": true,
+    "authorityGranted": false,
+    "timingAuthorityGranted": false,
+    "comparisonAuthorityGranted": false,
+    "optimizationAuthorityGranted": false,
+    "urlsRetained": false,
+    "responseHeadersRetained": false,
+    "rawPayloadsRetained": false
+  }
+}

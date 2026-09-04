@@ -47,6 +47,10 @@ manifest.projectedTree.files = files;
 manifest.projectedTree.fileCount = files.length;
 manifest.projectedTree.totalBytes = files.reduce((total, entry) => total + entry.bytes, 0);
 manifest.projectedTree.sha256 = projectedTreeDigest(files);
+manifest.unchangedInputs = files
+  .filter(({ path: relativePath }) =>
+    relativePath.startsWith("corpora/") || relativePath.startsWith("protocol/"))
+  .map((entry) => ({ ...entry }));
 validatePublicProjectionManifest(manifest);
 await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 process.stdout.write(`${JSON.stringify({
