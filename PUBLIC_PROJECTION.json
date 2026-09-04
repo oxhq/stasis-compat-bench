@@ -5,8 +5,8 @@
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
     "fileCount": 306,
-    "totalBytes": 5333881,
-    "sha256": "6dcc964ad4df2fa3d75518288e7a14d1fdb01916fb000c07d9d4a5969d7099b4",
+    "totalBytes": 5333867,
+    "sha256": "559cc1d6abb6a872b981cb327bd0ad34d6a2d49088449e085a0a74b6932a7420",
     "files": [
       {
         "bytes": 19,
@@ -1319,9 +1319,9 @@
         "sha256": "f8d2237f7dcc8d73ccfbea045f0e1a702f58066c3b13523831d22a4cc223ccda"
       },
       {
-        "bytes": 27402,
+        "bytes": 27388,
         "path": "test/performance-publication.test.mjs",
-        "sha256": "fdbb4481d3be244f57af2c29e8e2f102a5dc0636553b3092c53f18ee76ff459d"
+        "sha256": "d7afe7114bd80c5fbefffdf0a21466c95dc7c81c3ed1ba073e59d46f7ecec714"
       },
       {
         "bytes": 24959,

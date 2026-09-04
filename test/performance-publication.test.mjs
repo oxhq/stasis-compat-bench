@@ -388,7 +388,7 @@ test("hosted combine writes fixed outputs once under one fresh sealed root", asy
         crawlRawPath: crawlPath,
         ...dependencies,
         renderEvidence() {
-          return "Authorization: Bearer PRIVATE_SENTINEL\n";
+          return "Bearer\nPRIVATE_SENTINEL\n";
         },
       }),
       /credential-like text/u,
