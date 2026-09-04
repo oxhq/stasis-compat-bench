@@ -43,6 +43,16 @@ Identity verification, candidate extraction/import, checkout inspection,
 server byte/listener verification, and host inspection happen before any
 performance boundary. An integration must fail closed if any frozen identity
 does not match; this protocol does not time a degraded or substituted runner.
+The retained hosted provenance includes provider, repository, workflow, job,
+run ID/attempt, workflow-source SHA/ref, and the executing harness HEAD/tree.
+The harness must have no tracked or untracked non-ignored changes. Ignored
+dependency, candidate-input, and generated-artifact directories are outside the
+source-identity scope and remain covered by their dedicated byte identities and
+fresh-artifact gates.
+Before any timing boundary, the exact installed RWA `node_modules`, Cypress
+package, ts-node package, Cypress runtime trees, and `Cypress.exe` byte count
+and SHA-256 must match the frozen identities. The public wrapper retains those
+path-free values for exact replay.
 
 ## Complete denominator
 
@@ -90,6 +100,11 @@ The server-start callback must either return one ready cleanup handle or roll
 back before rejecting. The orchestrator also invokes the stop callback with a
 null handle and `startupComplete: false` after a rejected acquisition so an
 integration can reap any discoverable partial process state.
+Startup must retain the frozen clean `data/database.json` bytes. Postflight may
+retain either those same clean bytes or the one already declared newline-only
+runtime state, with its exact hash; the reverse transition and every other
+tracked mutation are forbidden. Both endpoints remain retained and must
+independently pass the frozen checkout inspector.
 
 ## Fresh-state and runner contract
 

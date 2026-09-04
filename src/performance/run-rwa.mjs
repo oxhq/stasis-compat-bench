@@ -38,7 +38,16 @@ import {
   sha256File,
   writeJson,
 } from "../shared/io.mjs";
+import {
+  FROZEN_IDENTITIES,
+  installedRwaEvidence,
+} from "../shared/manifest.mjs";
 import { rwaAuthCases, rwaAuthSource } from "../rwa/cases.mjs";
+import {
+  assertCleanHarnessWorktreeEvidence,
+  createCleanHarnessWorktreeEvidence,
+} from "./harness-worktree.mjs";
+import { rwaCheckoutContinuityMatches } from "./rwa-checkout-continuity.mjs";
 
 const expectedNodePlatform = "win32";
 const expectedNodeArch = "x64";
@@ -51,6 +60,8 @@ const serverPreloadPath = fileURLToPath(new URL("../rwa/server-ipc-preload.cjs",
 const nodeVersionPattern = /^v22\.20\.0$/u;
 const shaPattern = /^[a-f0-9]{40}$/u;
 const artifactSchema = "stasis-v0.3.3-performance-rwa-artifact-v1";
+const performanceWorkflowName = "Stasis v0.3.3 performance evidence";
+const performanceRwaJobName = "windows-rwa";
 
 export async function runSealedRwaPerformance({
   environment = process.env,
@@ -60,6 +71,7 @@ export async function runSealedRwaPerformance({
   inspectCheckout = inspectRwaCheckout,
   probeServers = probeRwaServers,
   loadCypress = loadCypressFromCheckout,
+  inspectInstalledRwa = installedRwaEvidence,
   verifyCandidate = verifyPostSupportCandidate,
   now = () => new Date(),
   writeArtifact = writeJson,
@@ -72,9 +84,10 @@ export async function runSealedRwaPerformance({
   );
   const candidate = await verifyCandidate(loadPostSupportCandidateSpec(environment));
   try {
-    const [nodeExecutable, initialCheckout] = await Promise.all([
+    const [nodeExecutable, initialCheckout, installedRwa] = await Promise.all([
       inspectPinnedNodeExecutable(hashFile),
       inspectCheckout(upstreamRoot),
+      inspectInstalledRwa(upstreamRoot),
     ]);
     if (!initialCheckout.valid) {
       throw new Error(`RWA checkout preflight failed: ${initialCheckout.violations.join("; ")}`);
@@ -83,6 +96,7 @@ export async function runSealedRwaPerformance({
     if (cypress === null || typeof cypress !== "object" || typeof cypress.run !== "function") {
       throw new TypeError("The pinned checkout did not provide the Cypress module API");
     }
+    const cypressInstalled = createRwaInstalledPerformanceIdentity(installedRwa);
     const runPreparedStasisLane = await prepareStasisRwaProofRunner(
       postSupportExecutablePath(candidate),
       {
@@ -161,6 +175,7 @@ export async function runSealedRwaPerformance({
           workflowSource,
           harness,
           nodeExecutable,
+          cypressInstalled,
           lifecycleEvidence,
           now: now(),
         });
@@ -453,6 +468,7 @@ export function createRwaPerformanceArtifact({
   workflowSource,
   harness,
   nodeExecutable,
+  cypressInstalled,
   lifecycleEvidence,
   now,
 }) {
@@ -489,6 +505,7 @@ export function createRwaPerformanceArtifact({
         resolvedNodeVersion: rwaBaselineExpected.resolvedNodeVersion,
         viewport: structuredClone(rwaBaselineExpected.viewport),
         retries: structuredClone(rwaBaselineExpected.primaryRetries),
+        installed: createRwaInstalledPerformanceIdentity(cypressInstalled),
       },
       rwa: {
         repository: rwaAuthSource.repository,
@@ -532,7 +549,7 @@ export function createRwaPerformanceArtifact({
           postflight.checkout.valid === true &&
           startup.checkout.violations.length === 0 &&
           postflight.checkout.violations.length === 0 &&
-          sameJson(
+          rwaCheckoutContinuityMatches(
             projectCheckoutForArtifact(startup.checkout),
             projectCheckoutForArtifact(postflight.checkout),
           ),
@@ -583,14 +600,31 @@ export async function collectHostFacts({
   return { host };
 }
 
-export function inspectHarnessProvenance() {
+export function inspectHarnessProvenance({
+  checkoutRoot = repositoryRoot,
+  runGitImpl = runGit,
+} = {}) {
+  const root = path.resolve(checkoutRoot);
   return {
-    revision: exactGitSha(runGit(repositoryRoot, ["rev-parse", "--verify", "HEAD"]), "Harness revision"),
-    tree: exactGitSha(runGit(repositoryRoot, ["rev-parse", "HEAD^{tree}"]), "Harness tree"),
+    revision: exactGitSha(runGitImpl(root, ["rev-parse", "--verify", "HEAD"]), "Harness revision"),
+    tree: exactGitSha(runGitImpl(root, ["rev-parse", "HEAD^{tree}"]), "Harness tree"),
+    worktree: createCleanHarnessWorktreeEvidence(runGitImpl(root, [
+      "status",
+      "--porcelain=v1",
+      "-z",
+      "--untracked-files=all",
+    ])),
   };
 }
 
 export function loadWorkflowSourceProvenance(environment = process.env) {
+  if (
+    environment.GITHUB_REPOSITORY !== "oxhq/stasis" ||
+    environment.GITHUB_WORKFLOW !== performanceWorkflowName ||
+    environment.GITHUB_JOB !== performanceRwaJobName
+  ) {
+    throw new TypeError("RWA performance provenance requires the exact GitHub Actions workflow job");
+  }
   const revision = exactGitSha(
     environment.STASIS_PERFORMANCE_WORKFLOW_SOURCE_SHA ?? environment.GITHUB_SHA,
     "Workflow source SHA",
@@ -599,7 +633,24 @@ export function loadWorkflowSourceProvenance(environment = process.env) {
     environment.STASIS_PERFORMANCE_WORKFLOW_SOURCE_REF ?? environment.GITHUB_REF,
     "Workflow source ref",
   );
-  return { revision, ref };
+  const runId = exactPositiveDecimal(
+    environment.GITHUB_RUN_ID,
+    "Workflow run id",
+  );
+  const runAttempt = exactPositiveDecimal(
+    environment.GITHUB_RUN_ATTEMPT,
+    "Workflow run attempt",
+  );
+  return {
+    provider: "github-actions",
+    repository: "oxhq/stasis",
+    workflow: performanceWorkflowName,
+    job: performanceRwaJobName,
+    revision,
+    ref,
+    runId,
+    runAttempt,
+  };
 }
 
 export async function inspectPinnedNodeExecutable(hashFile = sha256File) {
@@ -616,6 +667,34 @@ export async function inspectPinnedNodeExecutable(hashFile = sha256File) {
     executableSha256: sha256,
     executableBytes: metadata.size,
   };
+}
+
+export function createRwaInstalledPerformanceIdentity(value) {
+  const projected = {
+    nodeModulesTree: value?.nodeModulesTree,
+    cypressPackageTree: value?.cypressPackageTree,
+    tsNodePackageTree: value?.tsNodePackageTree,
+    cypressRuntimeTree: value?.cypressRuntimeTree,
+    executable: {
+      bytes: value?.executable?.bytes ?? value?.cypressExecutableBytes,
+      sha256: value?.executable?.sha256 ?? value?.cypressExecutableSha256,
+    },
+  };
+  const frozen = FROZEN_IDENTITIES.rwa.installed;
+  const expected = {
+    nodeModulesTree: frozen.nodeModulesTree,
+    cypressPackageTree: frozen.cypressPackageTree,
+    tsNodePackageTree: frozen.tsNodePackageTree,
+    cypressRuntimeTree: frozen.cypressRuntimeTree,
+    executable: {
+      bytes: frozen.cypressExecutableBytes,
+      sha256: frozen.cypressExecutableSha256,
+    },
+  };
+  if (!sameJson(projected, expected)) {
+    throw new TypeError("Installed RWA Cypress execution bytes differ from the frozen identity");
+  }
+  return structuredClone(projected);
 }
 
 function assertPinnedWindowsNodeRuntime() {
@@ -721,7 +800,7 @@ function projectServersForArtifact(value) {
     bodySha256: server.bodySha256,
     listener: {
       port: server.listener.port,
-      processName: server.listener.processName,
+      processName: server.listener.processName.toLowerCase(),
       nodeVersion: server.listener.nodeVersion,
       executableBytes: server.listener.executableBytes,
       executableSha256: server.listener.executableSha256,
@@ -898,6 +977,13 @@ function exactRef(value, label) {
   return value;
 }
 
+function exactPositiveDecimal(value, label) {
+  if (typeof value !== "string" || !/^[1-9][0-9]*$/u.test(value)) {
+    throw new TypeError(`${label} must be one canonical positive decimal string`);
+  }
+  return value;
+}
+
 function normalizeHarnessProvenance(value) {
   if (value === null || typeof value !== "object") {
     throw new TypeError("Harness provenance is required");
@@ -905,6 +991,7 @@ function normalizeHarnessProvenance(value) {
   return {
     revision: exactGitSha(value.revision, "Harness revision"),
     tree: exactGitSha(value.tree, "Harness tree"),
+    worktree: structuredClone(assertCleanHarnessWorktreeEvidence(value.worktree)),
   };
 }
 
@@ -913,9 +1000,20 @@ function normalizeWorkflowSourceProvenance(value) {
     throw new TypeError("Workflow source provenance is required");
   }
   return {
+    provider: exactLiteral(value.provider, "github-actions", "Workflow provider"),
+    repository: exactLiteral(value.repository, "oxhq/stasis", "Workflow repository"),
+    workflow: exactLiteral(value.workflow, performanceWorkflowName, "Workflow name"),
+    job: exactLiteral(value.job, performanceRwaJobName, "Workflow job"),
     revision: exactGitSha(value.revision, "Workflow source SHA"),
     ref: exactRef(value.ref, "Workflow source ref"),
+    runId: exactPositiveDecimal(value.runId, "Workflow run id"),
+    runAttempt: exactPositiveDecimal(value.runAttempt, "Workflow run attempt"),
   };
+}
+
+function exactLiteral(value, expected, label) {
+  if (value !== expected) throw new TypeError(`${label} must be ${expected}`);
+  return value;
 }
 
 function terminateProcessTree(processId) {

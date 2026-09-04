@@ -52,6 +52,20 @@ const frozenRwaRouteNarratives = new Set([
   "record /users, /login, /graphql, /logout, and navigation diagnostics",
   "record POST /login",
 ]);
+const frozenRwaSemanticRouteNarratives = new Map([
+  [
+    "graphql-operation-name-redacted:baseline",
+    "Cypress aliases the /graphql request by reading request.body.operationName.",
+  ],
+  [
+    "graphql-operation-name-redacted:treatment",
+    "Correlate POST /graphql status with the exact Finished UI and persisted bank-account oracle.",
+  ],
+  [
+    "unused-intercept-has-no-oracle:baseline",
+    "The signup-error case installs an unaliased GET /signup intercept without waiting on or asserting it.",
+  ],
+]);
 
 export function serializePostSupportArtifact(value) {
   const snapshot = privacySnapshot(value, [], new WeakSet());
@@ -242,7 +256,8 @@ function assertDecodedString(original, value, location) {
   const scanned = value.normalize("NFKC").replace(/\p{Cf}/gu, "");
   const typedSlashText =
     isTypedUrlPath(scanned, location) ||
-    isTypedRwaRouteNarrative(original, value, scanned, location);
+    isTypedRwaRouteNarrative(original, value, scanned, location) ||
+    isTypedRwaSemanticRouteNarrative(original, value, scanned, location);
   if (
     /\bfile:(?:\/\/|\\\\)/iu.test(scanned) ||
     /(?:^|[^a-z0-9])[a-z]:[^\s"']*[\\/]/iu.test(scanned) ||
@@ -307,6 +322,21 @@ function isTypedRwaRouteNarrative(original, value, scanned, location) {
     location.at(-5) >= 0 &&
     location.at(-6) === "cases"
   );
+}
+
+function isTypedRwaSemanticRouteNarrative(original, value, scanned, location) {
+  if (original !== value || value !== scanned || location.length < 3) return false;
+  const field = location.at(-1);
+  const differenceId = location.at(-2);
+  if (
+    typeof field !== "string" ||
+    typeof differenceId !== "string" ||
+    location.at(-3) !== "definitions" ||
+    (location.length !== 3 && location.at(-4) !== "semanticDifferenceDisclosure")
+  ) {
+    return false;
+  }
+  return frozenRwaSemanticRouteNarratives.get(`${differenceId}:${field}`) === original;
 }
 
 function expandedDecodedVariants(original, location, label) {

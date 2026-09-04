@@ -3,7 +3,9 @@ import test from "node:test";
 
 import {
   assertFrozenManifestIdentities,
+  assertFrozenRwaInstalledPackageTrees,
   FROZEN_IDENTITIES,
+  installedRwaEvidence,
 } from "../src/shared/manifest.mjs";
 
 test("the frozen identity validator rejects a coherently rewritten run manifest", () => {
@@ -22,6 +24,41 @@ test("frozen identity constants are recursively immutable", () => {
   assert.equal(Object.isFrozen(FROZEN_IDENTITIES.rwa.buildTree), true);
   assert.equal(Object.isFrozen(FROZEN_IDENTITIES.rwa.installed), true);
   assert.equal(Object.isFrozen(FROZEN_IDENTITIES.installed.packageTrees), true);
+});
+
+test("Cypress cache discovery is gated by exact installed package trees", () => {
+  const installed = FROZEN_IDENTITIES.rwa.installed;
+  const trees = structuredClone({
+    nodeModulesTree: installed.nodeModulesTree,
+    cypressPackageTree: installed.cypressPackageTree,
+    tsNodePackageTree: installed.tsNodePackageTree,
+  });
+  assert.equal(assertFrozenRwaInstalledPackageTrees(trees), trees);
+
+  trees.cypressPackageTree.sha256 = "0".repeat(64);
+  assert.throws(
+    () => assertFrozenRwaInstalledPackageTrees(trees),
+    /before Cypress cache discovery/u,
+  );
+});
+
+test("installed RWA inspection cannot execute Cypress before package-tree admission", async () => {
+  let commandCalls = 0;
+  await assert.rejects(
+    () => installedRwaEvidence("C:\\frozen-rwa", {
+      hashDirectory: async () => ({
+        sha256: "0".repeat(64),
+        fileCount: 1,
+        totalBytes: 1,
+      }),
+      runCommand: () => {
+        commandCalls += 1;
+        return "C:\\unreachable-cache";
+      },
+    }),
+    /before Cypress cache discovery/u,
+  );
+  assert.equal(commandCalls, 0);
 });
 
 function validIdentityProjection() {

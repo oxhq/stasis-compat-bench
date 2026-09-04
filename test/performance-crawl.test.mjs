@@ -18,6 +18,7 @@ import {
   expectedPrimaryScheduledUrls,
   origin,
 } from "../src/crawl/corpus.mjs";
+import { cleanHarnessWorktreeEvidence } from "../src/performance/harness-worktree.mjs";
 
 function identity() {
   const host = {
@@ -37,14 +38,15 @@ function identity() {
     provenance: createCrawlPerformanceGithubProvenance({
       provider: "github-actions",
       repository: "oxhq/stasis",
-      workflow: "performance",
-      job: "crawl-benchmark",
+      workflow: "Stasis v0.3.3 performance evidence",
+      job: "ubuntu-crawl",
       runId: "33599999999",
       runAttempt: "1",
       workflowSourceSha: "e".repeat(40),
       workflowSourceRef: "refs/heads/post-v033-performance-evidence",
       harnessCheckoutRevision: "f".repeat(40),
       harnessCheckoutTree: "1".repeat(40),
+      harnessCheckoutWorktree: structuredClone(cleanHarnessWorktreeEvidence),
     }),
     corpus: structuredClone(crawlPerformanceCorpusIdentity),
     crawlee: {
@@ -174,7 +176,7 @@ test("crawl authority runs one untimed warm-up and ten alternating AB/BA pairs",
     { lane: "crawlee", timed: false },
     { lane: "stasis", timed: false },
   ]);
-  assert.equal(raw.warmups.some((item) => Object.hasOwn(item, "elapsedNs")), false);
+  assert.equal(raw.warmups.some((item) => Object.hasOwn(item, "timing")), false);
   assert.deepEqual(raw.pairs.map(({ pairIndex, order, lanes }) => ({ pairIndex, order, lanes })),
     Array.from({ length: 10 }, (_, index) => ({
       pairIndex: index + 1,
@@ -182,7 +184,10 @@ test("crawl authority runs one untimed warm-up and ten alternating AB/BA pairs",
       lanes: index % 2 === 0 ? ["crawlee", "stasis"] : ["stasis", "crawlee"],
     })),
   );
-  assert.equal(raw.pairs.every((pair) => pair.observations.every((item) => item.elapsedNs === "7")), true);
+  assert.equal(raw.pairs.every((pair) => pair.observations.every((item) =>
+    item.timing.durationNs === "7" &&
+    BigInt(item.timing.endNs) - BigInt(item.timing.startNs) === 7n
+  )), true);
   assert.equal(clockReads, 40);
   assert.deepEqual(calls.slice(0, 6), [
     "crawlee:warmup:primary",
@@ -200,7 +205,7 @@ test("crawl authority runs one untimed warm-up and ten alternating AB/BA pairs",
   ]);
   assert.equal(raw.controls.timed, false);
   assert.equal(raw.controls.includedInPrimaryDenominator, false);
-  assert.equal(raw.controls.observations.some((item) => Object.hasOwn(item, "elapsedNs")), false);
+  assert.equal(raw.controls.observations.some((item) => Object.hasOwn(item, "timing")), false);
   assert.equal(assertCrawlPerformanceRaw(raw), raw);
   assert.equal(Object.isFrozen(raw), true);
 });
@@ -240,6 +245,59 @@ test("the external end clock is read only after the lane runner cleanup resolves
     "stasis:cleanup",
     "clock:end",
   ]);
+});
+
+test("clock failures are retained as typed terminal observations and never discarded", async () => {
+  const scenarios = [
+    {
+      values: [new TypeError("start details")],
+      code: "clock_start_invalid",
+      timing: { startNs: null, endNs: null, durationNs: null },
+      timedCalls: 0,
+    },
+    {
+      values: [10n, new TypeError("end details")],
+      code: "clock_end_invalid",
+      timing: { startNs: "10", endNs: null, durationNs: null },
+      timedCalls: 1,
+    },
+    {
+      values: [10n, 10n],
+      code: "clock_not_monotonic",
+      timing: { startNs: "10", endNs: "10", durationNs: null },
+      timedCalls: 1,
+    },
+  ];
+  for (const scenario of scenarios) {
+    let clockIndex = 0;
+    let timedCalls = 0;
+    const injected = runners();
+    const baseline = injected.crawlee;
+    injected.crawlee = async (job) => {
+      if (job.phase === "sample") timedCalls += 1;
+      return baseline(job);
+    };
+    const raw = await runCrawlPerformanceAuthority({
+      identity: identity(),
+      runners: injected,
+      now() {
+        const value = scenario.values[clockIndex++];
+        if (value instanceof Error) throw value;
+        return value;
+      },
+    });
+    assert.equal(raw.pairs.length, 1);
+    assert.equal(raw.pairs[0].observations.length, 1);
+    assert.equal(raw.pairs[0].observations[0].status, "clock_error");
+    assert.equal(raw.pairs[0].observations[0].error.code, scenario.code);
+    assert.deepEqual(raw.pairs[0].observations[0].timing, scenario.timing);
+    assert.equal(timedCalls, scenario.timedCalls);
+    assert.deepEqual(raw.authority.reasonCodes, [
+      "clock_failure",
+      "paired_sample_schedule_incomplete",
+    ]);
+    assert.equal(assertCrawlPerformanceRaw(raw), raw);
+  }
 });
 
 test("one invalid timed observation is retained, invalidates all authority, and fail-stops", async () => {
@@ -329,18 +387,80 @@ test("raw schema rejects host, order, timing, and authority mutations", async ()
     (value) => { value.identity.host.hostClassDigest = "0".repeat(64); },
     (value) => { value.identity.provenance.runId = "01"; },
     (value) => { value.identity.provenance.harnessCheckoutTree = "0".repeat(39); },
+    (value) => { value.identity.provenance.harnessCheckoutWorktree.clean = false; },
     (value) => { value.identity.corpus.sourceSha256 = "0".repeat(64); },
     (value) => { value.identity.crawlee.hostClassDigest = "0".repeat(64); },
     (value) => { value.identity.crawlee.chromiumExecutableBytes = 0; },
     (value) => { value.pairs[1].order = "AB"; },
-    (value) => { value.pairs[0].observations[0].elapsedNs = "01"; },
+    (value) => { value.pairs[0].observations[0].timing.durationNs = "01"; },
+    (value) => { value.pairs[0].observations[0].timing.durationNs = "0"; },
+    (value) => { value.pairs[0].observations[0].timing.endNs = "11"; },
+    (value) => {
+      const prior = value.pairs[0].observations[0].timing;
+      const next = value.pairs[0].observations[1].timing;
+      next.startNs = (BigInt(prior.endNs) - 1n).toString();
+      next.durationNs = (BigInt(next.endNs) - BigInt(next.startNs)).toString();
+    },
     (value) => { value.authority.completedPairs = 9; },
+    (value) => { value.authority.reasonCodes.push("arbitrary_extra"); },
   ];
   for (const mutate of mutations) {
     const changed = structuredClone(raw);
     mutate(changed);
-    assert.throws(() => assertCrawlPerformanceRaw(changed), /Invalid|mismatch/u);
+    assert.throws(
+      () => assertCrawlPerformanceRaw(changed),
+      /[Ii]nvalid|mismatch|overlap|backwards/u,
+    );
   }
+});
+
+test("raw replay rejects every observation retained after the first invalid result", async () => {
+  const valid = await runCrawlPerformanceAuthority({
+    identity: identity(),
+    runners: runners(),
+    now: incrementalClock(),
+  });
+  const injected = runners();
+  const original = injected.crawlee;
+  injected.crawlee = async (job) => {
+    const result = await original(job);
+    if (job.phase === "sample") result.result.pages.pop();
+    return result;
+  };
+  const failed = await runCrawlPerformanceAuthority({
+    identity: identity(),
+    runners: injected,
+    now: incrementalClock(),
+  });
+  const changed = structuredClone(failed);
+  changed.pairs[0].observations.push(structuredClone(valid.pairs[0].observations[1]));
+  assert.throws(
+    () => assertCrawlPerformanceRaw(changed),
+    /continued after an invalid observation/u,
+  );
+});
+
+test("raw replay rejects an observation retained after a terminal clock failure", async () => {
+  const valid = await runCrawlPerformanceAuthority({
+    identity: identity(),
+    runners: runners(),
+    now: incrementalClock(),
+  });
+  let read = 0;
+  const failed = await runCrawlPerformanceAuthority({
+    identity: identity(),
+    runners: runners(),
+    now() {
+      read += 1;
+      return read === 1 ? 10n : 10n;
+    },
+  });
+  const changed = structuredClone(failed);
+  changed.pairs[0].observations.push(structuredClone(valid.pairs[0].observations[1]));
+  assert.throws(
+    () => assertCrawlPerformanceRaw(changed),
+    /continued after a clock failure/u,
+  );
 });
 
 test("Stasis runner factory rejects the root historical 0.2.1 SDK identity", () => {

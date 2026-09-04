@@ -366,8 +366,8 @@ function extractCrawlPairs(raw) {
       crawlee?.oracle?.valid !== true ||
       stasis?.oracle?.valid !== true ||
       pair.equivalence?.valid !== true ||
-      !positiveDecimalPattern.test(crawlee?.elapsedNs ?? "") ||
-      !positiveDecimalPattern.test(stasis?.elapsedNs ?? "")
+      !positiveDecimalPattern.test(crawlee?.timing?.durationNs ?? "") ||
+      !positiveDecimalPattern.test(stasis?.timing?.durationNs ?? "")
     ) {
       throw new TypeError("Combined performance evidence requires a fully valid crawl authority");
     }
@@ -376,8 +376,8 @@ function extractCrawlPairs(raw) {
       order,
       baselineRunner: "crawlee",
       stasisRunner: stasisStatisticsLabel,
-      baselineDurationNs: crawlee.elapsedNs,
-      stasisDurationNs: stasis.elapsedNs,
+      baselineDurationNs: crawlee.timing.durationNs,
+      stasisDurationNs: stasis.timing.durationNs,
     };
   });
 }

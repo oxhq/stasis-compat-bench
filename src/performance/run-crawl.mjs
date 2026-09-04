@@ -31,6 +31,7 @@ import {
   crawlPerformanceRawArtifactPath,
   runCrawlPerformanceAuthority,
 } from "./crawl.mjs";
+import { createCleanHarnessWorktreeEvidence } from "./harness-worktree.mjs";
 
 const execFileAsync = promisify(execFile);
 const packageResolver = createRequire(import.meta.url);
@@ -153,7 +154,7 @@ export async function loadCrawlPerformanceProvenanceFromEnvironment(
   environment = process.env,
   {
     checkoutRoot = repositoryRoot,
-    readHarnessCheckoutIdentity = defaultReadHarnessCheckoutIdentity,
+    readHarnessCheckoutIdentity = readCrawlHarnessCheckoutIdentity,
   } = {},
 ) {
   const checkout = await readHarnessCheckoutIdentity(checkoutRoot);
@@ -168,6 +169,7 @@ export async function loadCrawlPerformanceProvenanceFromEnvironment(
     workflowSourceRef: required(environment, environmentNames.ref),
     harnessCheckoutRevision: checkout.revision,
     harnessCheckoutTree: checkout.tree,
+    harnessCheckoutWorktree: checkout.worktree,
   });
 }
 
@@ -264,17 +266,24 @@ async function defaultRunExecutable(executablePath) {
   return version;
 }
 
-async function defaultReadHarnessCheckoutIdentity(checkoutRoot) {
-  const { stdout } = await execFileAsync(
-    "git",
-    ["rev-parse", "HEAD", "HEAD^{tree}"],
-    {
-      cwd: checkoutRoot,
-      encoding: "utf8",
-      windowsHide: true,
-    },
-  );
-  const [revision, tree, ...extra] = stdout.trim().split(/\r?\n/u);
+export async function readCrawlHarnessCheckoutIdentity(
+  checkoutRoot,
+  { execFileImpl = execFileAsync } = {},
+) {
+  const options = {
+    cwd: checkoutRoot,
+    encoding: "utf8",
+    windowsHide: true,
+  };
+  const [{ stdout: identityOutput }, { stdout: statusOutput }] = await Promise.all([
+    execFileImpl("git", ["rev-parse", "HEAD", "HEAD^{tree}"], options),
+    execFileImpl(
+      "git",
+      ["status", "--porcelain=v1", "-z", "--untracked-files=all"],
+      options,
+    ),
+  ]);
+  const [revision, tree, ...extra] = identityOutput.trim().split(/\r?\n/u);
   if (
     extra.length !== 0 ||
     !/^[a-f0-9]{40}$/u.test(revision ?? "") ||
@@ -282,7 +291,11 @@ async function defaultReadHarnessCheckoutIdentity(checkoutRoot) {
   ) {
     throw new Error("Benchmark harness checkout identity is invalid");
   }
-  return Object.freeze({ revision, tree });
+  return Object.freeze({
+    revision,
+    tree,
+    worktree: createCleanHarnessWorktreeEvidence(statusOutput),
+  });
 }
 
 function required(environment, name) {

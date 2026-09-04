@@ -21,7 +21,23 @@ import {
   rwaPerformanceProtocol,
   rwaPerformanceTrack,
 } from "../src/performance/rwa.mjs";
+import { cleanHarnessWorktreeEvidence } from "../src/performance/harness-worktree.mjs";
+import {
+  postSupportNodeVersion,
+  postSupportProfile,
+  postSupportRevision,
+  postSupportVersion,
+} from "../src/post-support/candidate-identity.mjs";
+import { rwaAuthSource } from "../src/rwa/cases.mjs";
+import { rwaBaselineExpected } from "../src/rwa/run-cypress.mjs";
+import {
+  RWA_AMBIENT_OVERRIDE_IDENTITY,
+  RWA_GENERATED_RUNTIME_IDENTITY,
+  RWA_LOCAL_ENV_IDENTITY,
+  RWA_RUNTIME_CACHE_IDENTITY,
+} from "../src/rwa/runtime-identity.mjs";
 import { repositoryRoot } from "../src/shared/io.mjs";
+import { FROZEN_IDENTITIES } from "../src/shared/manifest.mjs";
 
 test("RWA hosted wrapper binds its identity, host, continuity, and valid raw authority", () => {
   const raw = rwaRawStub();
@@ -95,6 +111,51 @@ test("RWA hosted wrapper rejects schema, raw, host, continuity, and privacy drif
       },
     },
     {
+      label: "dirty harness provenance",
+      expected: /clean-worktree evidence/u,
+      mutate: (value) => { value.provenance.harness.worktree.clean = false; },
+    },
+    {
+      label: "noncanonical workflow attempt",
+      expected: /workflow-source provenance/u,
+      mutate: (value) => { value.provenance.workflowSource.runAttempt = "01"; },
+    },
+    {
+      label: "Node executable substitution",
+      expected: /Node identity/u,
+      mutate: (value) => { value.identities.node.executableSha256 = "a".repeat(64); },
+    },
+    {
+      label: "Cypress package substitution",
+      expected: /Cypress or Electron identity/u,
+      mutate: (value) => { value.identities.cypress.packageVersion = "15.17.1"; },
+    },
+    {
+      label: "Cypress executable-byte substitution",
+      expected: /Cypress or Electron identity/u,
+      mutate: (value) => { value.identities.cypress.installed.executable.bytes += 1; },
+    },
+    {
+      label: "Cypress runtime-tree substitution",
+      expected: /Cypress or Electron identity/u,
+      mutate: (value) => { value.identities.cypress.installed.cypressRuntimeTree.sha256 = "0".repeat(64); },
+    },
+    {
+      label: "RWA tree substitution",
+      expected: /checkout identity/u,
+      mutate: (value) => { value.identities.rwa.tree = "a".repeat(40); },
+    },
+    {
+      label: "Stasis candidate substitution",
+      expected: /candidate differs/u,
+      mutate: (value) => { value.identities.stasis.candidate.windows.zip.sha256 = "a".repeat(64); },
+    },
+    {
+      label: "Stasis runtime substitution",
+      expected: /runtime differs/u,
+      mutate: (value) => { value.identities.stasis.runtime.stasisRevision = "a".repeat(40); },
+    },
+    {
       label: "broken checkout continuity",
       expected: /sealed runtime continuity/u,
       mutate: (value) => {
@@ -113,9 +174,25 @@ test("RWA hosted wrapper rejects schema, raw, host, continuity, and privacy drif
     },
     {
       label: "checkout bytes drift behind a true flag",
-      expected: /sealed runtime continuity/u,
+      expected: /checkout differs from its frozen identity/u,
       mutate: (value) => {
         value.sealedRuntime.postflight.checkout.revision = "f".repeat(40);
+      },
+    },
+    {
+      label: "identical checkout drift in both retained phases",
+      expected: /checkout differs from its frozen identity/u,
+      mutate: (value) => {
+        value.sealedRuntime.startup.checkout.revision = "f".repeat(40);
+        value.sealedRuntime.postflight.checkout.revision = "f".repeat(40);
+      },
+    },
+    {
+      label: "identical incomplete server evidence in both retained phases",
+      expected: /servers differ from their frozen identity/u,
+      mutate: (value) => {
+        value.sealedRuntime.startup.servers = [{ name: "frontend" }, { name: "backend" }];
+        value.sealedRuntime.postflight.servers = [{ name: "frontend" }, { name: "backend" }];
       },
     },
     {
@@ -134,6 +211,50 @@ test("RWA hosted wrapper rejects schema, raw, host, continuity, and privacy drif
       item.label,
     );
   }
+});
+
+test("RWA wrapper continuity accepts only the declared database newline transition", () => {
+  const artifact = rwaArtifactStub(rwaRawStub());
+  artifact.sealedRuntime.postflight.checkout.trackedStatusEntries = [
+    ` M ${rwaBaselineExpected.databasePath}`,
+  ];
+  artifact.sealedRuntime.postflight.checkout.runtimeDatabase = {
+    ...artifact.sealedRuntime.postflight.checkout.runtimeDatabase,
+    worktreeSha256: "ce499607bd4d1851353aca0e79b95fd737aa15755fd12d0e10b02af71dd48920",
+    newlineOnlyDifference: true,
+    allowedRuntimeMutation: true,
+  };
+  assert.doesNotThrow(
+    () => assertRwaPerformanceArtifact(artifact, { assertRaw: (value) => value }),
+  );
+
+  artifact.sealedRuntime.postflight.checkout.trackedStatusEntries = [" M arbitrary.txt"];
+  assert.throws(
+    () => assertRwaPerformanceArtifact(artifact, { assertRaw: (value) => value }),
+    /sealed runtime continuity/u,
+  );
+
+  const wrongCleanHash = rwaArtifactStub(rwaRawStub());
+  wrongCleanHash.sealedRuntime.postflight.checkout.runtimeDatabase.worktreeSha256 = "9".repeat(64);
+  assert.throws(
+    () => assertRwaPerformanceArtifact(wrongCleanHash, { assertRaw: (value) => value }),
+    /sealed runtime continuity/u,
+  );
+
+  const reverseTransition = rwaArtifactStub(rwaRawStub());
+  reverseTransition.sealedRuntime.startup.checkout.trackedStatusEntries = [
+    ` M ${rwaBaselineExpected.databasePath}`,
+  ];
+  reverseTransition.sealedRuntime.startup.checkout.runtimeDatabase = {
+    ...reverseTransition.sealedRuntime.startup.checkout.runtimeDatabase,
+    worktreeSha256: "ce499607bd4d1851353aca0e79b95fd737aa15755fd12d0e10b02af71dd48920",
+    newlineOnlyDifference: true,
+    allowedRuntimeMutation: true,
+  };
+  assert.throws(
+    () => assertRwaPerformanceArtifact(reverseTransition, { assertRaw: (value) => value }),
+    /sealed runtime continuity/u,
+  );
 });
 
 test("canonical JSON reader rejects formatting and duplicate-key ambiguity", async () => {
@@ -410,14 +531,28 @@ function rwaRawStub() {
 }
 
 function rwaArtifactStub(raw) {
+  const identities = rwaIdentitiesStub();
   return {
     schema: rwaPerformanceArtifactSchema,
     protocol: rwaPerformanceProtocol,
     track: rwaPerformanceTrack,
     recordedAt: "2026-09-02T00:00:00.000Z",
     provenance: {
-      harness: { revision: "3".repeat(40), tree: "4".repeat(40) },
-      workflowSource: { revision: "5".repeat(40), ref: "refs/heads/performance" },
+      harness: {
+        revision: "3".repeat(40),
+        tree: "4".repeat(40),
+        worktree: structuredClone(cleanHarnessWorktreeEvidence),
+      },
+      workflowSource: {
+        provider: "github-actions",
+        repository: "oxhq/stasis",
+        workflow: "Stasis v0.3.3 performance evidence",
+        job: "windows-rwa",
+        revision: "5".repeat(40),
+        ref: "refs/heads/performance",
+        runId: "33840000000",
+        runAttempt: "1",
+      },
     },
     host: {
       facts: {
@@ -432,15 +567,15 @@ function rwaArtifactStub(raw) {
       classDigest: raw.host.identityDigest,
       machineInstanceSaltedDigest: raw.host.instanceDigest,
     },
-    identities: { runner: "sealed-test-runner" },
+    identities,
     sealedRuntime: {
       startup: {
-        checkout: { valid: true, violations: [], revision: "6".repeat(40) },
-        servers: [{ name: "frontend" }, { name: "backend" }],
+        checkout: checkoutStub(),
+        servers: serverStubs(identities),
       },
       postflight: {
-        checkout: { valid: true, violations: [], revision: "6".repeat(40) },
-        servers: [{ name: "frontend" }, { name: "backend" }],
+        checkout: checkoutStub(),
+        servers: serverStubs(identities),
       },
       continuity: {
         immutableCheckoutIdentity: true,
@@ -449,5 +584,167 @@ function rwaArtifactStub(raw) {
       },
     },
     authorityRaw: raw,
+  };
+}
+
+function checkoutStub() {
+  return {
+    valid: true,
+    violations: [],
+    revision: rwaAuthSource.revision,
+    tree: rwaBaselineExpected.tree,
+    detached: true,
+    authSpec: {
+      blobOid: rwaAuthSource.specBlobOid,
+      blobSha256: rwaAuthSource.specBlobSha256,
+      worktreeSha256: rwaAuthSource.windowsCrlfWorktreeSha256,
+    },
+    seed: {
+      blobOid: rwaBaselineExpected.seed.blobOid,
+      blobSha256: rwaBaselineExpected.seed.blobSha256,
+      worktreeSha256: rwaBaselineExpected.seed.worktreeSha256,
+    },
+    generatedRuntimeFiles: structuredClone(RWA_GENERATED_RUNTIME_IDENTITY),
+    runtimeCache: structuredClone(RWA_RUNTIME_CACHE_IDENTITY),
+    localEnvironmentFiles: structuredClone(RWA_LOCAL_ENV_IDENTITY),
+    ambientOverrides: structuredClone(RWA_AMBIENT_OVERRIDE_IDENTITY),
+    trackedStatusEntries: [],
+    runtimeDatabase: {
+      blobOid: rwaBaselineExpected.seed.blobOid,
+      blobSha256: rwaBaselineExpected.seed.blobSha256,
+      worktreeSha256: rwaBaselineExpected.seed.worktreeSha256,
+      newlineOnlyDifference: false,
+      allowedRuntimeMutation: false,
+    },
+  };
+}
+
+function serverStubs(identities) {
+  const listener = (port, scriptRole) => ({
+    port,
+    processName: "node.exe",
+    nodeVersion: identities.node.version,
+    executableBytes: identities.node.executableBytes,
+    executableSha256: identities.node.executableSha256,
+    launcherMatchesFrozenHost: true,
+    commandMatchesPinnedRole: true,
+    scriptRole,
+  });
+  return [
+    {
+      name: "frontend",
+      url: `${identities.rwa.endpoints.appOrigin}/`,
+      status: 200,
+      contentType: identities.rwa.serverBodies.frontend.contentType,
+      bodyBytes: identities.rwa.serverBodies.frontend.bytes,
+      bodySha256: identities.rwa.serverBodies.frontend.sha256,
+      listener: listener(3000, "scripts/testServer.ts"),
+      servedBuildTree: structuredClone(identities.rwa.buildTree),
+      generatedRuntimeFiles: structuredClone(RWA_GENERATED_RUNTIME_IDENTITY),
+      runtimeCache: structuredClone(RWA_RUNTIME_CACHE_IDENTITY),
+      localEnvironmentFiles: structuredClone(RWA_LOCAL_ENV_IDENTITY),
+      ambientOverrides: structuredClone(RWA_AMBIENT_OVERRIDE_IDENTITY),
+    },
+    {
+      name: "backend",
+      url: `${identities.rwa.endpoints.apiOrigin}/`,
+      status: 200,
+      contentType: identities.rwa.serverBodies.backend.contentType,
+      bodyBytes: identities.rwa.serverBodies.backend.bytes,
+      bodySha256: identities.rwa.serverBodies.backend.sha256,
+      listener: listener(3001, "backend/app.ts"),
+    },
+  ];
+}
+
+function rwaIdentitiesStub() {
+  return {
+    node: {
+      version: postSupportNodeVersion,
+      executableSha256: rwaBaselineExpected.nodeExecutable.sha256,
+      executableBytes: rwaBaselineExpected.nodeExecutable.bytes,
+    },
+    cypress: {
+      packageVersion: rwaBaselineExpected.cypressVersion,
+      browserName: "electron",
+      browserVersion: rwaBaselineExpected.electronVersion,
+      resolvedNodeVersion: rwaBaselineExpected.resolvedNodeVersion,
+      viewport: structuredClone(rwaBaselineExpected.viewport),
+      retries: structuredClone(rwaBaselineExpected.primaryRetries),
+      installed: {
+        nodeModulesTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.nodeModulesTree),
+        cypressPackageTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.cypressPackageTree),
+        tsNodePackageTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.tsNodePackageTree),
+        cypressRuntimeTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.cypressRuntimeTree),
+        executable: {
+          bytes: FROZEN_IDENTITIES.rwa.installed.cypressExecutableBytes,
+          sha256: FROZEN_IDENTITIES.rwa.installed.cypressExecutableSha256,
+        },
+      },
+    },
+    rwa: {
+      repository: rwaAuthSource.repository,
+      revision: rwaAuthSource.revision,
+      tree: rwaBaselineExpected.tree,
+      specBlobOid: rwaAuthSource.specBlobOid,
+      specBlobSha256: rwaAuthSource.specBlobSha256,
+      specWorktreeSha256: rwaAuthSource.windowsCrlfWorktreeSha256,
+      seedBlobOid: rwaBaselineExpected.seed.blobOid,
+      seedBlobSha256: rwaBaselineExpected.seed.blobSha256,
+      seedWorktreeSha256: rwaBaselineExpected.seed.worktreeSha256,
+      buildTree: structuredClone(rwaBaselineExpected.buildTree),
+      serverBodies: structuredClone(rwaBaselineExpected.serverBodies),
+      endpoints: {
+        appOrigin: rwaBaselineExpected.baseUrl,
+        apiOrigin: rwaBaselineExpected.apiUrl,
+      },
+    },
+    stasis: {
+      candidate: {
+        schema: "stasis-post-support-candidate-identity-v1",
+        repository: "oxhq/stasis",
+        revision: postSupportRevision,
+        version: postSupportVersion,
+        profile: postSupportProfile,
+        hostedSdkPackageTrain: {
+          source: "github_actions_package_workflow",
+          id: 33_506_181_780,
+          attempt: 1,
+        },
+        windows: {
+          source: "github_actions_package_workflow_ci_only_bundle",
+          zip: {
+            sha256: "5e95ed4123ee2b03d579313bae637cb35e3050114377072c603b0b5cbd1d217b",
+            bytes: 37_188_148,
+          },
+          executable: {
+            sha256: "e12230ec8659775353af50fed0d98fbaad0c2888143baf37667c90d469e738d9",
+            bytes: 87_334_400,
+          },
+        },
+        sdk: {
+          source: "hosted_package_train",
+          archive: {
+            sha256: "55063c0ab9fc802e101d792831c292f1a7b0b497a141603102eacbef9fc029ec",
+            bytes: 181_292,
+          },
+          proof: {
+            sha256: "ec6df3f07f3a27f16bf9fb91b5c2b09daf796bd8f2aed455f6879598f06b9ba4",
+            bytes: 10_695,
+          },
+          tree: {
+            sha256: "20f52ace92961030f8dc5d2743d941eb3445a86949097b194ec97312f5eface8",
+            fileCount: 55,
+            totalBytes: 896_631,
+          },
+        },
+      },
+      runtime: {
+        implementationName: "stasis-shell",
+        implementationVersion: postSupportVersion,
+        stasisRevision: postSupportRevision,
+        v2ProfileAdvertised: true,
+      },
+    },
   };
 }

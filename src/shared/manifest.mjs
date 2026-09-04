@@ -4,8 +4,6 @@ import { readFileSync, statSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
-import { chromium } from "playwright";
-
 import { repositoryRoot, sha256DirectoryTree, sha256File } from "./io.mjs";
 import {
   assertRwaGeneratedRuntimeFiles,
@@ -75,6 +73,7 @@ export const FROZEN_IDENTITIES = deepFreeze({
         fileCount: 21_519,
         totalBytes: 785_105_214,
       },
+      cypressExecutableBytes: 205_927_728,
       cypressExecutableSha256:
         "3af48298e0deb0202601e18dbbb3c1ec0da29a18edd842528e83ea3e53126ecf",
     },
@@ -275,6 +274,7 @@ export function assertFrozenManifestIdentities(manifest) {
     ["RWA Cypress package tree", manifest?.rwa?.installed?.cypressPackageTree, expected.rwa.installed.cypressPackageTree],
     ["RWA ts-node package tree", manifest?.rwa?.installed?.tsNodePackageTree, expected.rwa.installed.tsNodePackageTree],
     ["RWA Cypress runtime tree", manifest?.rwa?.installed?.cypressRuntimeTree, expected.rwa.installed.cypressRuntimeTree],
+    ["RWA Cypress executable bytes", manifest?.rwa?.installed?.cypressExecutableBytes, expected.rwa.installed.cypressExecutableBytes],
     ["RWA Cypress executable", manifest?.rwa?.installed?.cypressExecutableSha256, expected.rwa.installed.cypressExecutableSha256],
     ["RWA frontend origin", manifest?.rwa?.frontendOrigin, expected.rwa.frontendOrigin],
     ["RWA API origin", manifest?.rwa?.apiOrigin, expected.rwa.apiOrigin],
@@ -317,30 +317,59 @@ export async function installedPackageEvidence() {
   };
 }
 
-export async function installedRwaEvidence(root) {
+export async function installedRwaEvidence(
+  root,
+  {
+    hashDirectory = sha256DirectoryTree,
+    hashFile = sha256File,
+    runCommand = command,
+    statFile = statSync,
+  } = {},
+) {
   const nodeModulesRoot = path.join(root, "node_modules");
   const cypressPackageRoot = path.join(nodeModulesRoot, "cypress");
   const tsNodePackageRoot = path.join(nodeModulesRoot, "ts-node");
+  const [nodeModulesTree, cypressPackageTree, tsNodePackageTree] = await Promise.all([
+    hashDirectory(nodeModulesRoot),
+    hashDirectory(cypressPackageRoot),
+    hashDirectory(tsNodePackageRoot),
+  ]);
+  const packageTrees = { nodeModulesTree, cypressPackageTree, tsNodePackageTree };
+  assertFrozenRwaInstalledPackageTrees(packageTrees);
   const cypressCli = path.join(cypressPackageRoot, "bin", "cypress");
-  const cacheRoot = command(process.execPath, [cypressCli, "cache", "path"]);
+  const cacheRoot = runCommand(process.execPath, [cypressCli, "cache", "path"]);
   const cypressRuntimeRoot = path.join(cacheRoot, FROZEN_IDENTITIES.rwa.cypress, "Cypress");
   const cypressExecutablePath = path.join(cypressRuntimeRoot, "Cypress.exe");
   return {
     nodeModulesRoot,
-    nodeModulesTree: await sha256DirectoryTree(nodeModulesRoot),
+    nodeModulesTree: packageTrees.nodeModulesTree,
     cypressPackageRoot,
-    cypressPackageTree: await sha256DirectoryTree(cypressPackageRoot),
+    cypressPackageTree: packageTrees.cypressPackageTree,
     tsNodePackageRoot,
-    tsNodePackageTree: await sha256DirectoryTree(tsNodePackageRoot),
+    tsNodePackageTree: packageTrees.tsNodePackageTree,
     cypressRuntimeRoot,
-    cypressRuntimeTree: await sha256DirectoryTree(cypressRuntimeRoot),
+    cypressRuntimeTree: await hashDirectory(cypressRuntimeRoot),
     cypressExecutablePath,
-    cypressExecutableBytes: statSync(cypressExecutablePath).size,
-    cypressExecutableSha256: await sha256File(cypressExecutablePath),
+    cypressExecutableBytes: statFile(cypressExecutablePath).size,
+    cypressExecutableSha256: await hashFile(cypressExecutablePath),
   };
 }
 
+export function assertFrozenRwaInstalledPackageTrees(value) {
+  const frozen = FROZEN_IDENTITIES.rwa.installed;
+  const expected = {
+    nodeModulesTree: frozen.nodeModulesTree,
+    cypressPackageTree: frozen.cypressPackageTree,
+    tsNodePackageTree: frozen.tsNodePackageTree,
+  };
+  if (!isDeepStrictEqual(value, expected)) {
+    throw new Error("RWA installed package trees drifted before Cypress cache discovery");
+  }
+  return value;
+}
+
 export async function installedBrowserEvidence() {
+  const { chromium } = await import("playwright");
   const chromiumExecutable = chromium.executablePath();
   const chromiumInstallRoot = path.dirname(path.dirname(chromiumExecutable));
   const browser = await chromium.launch({ headless: true });

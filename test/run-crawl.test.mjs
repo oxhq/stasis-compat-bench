@@ -16,8 +16,10 @@ import {
   loadCrawlPerformanceProvenanceFromEnvironment,
   observeCrawleePerformanceIdentity,
   observeCrawlPerformanceHost,
+  readCrawlHarnessCheckoutIdentity,
   runCrawlPerformanceCommand,
 } from "../src/performance/run-crawl.mjs";
+import { cleanHarnessWorktreeEvidence } from "../src/performance/harness-worktree.mjs";
 import {
   expectedPrimaryScheduledUrls,
   origin,
@@ -29,8 +31,8 @@ function baseEnvironment() {
     ImageOS: "ubuntu22",
     ImageVersion: "20260824.1.0",
     GITHUB_REPOSITORY: "oxhq/stasis",
-    GITHUB_WORKFLOW: "performance",
-    GITHUB_JOB: "crawl-benchmark",
+    GITHUB_WORKFLOW: "Stasis v0.3.3 performance evidence",
+    GITHUB_JOB: "ubuntu-crawl",
     GITHUB_REF: "refs/heads/post-v033-performance-evidence",
     GITHUB_RUN_ID: "33599999999",
     GITHUB_RUN_ATTEMPT: "1",
@@ -116,6 +118,7 @@ test("provenance keeps workflow-source and harness-checkout revisions separate",
       readHarnessCheckoutIdentity: async () => ({
         revision: "b".repeat(40),
         tree: "c".repeat(40),
+        worktree: structuredClone(cleanHarnessWorktreeEvidence),
       }),
     },
   );
@@ -123,15 +126,70 @@ test("provenance keeps workflow-source and harness-checkout revisions separate",
   assert.deepEqual(provenance, createCrawlPerformanceGithubProvenance({
     provider: "github-actions",
     repository: "oxhq/stasis",
-    workflow: "performance",
-    job: "crawl-benchmark",
+    workflow: "Stasis v0.3.3 performance evidence",
+    job: "ubuntu-crawl",
     runId: "33599999999",
     runAttempt: "1",
     workflowSourceSha: "a".repeat(40),
     workflowSourceRef: "refs/heads/post-v033-performance-evidence",
     harnessCheckoutRevision: "b".repeat(40),
     harnessCheckoutTree: "c".repeat(40),
+    harnessCheckoutWorktree: structuredClone(cleanHarnessWorktreeEvidence),
   }));
+});
+
+test("crawl provenance rejects repository, workflow, or job drift", async () => {
+  for (const [name, value] of [
+    ["GITHUB_REPOSITORY", "someone/fork"],
+    ["GITHUB_WORKFLOW", "performance-copy"],
+    ["GITHUB_JOB", "crawl-copy"],
+  ]) {
+    const environment = baseEnvironment();
+    environment[name] = value;
+    await assert.rejects(
+      loadCrawlPerformanceProvenanceFromEnvironment(environment, {
+        readHarnessCheckoutIdentity: async () => ({
+          revision: "b".repeat(40),
+          tree: "c".repeat(40),
+          worktree: structuredClone(cleanHarnessWorktreeEvidence),
+        }),
+      }),
+      /Invalid GitHub Actions crawl performance provenance/u,
+    );
+  }
+});
+
+test("crawl harness checkout evidence fails closed on tracked or untracked non-ignored files", async () => {
+  const calls = [];
+  const clean = await readCrawlHarnessCheckoutIdentity("/checkout", {
+    execFileImpl: async (_file, args, options) => {
+      calls.push({ args, cwd: options.cwd });
+      return args[0] === "rev-parse"
+        ? { stdout: `${"b".repeat(40)}\n${"c".repeat(40)}\n` }
+        : { stdout: "" };
+    },
+  });
+  assert.deepEqual(clean, {
+    revision: "b".repeat(40),
+    tree: "c".repeat(40),
+    worktree: cleanHarnessWorktreeEvidence,
+  });
+  assert.deepEqual(calls.map(({ args }) => args), [
+    ["rev-parse", "HEAD", "HEAD^{tree}"],
+    ["status", "--porcelain=v1", "-z", "--untracked-files=all"],
+  ]);
+  assert.equal(calls.every(({ cwd }) => cwd === "/checkout"), true);
+
+  for (const dirtyStatus of [" M tracked.mjs\0", "?? untracked.mjs\0"]) {
+    await assert.rejects(
+      readCrawlHarnessCheckoutIdentity("/checkout", {
+        execFileImpl: async (_file, args) => args[0] === "rev-parse"
+          ? { stdout: `${"b".repeat(40)}\n${"c".repeat(40)}\n` }
+          : { stdout: dirtyStatus },
+      }),
+      /must match HEAD/u,
+    );
+  }
 });
 
 test("command preflight builds the exact identity, writes raw, and disposes the verified candidate", async () => {
@@ -158,14 +216,15 @@ test("command preflight builds the exact identity, writes raw, and disposes the 
   const provenance = createCrawlPerformanceGithubProvenance({
     provider: "github-actions",
     repository: "oxhq/stasis",
-    workflow: "performance",
-    job: "crawl-benchmark",
+    workflow: "Stasis v0.3.3 performance evidence",
+    job: "ubuntu-crawl",
     runId: "33599999999",
     runAttempt: "1",
     workflowSourceSha: "a".repeat(40),
     workflowSourceRef: "refs/heads/post-v033-performance-evidence",
     harnessCheckoutRevision: "b".repeat(40),
     harnessCheckoutTree: "c".repeat(40),
+    harnessCheckoutWorktree: structuredClone(cleanHarnessWorktreeEvidence),
   });
 
   const result = await runCrawlPerformanceCommand({
@@ -295,14 +354,15 @@ test("candidate disposal still runs when command execution fails after verificat
       loadProvenance: async () => createCrawlPerformanceGithubProvenance({
         provider: "github-actions",
         repository: "oxhq/stasis",
-        workflow: "performance",
-        job: "crawl-benchmark",
+        workflow: "Stasis v0.3.3 performance evidence",
+        job: "ubuntu-crawl",
         runId: "33599999999",
         runAttempt: "1",
         workflowSourceSha: "a".repeat(40),
         workflowSourceRef: "refs/heads/post-v033-performance-evidence",
         harnessCheckoutRevision: "b".repeat(40),
         harnessCheckoutTree: "c".repeat(40),
+        harnessCheckoutWorktree: structuredClone(cleanHarnessWorktreeEvidence),
       }),
       observeBaseline: async ({ host }) => ({
         runner: "crawlee-playwrightcrawler",

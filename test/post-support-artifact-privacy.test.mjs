@@ -62,6 +62,34 @@ test("post-support serializer accepts only the frozen RWA route narratives in ty
   }
 });
 
+test("RWA wrapper privacy accepts only the frozen GraphQL semantic narrative", () => {
+  const frozen = {
+    authorityRaw: {
+      semanticDifferenceDisclosure: {
+        definitions: {
+          "graphql-operation-name-redacted": {
+            baseline: "Cypress aliases the /graphql request by reading request.body.operationName.",
+            treatment:
+              "Correlate POST /graphql status with the exact Finished UI and persisted bank-account oracle.",
+          },
+        },
+      },
+    },
+  };
+  assert.doesNotThrow(() => serializePostSupportArtifact(frozen));
+  for (const attack of [
+    "C:\\Users\\private\\proof.txt",
+    "/home/private/proof.txt",
+    "Cypress aliases an arbitrary /graphql-copy request.",
+  ]) {
+    const changed = structuredClone(frozen);
+    changed.authorityRaw.semanticDifferenceDisclosure.definitions[
+      "graphql-operation-name-redacted"
+    ].baseline = attack;
+    assert.throws(() => serializePostSupportArtifact(changed), /local path/u);
+  }
+});
+
 test("typed RWA action narratives still reject local, encoded, traversal, credential, and arbitrary slash text", () => {
   const frozenStage = "POST /users and sign-in form ready";
   const frozenPurpose = "record POST /login";

@@ -51,6 +51,7 @@ const projectedErrorCodes = new Set([
   "droppedfailurecount_not_zero",
   "engine_crash",
   "engine_startup_not_included",
+  "execution_history_invalid",
   "host_cpu_count_invalid",
   "host_field_invalid",
   "host_identity_digest_invalid",
@@ -544,7 +545,7 @@ export async function runRwaPerformanceAuthority({
       }
     }
 
-    if (!unsafeToContinue && warmups.length === runners.length && warmups.every(isPassingRecord)) {
+    if (!unsafeToContinue && warmups.length === runners.length) {
       outer: for (const pair of pairSchedule) {
         for (let position = 0; position < pair.runners.length; position += 1) {
           const runner = pair.runners[position];
@@ -813,6 +814,7 @@ export function assertRwaPerformanceRaw(value) {
   assertServerLifecycle(value.serverLifecycle);
   assertWarmups(value.warmups, value.host.identityDigest, value.host.instanceDigest);
   assertSamples(value.samples, value.host.identityDigest, value.host.instanceDigest);
+  assertFailStopHistory(value.warmups, value.samples);
   const expectedAuthority = deriveAuthority(value.warmups, value.samples, value.serverLifecycle);
   if (!isDeepStrictEqual(value.authority, expectedAuthority)) {
     invalid("authority_summary_invalid", "RWA performance authority summary does not replay from raw samples");
@@ -888,9 +890,13 @@ function assertWarmups(value, hostDigest, hostInstanceDigest) {
     if (
       record.sequence !== index + 1 ||
       record.warmupIndex !== 1 ||
-      record.runner !== runners[index]
+      record.runner !== runners[index] ||
+      record.status === "clock_error"
     ) {
-      invalid("warmup_order_invalid", "RWA performance warmups changed order or multiplicity");
+      invalid(
+        "warmup_order_invalid",
+        "RWA performance warmups changed order, multiplicity, or untimed status vocabulary",
+      );
     }
     assertExecutionRecord(record, hostDigest, hostInstanceDigest);
   });
@@ -945,6 +951,41 @@ function assertSamples(value, hostDigest, hostInstanceDigest) {
     if (timing.end !== null) priorEnd = timing.end;
     assertExecutionRecord(record, hostDigest, hostInstanceDigest);
   });
+}
+
+function assertFailStopHistory(warmups, samples) {
+  if (warmups.length < 1) {
+    invalid("execution_history_invalid", "RWA performance history lacks its first retained warm-up");
+  }
+  const unsafeWarmupIndex = warmups.findIndex(({ status }) => unsafeRecordStatuses.has(status));
+  if (unsafeWarmupIndex !== -1) {
+    if (unsafeWarmupIndex !== warmups.length - 1 || samples.length !== 0) {
+      invalid("execution_history_invalid", "RWA performance history continued after an unsafe warm-up");
+    }
+    return;
+  }
+  if (warmups.length !== runners.length) {
+    invalid(
+      "execution_history_invalid",
+      "RWA performance warm-up history stopped without an unsafe retained failure",
+    );
+  }
+  if (samples.length < 1) {
+    invalid(
+      "execution_history_invalid",
+      "RWA performance timed history stopped without an unsafe retained failure",
+    );
+  }
+  const unsafeSampleIndex = samples.findIndex(({ status }) => unsafeRecordStatuses.has(status));
+  if (unsafeSampleIndex !== -1 && unsafeSampleIndex !== samples.length - 1) {
+    invalid("execution_history_invalid", "RWA performance history continued after an unsafe timed sample");
+  }
+  if (samples.length < pairSchedule.length * 2 && unsafeSampleIndex === -1) {
+    invalid(
+      "execution_history_invalid",
+      "RWA performance timed history stopped without an unsafe retained failure",
+    );
+  }
 }
 
 function assertTiming(value) {

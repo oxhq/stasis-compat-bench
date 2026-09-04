@@ -25,6 +25,7 @@ import {
 } from "../src/performance/rwa.mjs";
 import { rwaAuthCases, rwaAuthSource } from "../src/rwa/cases.mjs";
 import { expectedPrimaryScheduledUrls, origin } from "../src/crawl/corpus.mjs";
+import { cleanHarnessWorktreeEvidence } from "../src/performance/harness-worktree.mjs";
 
 const rwaPairDurations = [
   { baselineNs: "11000000", stasisNs: "5000000" },
@@ -371,14 +372,15 @@ function crawlIdentity() {
     provenance: createCrawlPerformanceGithubProvenance({
       provider: "github-actions",
       repository: "oxhq/stasis",
-      workflow: "performance",
-      job: "crawl-benchmark",
+      workflow: "Stasis v0.3.3 performance evidence",
+      job: "ubuntu-crawl",
       runId: "33599999999",
       runAttempt: "1",
       workflowSourceSha: "e".repeat(40),
       workflowSourceRef: "refs/heads/post-v033-performance-evidence",
       harnessCheckoutRevision: "f".repeat(40),
       harnessCheckoutTree: "1".repeat(40),
+      harnessCheckoutWorktree: structuredClone(cleanHarnessWorktreeEvidence),
     }),
     corpus: structuredClone(crawlPerformanceCorpusIdentity),
     crawlee: {

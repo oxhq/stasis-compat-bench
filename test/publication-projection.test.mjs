@@ -186,7 +186,7 @@ test("prepared projection tree reports the remaining fresh-root operation explic
     !result.sourceHistoryExcluded || !result.sourceExclusionsAbsent,
   );
   if (!result.sourceHistoryExcluded) assert.equal(result.sourceSnapshotVerified, true);
-  assert.equal(result.unchangedInputCount, 9);
+  assert.equal(result.unchangedInputCount, 11);
   assert.equal(result.pathProjectionReceiptVerified, true);
   assert.equal(result.pathProjectionJsonPointerCount, 4);
   assert.equal(result.pathProjectionLogLineCount, 1);

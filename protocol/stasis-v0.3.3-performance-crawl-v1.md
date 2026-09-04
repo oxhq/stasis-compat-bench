@@ -29,6 +29,11 @@ The v0.3.3 SDK and runtime are verified and supplied from outside the benchmark
 module. The repository-root `@oxhq/stasis@0.2.1` dependency is sealed historical
 input and is forbidden for this authority. Package acquisition, extraction,
 hashing, runtime inspection, and other identity checks occur before measurement.
+The retained GitHub provenance binds repository, workflow, job, run ID/attempt,
+workflow-source SHA/ref, and the executing harness HEAD/tree. The harness gate
+requires no tracked or untracked non-ignored changes. Ignored dependency,
+candidate-input, and generated-artifact directories stay outside the source
+checkout identity and are governed by their own byte/fresh-output checks.
 
 ## Host binding and privacy
 
@@ -87,9 +92,16 @@ denominator.
 
 The authoritative clock is `process.hrtime.bigint()`. Each timed observation
 reads it immediately before invoking the lane runner and immediately after the
-runner promise settles. Duration is retained as canonical decimal nanoseconds.
-The clock is outside the lane so a runner cannot end its own measurement before
-cleanup.
+runner promise settles. The start, end, and duration are retained as canonical
+decimal nanoseconds; every duration is strictly positive, replays exactly as
+`end - start`, and every later start is greater than or equal to the preceding
+end. The clock is outside the lane so a runner cannot end its own measurement
+before cleanup, and the retained boundaries prove the global order from the one
+clock.
+A start/end clock exception, invalid clock value, stationary reading, or
+backwards reading is retained once as a typed terminal `clock_error` with the
+available partial boundary and no invented duration. It invalidates authority
+and stops the remaining schedule without retry.
 
 The measured Crawlee boundary includes:
 
@@ -135,7 +147,7 @@ dependency-injected orchestration returns one immutable raw value containing:
 - schema, protocol, track, exact host and runner identity, and frozen rules;
 - untimed warm-up runs and their post-timing oracle results;
 - ordered pair records with lane order, complete raw lane results, canonical
-  nanosecond durations, and exact-equivalence counts;
+  nanosecond start/end/duration boundaries, and exact-equivalence counts;
 - untimed worker/iframe observations kept outside the denominator;
 - a derived valid/invalid authority verdict, completed-pair count,
   exact-equivalent-pair count, and reason codes.

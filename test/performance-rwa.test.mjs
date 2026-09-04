@@ -238,6 +238,42 @@ test("one retained Stasis behavioral failure invalidates all ten pairs without r
   );
 });
 
+test("a safe behavioral warm-up failure is retained and the full timed schedule continues", async () => {
+  const calls = [];
+  let clockValue = 20_000n;
+  const raw = await runRwaPerformanceAuthority({
+    monotonicNow: () => ++clockValue,
+    preflight: async () => ({ sameHostVerified: true, host }),
+    startRwaServers: async () => ({ id: "servers" }),
+    stopRwaServers: async () => undefined,
+    runCypressLane: async (context) => {
+      calls.push(invocationLabel(context));
+      if (context.phase === "warmup") {
+        return laneResult("cypress", {
+          cases: rwaAuthCases.map((item, index) => caseResult("cypress", item, index === 0
+            ? {
+                classification: "BASELINE_FAILURE",
+                allOraclesPassed: false,
+                behaviorallySupported: false,
+              }
+            : {})),
+        });
+      }
+      return laneResult("cypress");
+    },
+    runStasisLane: async (context) => {
+      calls.push(invocationLabel(context));
+      return laneResult("stasis-v0.3.3");
+    },
+  });
+
+  assert.equal(calls.length, 22, "two warm-ups plus all twenty scheduled samples run once");
+  assert.deepEqual(raw.warmups.map(({ status }) => status), ["failed", "passed"]);
+  assert.equal(raw.samples.length, 20);
+  assert.equal(raw.authority.valid, false);
+  assert.deepEqual(raw.authority.reasonCodes, ["warmup_not_8_of_8"]);
+});
+
 test("a thrown lane callback is retained once and aborts after the timed cleanup boundary becomes unknown", async () => {
   let stasisCalls = 0;
   let clockValue = 0n;
@@ -348,6 +384,46 @@ test("projected runner errors use closed privacy-safe name and code vocabularies
   assert.equal(JSON.stringify(raw).includes("sentinel"), false);
 });
 
+test("raw replay rejects execution retained after the first unsafe RWA record", async () => {
+  const passing = await validRaw((() => {
+    let value = 1_000n;
+    return () => ++value;
+  })());
+  let value = 0n;
+  const timedFailure = await runRwaPerformanceAuthority({
+    monotonicNow: () => ++value,
+    preflight: async () => ({ sameHostVerified: true, host }),
+    startRwaServers: async () => ({ id: "servers" }),
+    stopRwaServers: async () => undefined,
+    runCypressLane: async () => laneResult("cypress"),
+    runStasisLane: async (context) => {
+      if (context.phase === "timed") throw new Error("planned terminal failure");
+      return laneResult("stasis-v0.3.3");
+    },
+  });
+  const changedTimed = structuredClone(timedFailure);
+  changedTimed.samples.push(structuredClone(passing.samples[2]));
+  assert.throws(
+    () => assertRwaPerformanceRaw(changedTimed),
+    /continued after an unsafe timed sample/u,
+  );
+
+  const warmupFailure = await runRwaPerformanceAuthority({
+    monotonicNow: () => { throw new Error("must remain untimed"); },
+    preflight: async () => ({ sameHostVerified: true, host }),
+    startRwaServers: async () => ({ id: "servers" }),
+    stopRwaServers: async () => undefined,
+    runCypressLane: async () => { throw new Error("planned terminal failure"); },
+    runStasisLane: async () => laneResult("stasis-v0.3.3"),
+  });
+  const changedWarmup = structuredClone(warmupFailure);
+  changedWarmup.warmups.push(structuredClone(passing.warmups[1]));
+  assert.throws(
+    () => assertRwaPerformanceRaw(changedWarmup),
+    /continued after an unsafe warm-up/u,
+  );
+});
+
 test("a failed server acquisition invokes out-of-boundary rollback without running a lane", async () => {
   const events = [];
   await assert.rejects(
@@ -429,6 +505,14 @@ test("raw schema replays host, schedule, timing, authority, and semantic disclos
     }],
     ["authority drift", (value) => {
       value.authority.valid = false;
+    }],
+    ["arbitrary authority reason", (value) => {
+      value.authority.reasonCodes.push("arbitrary_extra");
+    }],
+    ["impossible warmup clock error", (value) => {
+      value.warmups[0].status = "clock_error";
+      value.warmups[0].result = null;
+      value.warmups[0].error = { name: "TypeError", code: "clock_start_invalid" };
     }],
     ["semantic disclosure drift", (value) => {
       value.samples[1].result.cases[0].semanticDifferenceIds = [];

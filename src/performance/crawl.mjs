@@ -24,6 +24,7 @@ import {
 } from "../crawl/corpus.mjs";
 import { runStasisV03Case } from "../crawl-v03/stasis-lane.mjs";
 import { canonicalHttpUrl, serializeError } from "../shared/io.mjs";
+import { assertCleanHarnessWorktreeEvidence } from "./harness-worktree.mjs";
 
 export const crawlPerformanceSchema = "stasis-v0.3.3-performance-crawl-raw-v1";
 export const crawlPerformanceProtocol = "stasis-v0.3.3-performance-crawl-v1";
@@ -40,6 +41,9 @@ const stasisRuntimeManifestSha256 = "4e466dbd269fb08738c265133aa5bed2d139d2750db
 const nodeVersion = "v22.20.0";
 const crawleeVersion = "3.18.1";
 const playwrightVersion = "1.62.1";
+const performanceRepository = "oxhq/stasis";
+const performanceWorkflowName = "Stasis v0.3.3 performance evidence";
+const performanceCrawlJobName = "ubuntu-crawl";
 const sha256Pattern = /^[a-f0-9]{64}$/u;
 const gitShaPattern = /^[a-f0-9]{40}$/u;
 const canonicalUnsignedIntegerPattern = /^(?:0|[1-9][0-9]*)$/u;
@@ -182,15 +186,12 @@ export async function runCrawlPerformanceAuthority({
     authority: undefined,
   };
   let ordinal = 0;
-  const reasons = [];
-
   for (const lane of laneNames) {
     const job = makeJob({ phase: "warmup", lane, ordinal: ++ordinal, crawl: primaryCrawl });
     const observation = await observeUntimed(runners[lane], job, lane);
     raw.warmups.push(observation);
     if (!observation.oracle.valid) {
-      reasons.push(`${lane}_warmup_invalid`);
-      return finalize(raw, reasons);
+      return finalize(raw);
     }
   }
   const warmupEquivalence = compareExactRuns(
@@ -198,8 +199,7 @@ export async function runCrawlPerformanceAuthority({
     raw.warmups[1].run,
   );
   if (!warmupEquivalence.valid) {
-    reasons.push("warmups_not_exact_equivalent");
-    return finalize(raw, reasons);
+    return finalize(raw);
   }
 
   for (let pairIndex = 1; pairIndex <= pairCount; pairIndex += 1) {
@@ -225,9 +225,8 @@ export async function runCrawlPerformanceAuthority({
       });
       const observation = await observeTimed(runners[lane], job, lane, now);
       pair.observations.push(observation);
-      if (!observation.oracle.valid) {
-        reasons.push(`${lane}_sample_invalid`);
-        return finalize(raw, reasons);
+      if (observation.status === "clock_error" || !observation.oracle.valid) {
+        return finalize(raw);
       }
     }
 
@@ -236,8 +235,7 @@ export async function runCrawlPerformanceAuthority({
     );
     pair.equivalence = compareExactRuns(byLane.crawlee.run, byLane.stasis.run);
     if (!pair.equivalence.valid) {
-      reasons.push("pair_not_exact_equivalent");
-      return finalize(raw, reasons);
+      return finalize(raw);
     }
   }
 
@@ -260,7 +258,7 @@ export async function runCrawlPerformanceAuthority({
     }
   }
 
-  return finalize(raw, reasons);
+  return finalize(raw);
 }
 
 /** Creates the real Crawlee PlaywrightCrawler lane. No browser is launched here. */
@@ -369,6 +367,7 @@ export function assertCrawlPerformanceGithubProvenance(value) {
     "workflowSourceRef",
     "harnessCheckoutRevision",
     "harnessCheckoutTree",
+    "harnessCheckoutWorktree",
   ]) || !isDeepStrictEqual(projectGithubProvenance(value), value)) {
     throw new TypeError("Invalid GitHub Actions crawl performance provenance");
   }
@@ -407,6 +406,7 @@ export function assertCrawlPerformanceRaw(value) {
   for (let index = 0; index < value.warmups.length; index += 1) {
     assertObservation(value.warmups[index], laneNames[index], false);
   }
+  let priorTimedEnd = null;
   for (let index = 0; index < value.pairs.length; index += 1) {
     const pair = value.pairs[index];
     const expectedIndex = index + 1;
@@ -430,10 +430,16 @@ export function assertCrawlPerformanceRaw(value) {
       throw new TypeError("Invalid crawl performance pair");
     }
     pair.observations.forEach((observation, position) => {
-      assertObservation(observation, expectedOrder[position], true);
+      const timing = assertObservation(observation, expectedOrder[position], true);
+      if (timing.start !== null && priorTimedEnd !== null && timing.start < priorTimedEnd) {
+        throw new TypeError("Crawl performance timing boundaries overlap or move backwards");
+      }
+      if (timing.complete) priorTimedEnd = timing.end;
     });
     const expectedEquivalence = pair.observations.length === 2 &&
-      pair.observations.every(({ oracle }) => oracle.valid)
+      pair.observations.every(({ status, oracle }) =>
+        status === "completed" && oracle?.valid === true
+      )
       ? compareExactRuns(
           pair.observations.find(({ lane }) => lane === "crawlee")?.run,
           pair.observations.find(({ lane }) => lane === "stasis")?.run,
@@ -619,17 +625,61 @@ async function observeUntimed(runner, job, lane, validatePrimary = true) {
 }
 
 async function observeTimed(runner, job, lane, now) {
-  const startedAt = readClock(now);
+  let startedAt;
+  try {
+    startedAt = readClock(now);
+  } catch {
+    return clockFailureObservation(lane, {
+      startNs: null,
+      endNs: null,
+      durationNs: null,
+    }, "clock_start_invalid");
+  }
   const settlement = await settleRunner(runner, job);
-  const endedAt = readClock(now);
-  if (endedAt < startedAt) throw new Error("Monotonic clock moved backwards");
-  const elapsedNs = (endedAt - startedAt).toString(10);
+  let endedAt;
+  try {
+    endedAt = readClock(now);
+  } catch {
+    return clockFailureObservation(lane, {
+      startNs: startedAt.toString(10),
+      endNs: null,
+      durationNs: null,
+    }, "clock_end_invalid", settlement);
+  }
+  if (endedAt <= startedAt) {
+    return clockFailureObservation(lane, {
+      startNs: startedAt.toString(10),
+      endNs: endedAt.toString(10),
+      durationNs: null,
+    }, "clock_not_monotonic", settlement);
+  }
+  const timing = {
+    startNs: startedAt.toString(10),
+    endNs: endedAt.toString(10),
+    durationNs: (endedAt - startedAt).toString(10),
+  };
   // This validation is deliberately after the end-clock read. Page waits and
   // extraction oracles run in the lane itself and remain inside the boundary;
   // structural replay and raw materialization do not.
   const run = materializeRunnerSettlement(settlement);
   const oracle = validatePrimaryRun(lane, run);
-  return { lane, timed: true, elapsedNs, run, oracle };
+  return { lane, timed: true, status: "completed", timing, run, oracle, error: null };
+}
+
+function clockFailureObservation(lane, timing, code, settlement = null) {
+  const run = settlement === null ? null : materializeRunnerSettlement(settlement);
+  return {
+    lane,
+    timed: true,
+    status: "clock_error",
+    timing,
+    run,
+    oracle: run === null ? null : validatePrimaryRun(lane, run),
+    error: {
+      name: code === "clock_not_monotonic" ? "RangeError" : "TypeError",
+      code,
+    },
+  };
 }
 
 async function settleRunner(runner, job) {
@@ -753,25 +803,8 @@ function projectComparablePage(page) {
   };
 }
 
-function finalize(raw, reasons) {
-  const completePairs = raw.pairs.filter((pair) => pair.observations.length === 2).length;
-  const exactEquivalentPairs = raw.pairs.filter((pair) => pair.equivalence.valid === true).length;
-  const warmupsValid = raw.warmups.length === 2 && raw.warmups.every((item) => item.oracle.valid);
-  const valid = reasons.length === 0 && warmupsValid &&
-    completePairs === pairCount && exactEquivalentPairs === pairCount;
-  const reasonCodes = [...new Set([
-    ...reasons,
-    ...(valid || completePairs === pairCount ? [] : ["paired_sample_schedule_incomplete"]),
-  ])];
-  raw.authority = {
-    status: valid ? "valid" : "invalid",
-    valid,
-    requiredPairs: pairCount,
-    completedPairs: completePairs,
-    exactEquivalentPairs,
-    primaryPagesPerLane: maxPages,
-    reasonCodes,
-  };
+function finalize(raw) {
+  raw.authority = replayCrawlAuthority(raw);
   assertCrawlPerformanceRaw(raw);
   return deepFreeze(raw);
 }
@@ -809,6 +842,7 @@ function cloneAndAssertIdentity(identity) {
       "workflowSourceRef",
       "harnessCheckoutRevision",
       "harnessCheckoutTree",
+      "harnessCheckoutWorktree",
     ]) ||
     !hasExactKeys(value?.corpus, [
       "schema",
@@ -915,19 +949,21 @@ function projectGithubProvenance(value) {
     workflowSourceRef: value?.workflowSourceRef,
     harnessCheckoutRevision: value?.harnessCheckoutRevision,
     harnessCheckoutTree: value?.harnessCheckoutTree,
+    harnessCheckoutWorktree: value?.harnessCheckoutWorktree,
   };
   if (
     facts.provider !== "github-actions" ||
-    !safeHostString(facts.repository) ||
-    !/^[^/\s]+\/[^/\s]+$/u.test(facts.repository) ||
-    !safeHostString(facts.workflow) ||
-    !safeHostString(facts.job) ||
+    facts.repository !== performanceRepository ||
+    facts.workflow !== performanceWorkflowName ||
+    facts.job !== performanceCrawlJobName ||
     !canonicalPositiveInteger(facts.runId) ||
     !canonicalPositiveInteger(facts.runAttempt) ||
     !gitShaPattern.test(facts.workflowSourceSha ?? "") ||
     !safeHostString(facts.workflowSourceRef) ||
     !gitShaPattern.test(facts.harnessCheckoutRevision ?? "") ||
-    !gitShaPattern.test(facts.harnessCheckoutTree ?? "")
+    !gitShaPattern.test(facts.harnessCheckoutTree ?? "") ||
+    assertCleanHarnessWorktreeEvidence(facts.harnessCheckoutWorktree) !==
+      facts.harnessCheckoutWorktree
   ) {
     throw new TypeError("Invalid GitHub Actions crawl performance provenance");
   }
@@ -942,27 +978,91 @@ function assertRunners(runners) {
 
 function assertObservation(value, lane, timed) {
   const expectedKeys = timed
-    ? ["lane", "timed", "elapsedNs", "run", "oracle"]
+    ? ["lane", "timed", "status", "timing", "run", "oracle", "error"]
     : ["lane", "timed", "run", "oracle"];
   if (
     !isPlainRecord(value) ||
     !hasExactKeys(value, expectedKeys) ||
     value.lane !== lane ||
     value.timed !== timed ||
+    (!timed && Object.hasOwn(value, "timing"))
+  ) {
+    throw new TypeError("Invalid crawl performance observation");
+  }
+  if (timed && value.status === "clock_error") {
+    return assertClockFailureObservation(value);
+  }
+  if (
+    (timed && (value.status !== "completed" || value.error !== null)) ||
     !isPlainRecord(value.run) ||
     !isPlainRecord(value.oracle) ||
     typeof value.oracle.valid !== "boolean" ||
     !Number.isSafeInteger(value.oracle.expectedPages) ||
     !Number.isSafeInteger(value.oracle.exactOraclePages) ||
-    !Array.isArray(value.oracle.reasons) ||
-    (timed && !canonicalUnsignedIntegerPattern.test(value.elapsedNs ?? "")) ||
-    (!timed && Object.hasOwn(value, "elapsedNs"))
+    !Array.isArray(value.oracle.reasons)
   ) {
     throw new TypeError("Invalid crawl performance observation");
   }
   if (!isDeepStrictEqual(value.oracle, validatePrimaryRun(lane, value.run))) {
     throw new TypeError("Crawl performance oracle replay mismatch");
   }
+  return timed ? assertTiming(value.timing) : null;
+}
+
+function assertClockFailureObservation(value) {
+  if (
+    !hasExactKeys(value.error, ["name", "code"]) ||
+    !hasExactKeys(value.timing, ["startNs", "endNs", "durationNs"])
+  ) {
+    throw new TypeError("Invalid crawl performance clock failure");
+  }
+  const { code, name } = value.error;
+  if (code === "clock_start_invalid") {
+    if (
+      name !== "TypeError" ||
+      value.timing.startNs !== null ||
+      value.timing.endNs !== null ||
+      value.timing.durationNs !== null ||
+      value.run !== null ||
+      value.oracle !== null
+    ) {
+      throw new TypeError("Invalid crawl performance start-clock failure");
+    }
+    return { start: null, end: null, complete: false };
+  }
+  if (!canonicalUnsignedIntegerPattern.test(value.timing.startNs ?? "")) {
+    throw new TypeError("Invalid crawl performance partial timing start");
+  }
+  const start = BigInt(value.timing.startNs);
+  if (!isPlainRecord(value.run) || !isPlainRecord(value.oracle)) {
+    throw new TypeError("Invalid crawl performance clock-failure result");
+  }
+  if (!isDeepStrictEqual(value.oracle, validatePrimaryRun(value.lane, value.run))) {
+    throw new TypeError("Crawl performance clock-failure oracle replay mismatch");
+  }
+  if (code === "clock_end_invalid") {
+    if (
+      name !== "TypeError" ||
+      value.timing.endNs !== null ||
+      value.timing.durationNs !== null
+    ) {
+      throw new TypeError("Invalid crawl performance end-clock failure");
+    }
+    return { start, end: null, complete: false };
+  }
+  if (
+    code !== "clock_not_monotonic" ||
+    name !== "RangeError" ||
+    !canonicalUnsignedIntegerPattern.test(value.timing.endNs ?? "") ||
+    value.timing.durationNs !== null
+  ) {
+    throw new TypeError("Invalid crawl performance monotonic-clock failure");
+  }
+  const end = BigInt(value.timing.endNs);
+  if (end > start) {
+    throw new TypeError("Invalid crawl performance monotonic-clock failure boundary");
+  }
+  return { start, end, complete: false };
 }
 
 function assertControls(value) {
@@ -1005,7 +1105,7 @@ function assertControls(value) {
           "run",
         ]) ||
         observation.timed !== false ||
-        Object.hasOwn(observation, "elapsedNs") ||
+        Object.hasOwn(observation, "timing") ||
         !isPlainRecord(observation.run) ||
         Object.hasOwn(observation, "oracle")
       ) {
@@ -1016,41 +1116,122 @@ function assertControls(value) {
 }
 
 function assertAuthority(value) {
-  const authority = value.authority;
-  const validPairs = value.pairs.filter((pair) => pair.equivalence.valid === true).length;
-  const completedPairs = value.pairs.filter((pair) => pair.observations.length === 2).length;
-  const shouldBeValid =
-    value.warmups.length === 2 &&
-    value.warmups.every((observation) => observation.oracle.valid) &&
-    completedPairs === pairCount &&
-    validPairs === pairCount &&
-    value.pairs.every((pair) =>
-      pair.observations.length === 2 &&
-      pair.observations.every((observation) => observation.oracle.valid)
-    );
-  if (
-    !hasExactKeys(authority, [
-      "status",
-      "valid",
-      "requiredPairs",
-      "completedPairs",
-      "exactEquivalentPairs",
-      "primaryPagesPerLane",
-      "reasonCodes",
-    ]) ||
-    authority.valid !== shouldBeValid ||
-    authority.status !== (shouldBeValid ? "valid" : "invalid") ||
-    authority.requiredPairs !== pairCount ||
-    authority.completedPairs !== completedPairs ||
-    authority.exactEquivalentPairs !== validPairs ||
-    authority.primaryPagesPerLane !== maxPages ||
-    !Array.isArray(authority.reasonCodes) ||
-    value.controls.status !== (shouldBeValid ? "complete" : "not_run") ||
-    (shouldBeValid && authority.reasonCodes.length !== 0) ||
-    (!shouldBeValid && authority.reasonCodes.length === 0)
-  ) {
+  const expected = replayCrawlAuthority(value);
+  if (!isDeepStrictEqual(value.authority, expected)) {
     throw new TypeError("Invalid crawl performance authority verdict");
   }
+  if (value.controls.status !== (expected.valid ? "complete" : "not_run")) {
+    throw new TypeError("Invalid crawl performance control execution state");
+  }
+}
+
+function assertTiming(value) {
+  if (!hasExactKeys(value, ["startNs", "endNs", "durationNs"])) {
+    throw new TypeError("Invalid crawl performance timing boundary");
+  }
+  if (
+    !canonicalUnsignedIntegerPattern.test(value.startNs ?? "") ||
+    !canonicalUnsignedIntegerPattern.test(value.endNs ?? "") ||
+    !/^[1-9][0-9]*$/u.test(value.durationNs ?? "")
+  ) {
+    throw new TypeError("Invalid crawl performance timing value");
+  }
+  const start = BigInt(value.startNs);
+  const end = BigInt(value.endNs);
+  if (end <= start || BigInt(value.durationNs) !== end - start) {
+    throw new TypeError("Invalid crawl performance timing duration");
+  }
+  return { start, end, complete: true };
+}
+
+function replayCrawlAuthority(raw) {
+  const completePairs = raw.pairs.filter((pair) => pair.observations.length === 2).length;
+  const exactEquivalentPairs = raw.pairs.filter((pair) => pair.equivalence.valid === true).length;
+  const reasons = [];
+
+  if (raw.warmups.length < 1) {
+    throw new TypeError("Crawl performance raw result lacks its first retained warm-up");
+  }
+  for (let index = 0; index < raw.warmups.length; index += 1) {
+    if (!raw.warmups[index].oracle.valid) {
+      if (index !== raw.warmups.length - 1 || raw.pairs.length !== 0) {
+        throw new TypeError("Crawl performance history continued after an invalid warm-up");
+      }
+      reasons.push(`${raw.warmups[index].lane}_warmup_invalid`);
+      return crawlAuthorityValue(false, completePairs, exactEquivalentPairs, reasons);
+    }
+  }
+  if (raw.warmups.length !== laneNames.length) {
+    throw new TypeError("Crawl performance warm-up history stopped without a retained failure");
+  }
+  if (!compareExactRuns(raw.warmups[0].run, raw.warmups[1].run).valid) {
+    if (raw.pairs.length !== 0) {
+      throw new TypeError("Crawl performance history continued after warm-up divergence");
+    }
+    reasons.push("warmups_not_exact_equivalent");
+    return crawlAuthorityValue(false, completePairs, exactEquivalentPairs, reasons);
+  }
+
+  for (let pairIndex = 0; pairIndex < raw.pairs.length; pairIndex += 1) {
+    const pair = raw.pairs[pairIndex];
+    if (pair.observations.length < 1) {
+      throw new TypeError("Crawl performance pair stopped without a retained observation");
+    }
+    for (let observationIndex = 0; observationIndex < pair.observations.length; observationIndex += 1) {
+      const observation = pair.observations[observationIndex];
+      if (observation.status === "clock_error") {
+        if (
+          pairIndex !== raw.pairs.length - 1 ||
+          observationIndex !== pair.observations.length - 1
+        ) {
+          throw new TypeError("Crawl performance history continued after a clock failure");
+        }
+        reasons.push("clock_failure");
+        return crawlAuthorityValue(false, completePairs, exactEquivalentPairs, reasons);
+      }
+      if (!observation.oracle.valid) {
+        if (
+          pairIndex !== raw.pairs.length - 1 ||
+          observationIndex !== pair.observations.length - 1
+        ) {
+          throw new TypeError("Crawl performance history continued after an invalid observation");
+        }
+        reasons.push(`${observation.lane}_sample_invalid`);
+        return crawlAuthorityValue(false, completePairs, exactEquivalentPairs, reasons);
+      }
+    }
+    if (pair.observations.length !== laneNames.length) {
+      throw new TypeError("Crawl performance pair stopped without a retained failure");
+    }
+    if (!pair.equivalence.valid) {
+      if (pairIndex !== raw.pairs.length - 1) {
+        throw new TypeError("Crawl performance history continued after pair divergence");
+      }
+      reasons.push("pair_not_exact_equivalent");
+      return crawlAuthorityValue(false, completePairs, exactEquivalentPairs, reasons);
+    }
+  }
+
+  if (raw.pairs.length !== pairCount) {
+    throw new TypeError("Crawl performance schedule stopped without a retained failure");
+  }
+  return crawlAuthorityValue(true, completePairs, exactEquivalentPairs, reasons);
+}
+
+function crawlAuthorityValue(valid, completePairs, exactEquivalentPairs, reasons) {
+  const reasonCodes = [
+    ...reasons,
+    ...(valid || completePairs === pairCount ? [] : ["paired_sample_schedule_incomplete"]),
+  ];
+  return {
+    status: valid ? "valid" : "invalid",
+    valid,
+    requiredPairs: pairCount,
+    completedPairs: completePairs,
+    exactEquivalentPairs,
+    primaryPagesPerLane: maxPages,
+    reasonCodes,
+  };
 }
 
 function makeJob(value) {

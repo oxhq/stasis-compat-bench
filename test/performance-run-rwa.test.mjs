@@ -3,7 +3,9 @@ import { EventEmitter } from "node:events";
 import test from "node:test";
 
 import {
+  createRwaInstalledPerformanceIdentity,
   createRwaPerformanceArtifact,
+  inspectHarnessProvenance,
   loadWorkflowSourceProvenance,
   projectCypressLaneResult,
   projectStasisLaneResult,
@@ -21,6 +23,8 @@ import { assertPostSupportArtifactPrivacy } from "../src/post-support/artifact-p
 import { rwaAuthCases, rwaAuthSource } from "../src/rwa/cases.mjs";
 import { rwaBaselineExpected } from "../src/rwa/run-cypress.mjs";
 import { repositoryRoot } from "../src/shared/io.mjs";
+import { FROZEN_IDENTITIES } from "../src/shared/manifest.mjs";
+import { cleanHarnessWorktreeEvidence } from "../src/performance/harness-worktree.mjs";
 
 const host = createRwaPerformanceHostIdentity({
   platform: "win32",
@@ -260,17 +264,114 @@ test("workflow-source provenance requires exact SHA and distinct ref", () => {
   assert.deepEqual(loadWorkflowSourceProvenance({
     STASIS_PERFORMANCE_WORKFLOW_SOURCE_SHA: "1".repeat(40),
     STASIS_PERFORMANCE_WORKFLOW_SOURCE_REF: "refs/heads/main",
+    GITHUB_REPOSITORY: "oxhq/stasis",
+    GITHUB_WORKFLOW: "Stasis v0.3.3 performance evidence",
+    GITHUB_JOB: "windows-rwa",
+    GITHUB_RUN_ID: "33840000000",
+    GITHUB_RUN_ATTEMPT: "1",
+    STASIS_PERFORMANCE_WORKFLOW_RUN_ID: "999",
+    STASIS_PERFORMANCE_WORKFLOW_RUN_ATTEMPT: "9",
   }), {
+    provider: "github-actions",
+    repository: "oxhq/stasis",
+    workflow: "Stasis v0.3.3 performance evidence",
+    job: "windows-rwa",
     revision: "1".repeat(40),
     ref: "refs/heads/main",
+    runId: "33840000000",
+    runAttempt: "1",
   });
   assert.throws(
     () => loadWorkflowSourceProvenance({
       STASIS_PERFORMANCE_WORKFLOW_SOURCE_SHA: "not-a-sha",
       STASIS_PERFORMANCE_WORKFLOW_SOURCE_REF: "refs/heads/main",
+      GITHUB_REPOSITORY: "oxhq/stasis",
+      GITHUB_WORKFLOW: "Stasis v0.3.3 performance evidence",
+      GITHUB_JOB: "windows-rwa",
+      GITHUB_RUN_ID: "33840000000",
+      GITHUB_RUN_ATTEMPT: "1",
     }),
     /40-hex SHA/u,
   );
+  for (const invalid of ["", "0", "01", "not-a-number"]) {
+    assert.throws(
+      () => loadWorkflowSourceProvenance({
+        GITHUB_SHA: "1".repeat(40),
+        GITHUB_REF: "refs/heads/main",
+        GITHUB_REPOSITORY: "oxhq/stasis",
+        GITHUB_WORKFLOW: "Stasis v0.3.3 performance evidence",
+        GITHUB_JOB: "windows-rwa",
+        GITHUB_RUN_ID: invalid,
+        GITHUB_RUN_ATTEMPT: "1",
+      }),
+      /canonical positive decimal/u,
+    );
+  }
+});
+
+test("RWA harness checkout evidence fails closed on tracked or untracked non-ignored files", () => {
+  const calls = [];
+  const clean = inspectHarnessProvenance({
+    checkoutRoot: "C:\\harness",
+    runGitImpl(root, args) {
+      calls.push({ root, args });
+      if (args[0] === "status") return "";
+      return args.at(-1) === "HEAD" ? "3".repeat(40) : "4".repeat(40);
+    },
+  });
+  assert.deepEqual(clean, {
+    revision: "3".repeat(40),
+    tree: "4".repeat(40),
+    worktree: cleanHarnessWorktreeEvidence,
+  });
+  assert.deepEqual(calls.at(-1).args, [
+    "status",
+    "--porcelain=v1",
+    "-z",
+    "--untracked-files=all",
+  ]);
+  for (const dirtyStatus of [" M tracked.mjs\0", "?? untracked.mjs\0"]) {
+    assert.throws(
+      () => inspectHarnessProvenance({
+        checkoutRoot: "C:\\harness",
+        runGitImpl(_root, args) {
+          if (args[0] === "status") return dirtyStatus;
+          return args.at(-1) === "HEAD" ? "3".repeat(40) : "4".repeat(40);
+        },
+      }),
+      /must match HEAD/u,
+    );
+  }
+});
+
+test("installed Cypress execution identity binds package, runtime, and executable bytes", () => {
+  const actual = frozenInstalledRwaEvidence();
+  const identity = createRwaInstalledPerformanceIdentity(actual);
+  assert.deepEqual(identity, {
+    nodeModulesTree: FROZEN_IDENTITIES.rwa.installed.nodeModulesTree,
+    cypressPackageTree: FROZEN_IDENTITIES.rwa.installed.cypressPackageTree,
+    tsNodePackageTree: FROZEN_IDENTITIES.rwa.installed.tsNodePackageTree,
+    cypressRuntimeTree: FROZEN_IDENTITIES.rwa.installed.cypressRuntimeTree,
+    executable: {
+      bytes: 205_927_728,
+      sha256: "3af48298e0deb0202601e18dbbb3c1ec0da29a18edd842528e83ea3e53126ecf",
+    },
+  });
+  assert.equal(JSON.stringify(identity).includes("C:\\private"), false);
+
+  for (const mutate of [
+    (value) => { value.cypressPackageTree.sha256 = "0".repeat(64); },
+    (value) => { value.cypressRuntimeTree.totalBytes += 1; },
+    (value) => { value.cypressExecutableBytes += 1; },
+    (value) => { value.cypressExecutableSha256 = "0".repeat(64); },
+  ]) {
+    const changed = frozenInstalledRwaEvidence();
+    mutate(changed);
+    assert.throws(
+      () => createRwaInstalledPerformanceIdentity(changed),
+      /execution bytes differ/u,
+    );
+  }
 });
 
 test("server-host lifecycle waits on IPC readiness and stop without polling", async () => {
@@ -362,13 +463,27 @@ test("the sealed artifact omits local paths and listener PIDs while binding exac
         v2ProfileAdvertised: true,
       },
     },
-    workflowSource: { revision: "2".repeat(40), ref: "refs/heads/main" },
-    harness: { revision: "3".repeat(40), tree: "4".repeat(40) },
+    workflowSource: {
+      provider: "github-actions",
+      repository: "oxhq/stasis",
+      workflow: "Stasis v0.3.3 performance evidence",
+      job: "windows-rwa",
+      revision: "2".repeat(40),
+      ref: "refs/heads/main",
+      runId: "33840000000",
+      runAttempt: "1",
+    },
+    harness: {
+      revision: "3".repeat(40),
+      tree: "4".repeat(40),
+      worktree: structuredClone(cleanHarnessWorktreeEvidence),
+    },
     nodeExecutable: {
       version: postSupportNodeVersion,
       executableSha256: rwaBaselineExpected.nodeExecutable.sha256,
       executableBytes: rwaBaselineExpected.nodeExecutable.bytes,
     },
+    cypressInstalled: createRwaInstalledPerformanceIdentity(frozenInstalledRwaEvidence()),
     lifecycleEvidence: {
       startup: { checkout: lifecycleCheckout(), servers: lifecycleServers() },
       postflight: { checkout: lifecycleCheckout(), servers: lifecycleServers() },
@@ -386,3 +501,19 @@ test("the sealed artifact omits local paths and listener PIDs while binding exac
   assert.deepEqual(artifact.authorityRaw, raw);
   assert.equal(assertPostSupportArtifactPrivacy(artifact), artifact);
 });
+
+function frozenInstalledRwaEvidence() {
+  return {
+    nodeModulesRoot: "C:\\private\\node_modules",
+    nodeModulesTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.nodeModulesTree),
+    cypressPackageRoot: "C:\\private\\node_modules\\cypress",
+    cypressPackageTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.cypressPackageTree),
+    tsNodePackageRoot: "C:\\private\\node_modules\\ts-node",
+    tsNodePackageTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.tsNodePackageTree),
+    cypressRuntimeRoot: "C:\\private\\Cypress",
+    cypressRuntimeTree: structuredClone(FROZEN_IDENTITIES.rwa.installed.cypressRuntimeTree),
+    cypressExecutablePath: "C:\\private\\Cypress\\Cypress.exe",
+    cypressExecutableBytes: FROZEN_IDENTITIES.rwa.installed.cypressExecutableBytes,
+    cypressExecutableSha256: FROZEN_IDENTITIES.rwa.installed.cypressExecutableSha256,
+  };
+}
