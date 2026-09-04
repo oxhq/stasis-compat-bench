@@ -4,9 +4,9 @@
   "projectedTree": {
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
-    "fileCount": 329,
-    "totalBytes": 5865226,
-    "sha256": "f09e05d0d973024bfe6edb8492e70f7a49ba54359abd7ae84f32556a095b165b",
+    "fileCount": 343,
+    "totalBytes": 6333035,
+    "sha256": "fbc3ba5e3fe9e71f68b73e43607fa31818869eb27116aad10d416cf7f4aa3591",
     "files": [
       {
         "bytes": 19,
@@ -69,9 +69,9 @@
         "sha256": "d17fe6f8f7c67b4bfeed0b5f413f513c9c4d94bde1a6bf78115ef1b70591cf8a"
       },
       {
-        "bytes": 3767,
+        "bytes": 4184,
         "path": "package.json",
-        "sha256": "1007a64fe5a44369443ba9dc6c2c5422a4c4b01e67e17d4a2a816a1a6c5d5ad6"
+        "sha256": "f0adb07524de1da97de6c153b9c200a441b3be2726226918c0318e040949e31c"
       },
       {
         "bytes": 12491,
@@ -102,6 +102,21 @@
         "bytes": 14585,
         "path": "protocol/stasis-post-0.3-census-v1.md",
         "sha256": "37cea038762e3d120ad548d0e01f711f48b164a8139428cc9150a4948cde34a9"
+      },
+      {
+        "bytes": 5783,
+        "path": "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-preflight.json",
+        "sha256": "79b8a8493610ac1e61d1c7f4335fd1f1d199899ed9ee39092ba0f84b50e51299"
+      },
+      {
+        "bytes": 20613,
+        "path": "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v1.md",
+        "sha256": "dab4a9b28f76389bbe755c7f0256e30be77747206dc057a7610daa693e0056f5"
+      },
+      {
+        "bytes": 44356,
+        "path": "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-workflow.yml",
+        "sha256": "1cc7eccd1363d9f4e91d2d7860480cc165a59e5d351fce60c28e1bb3130cc58f"
       },
       {
         "bytes": 11646,
@@ -237,6 +252,31 @@
         "bytes": 682,
         "path": "src/minimizers/run-cookie-profile.mjs",
         "sha256": "49725e698071e17a8f348038c1a3daf722f3fd690bb8c651cfd0bb1ea2a261fc"
+      },
+      {
+        "bytes": 35084,
+        "path": "src/performance/crawl-phase-diagnostic-artifact-binding.mjs",
+        "sha256": "48bbb785254deadf2e8739d3477594eab25cce978a9e1ca17a1360283d149a65"
+      },
+      {
+        "bytes": 88637,
+        "path": "src/performance/crawl-phase-diagnostic-hosted-provenance.mjs",
+        "sha256": "2ed94dce2105451e5b487d9a544614ab55ff1fd70284f2e285ec9bfc318bbde9"
+      },
+      {
+        "bytes": 40203,
+        "path": "src/performance/crawl-phase-diagnostic-public-release.mjs",
+        "sha256": "5b3e3248fda7d1a6b139d8bcededbb8baf80e4bb8cd173511bc730cdbd2dd7ad"
+      },
+      {
+        "bytes": 11434,
+        "path": "src/performance/crawl-phase-diagnostic-publication-cli.mjs",
+        "sha256": "4b99fc47448ce861024ff991b38938141a0c3891962669352a7d57a699fcf29e"
+      },
+      {
+        "bytes": 68253,
+        "path": "src/performance/crawl-phase-diagnostic-publication.mjs",
+        "sha256": "9b2757d5dcc97eaaeefad91a0b7e28191f4fd41ba53ece60ad7f17748f23c2a7"
       },
       {
         "bytes": 13833,
@@ -732,6 +772,11 @@
         "bytes": 3859,
         "path": "test/final-report.test.mjs",
         "sha256": "70e2ae07e2f4092e8613e20ac82dbaf05299b3bbb7a497fdfb4e7b0298cac6e9"
+      },
+      {
+        "bytes": 33391,
+        "path": "test/fixtures/crawl-phase-diagnostic-hosted-fixture.mjs",
+        "sha256": "5727f418ca5c6f870b6c5af7c40eeec9e3216c27d2de795611ebea028b69d2dc"
       },
       {
         "bytes": 1502,
@@ -1364,6 +1409,31 @@
         "sha256": "83210a939ef0696e8f4c35b388301d75ab4cfc20e8cebb4eab1c9331631a97cd"
       },
       {
+        "bytes": 32913,
+        "path": "test/performance-crawl-phase-diagnostic-artifact-binding.test.mjs",
+        "sha256": "670fb0dd42cd7bb0b952fb5427577202af350fbf12a4fbf7c1f1d919468d2a72"
+      },
+      {
+        "bytes": 19640,
+        "path": "test/performance-crawl-phase-diagnostic-hosted-provenance.test.mjs",
+        "sha256": "e5f05e08f237d9bc68db86cc93298b095ab41a646d57f5ab697d22221b8e40f6"
+      },
+      {
+        "bytes": 29156,
+        "path": "test/performance-crawl-phase-diagnostic-public-release.test.mjs",
+        "sha256": "48bdff1160d6546bf0c366bb78fa1c54123c4fd53f25eae40d101fb962c3b4ec"
+      },
+      {
+        "bytes": 10707,
+        "path": "test/performance-crawl-phase-diagnostic-publication-cli.test.mjs",
+        "sha256": "54823e29499c3510b7002153f4e7dc8fcd5169f340943838ff7de48dd5d0f45c"
+      },
+      {
+        "bytes": 26993,
+        "path": "test/performance-crawl-phase-diagnostic-publication.test.mjs",
+        "sha256": "f1fae51ecf6177b02ef71c41374363bc751fd1e324cbcb5257f9a2ea5f074c63"
+      },
+      {
         "bytes": 24213,
         "path": "test/performance-crawl-phase-diagnostic-verification.test.mjs",
         "sha256": "eb7905d5bcf146f34bc63b693db40adbeb52ccc192958d3b8666dcd4ab7a6e84"
@@ -1524,9 +1594,9 @@
         "sha256": "a8340f7f3f153a85a7f71fccb41966c0dff7de85f69f0593deaf6cb7c9e6c6e1"
       },
       {
-        "bytes": 7645,
+        "bytes": 7874,
         "path": "test/publication-projection.test.mjs",
-        "sha256": "f03418ac292a2dda296ca9427dbdde3f1991228f34a980642b6c4f58e3d23d83"
+        "sha256": "351598df45f2232781fbe39177eba1e7bcf5fbc01aeeca05e641004409ab1d87"
       },
       {
         "bytes": 2100,
@@ -1721,6 +1791,21 @@
       "sha256": "37cea038762e3d120ad548d0e01f711f48b164a8139428cc9150a4948cde34a9"
     },
     {
+      "bytes": 5783,
+      "path": "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-preflight.json",
+      "sha256": "79b8a8493610ac1e61d1c7f4335fd1f1d199899ed9ee39092ba0f84b50e51299"
+    },
+    {
+      "bytes": 20613,
+      "path": "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-v1.md",
+      "sha256": "dab4a9b28f76389bbe755c7f0256e30be77747206dc057a7610daa693e0056f5"
+    },
+    {
+      "bytes": 44356,
+      "path": "protocol/stasis-v0.3.3-performance-crawl-phase-diagnostic-workflow.yml",
+      "sha256": "1cc7eccd1363d9f4e91d2d7860480cc165a59e5d351fce60c28e1bb3130cc58f"
+    },
+    {
       "bytes": 11646,
       "path": "protocol/stasis-v0.3.3-performance-crawl-v1.md",
       "sha256": "9a8e4c00bf57514b66f7ed1f15c1ce3e3599a90c336ccc884fd38016839c72ff"
@@ -1747,10 +1832,10 @@
         "sha256": "923acbfee9a36d8dfb3d21608ad2532fd00be3413438123a074822ee71a45ee6"
       },
       {
-        "bytes": 3767,
+        "bytes": 4184,
         "path": "package.json",
         "reason": "confirmed public author email in package metadata",
-        "sha256": "1007a64fe5a44369443ba9dc6c2c5422a4c4b01e67e17d4a2a816a1a6c5d5ad6"
+        "sha256": "f0adb07524de1da97de6c153b9c200a441b3be2726226918c0318e040949e31c"
       },
       {
         "bytes": 9803,

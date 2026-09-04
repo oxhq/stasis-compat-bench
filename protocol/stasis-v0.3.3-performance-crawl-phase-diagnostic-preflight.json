@@ -1,0 +1,172 @@
+{
+  "schema": "stasis-v0.3.3-performance-crawl-phase-diagnostic-preflight-v1",
+  "status": "preregistered",
+  "comparisonEvidence": {
+    "repository": "oxhq/stasis-compat-bench",
+    "releaseId": 382679391,
+    "tag": "stasis-v0.3.3-performance-replication-evidence-v1",
+    "targetCommitSha": "6c1a0066eb17425628293993fd7312d4cf26e0f5",
+    "targetTreeSha": "0d5322a5c2c104d2065a37fb7deecfa6944100bc",
+    "assets": [
+      {
+        "name": "artifact-binding.json",
+        "bytes": 5086,
+        "sha256": "78d91f9c12f85d538dff1944e772614bf9b0adc9841d647c93ab8f608f1ba4ad"
+      },
+      {
+        "name": "fresh-crawl-raw.json",
+        "bytes": 221543,
+        "sha256": "52a76a4ebb726c6ab78b70356655e8abd7a5e84d9ce175a8e0d876f543c1a16b"
+      }
+    ]
+  },
+  "diagnosticContract": {
+    "repository": "oxhq/stasis-compat-bench",
+    "parentCommitSha": "6c1a0066eb17425628293993fd7312d4cf26e0f5",
+    "tag": "stasis-v0.3.3-performance-crawl-phase-diagnostic-contract-v1",
+    "evidenceTag": "stasis-v0.3.3-performance-crawl-phase-diagnostic-evidence-v1",
+    "releaseAssetNames": [
+      "stasis-v0.3.3-performance-crawl-phase-diagnostic-preflight.json",
+      "stasis-v0.3.3-performance-crawl-phase-diagnostic-v1.md",
+      "stasis-v0.3.3-performance-crawl-phase-diagnostic-workflow.yml"
+    ]
+  },
+  "workflowSource": {
+    "repository": "oxhq/stasis",
+    "branch": "codex/stasis-v033-crawl-phase-diagnostic-v1",
+    "ref": "refs/heads/codex/stasis-v033-crawl-phase-diagnostic-v1",
+    "commitSha": "6c142d18631b910ab9e7ce842b52ed817b46ecc5",
+    "parentCommitSha": "6c7a6013e00584c8cb8d54c80cee5dbbcf3ca1b9",
+    "treeSha": "e5842f5effda8d09caf99f40900e7dacccaec610",
+    "changedFiles": [
+      {
+        "status": "added",
+        "path": ".github/workflows/stasis-v0.3.3-performance-crawl-phase-diagnostic.yml"
+      }
+    ],
+    "workflow": {
+      "path": ".github/workflows/stasis-v0.3.3-performance-crawl-phase-diagnostic.yml",
+      "blobSha": "61675d581be0f8d40accadef531ff1a7c71deb76",
+      "name": "Stasis v0.3.3 performance crawl phase diagnostic",
+      "jobId": "crawl-phase-diagnostic",
+      "jobName": "Native Ubuntu 22.04 crawl phase diagnostic"
+    },
+    "preservedComparisonWorkflow": {
+      "path": ".github/workflows/stasis-v0.3.3-performance-evidence.yml",
+      "blobSha": "e31601363f2506df87f05a585f8adb0c790c5481"
+    }
+  },
+  "execution": {
+    "event": "push",
+    "runAttempt": 1,
+    "runnerLabels": [
+      "ubuntu-22.04"
+    ],
+    "runnerOs": "Linux",
+    "runnerArch": "X64",
+    "nodeVersion": "22.20.0",
+    "comparisonRunId": 33862916068,
+    "comparisonCrawlJobId": 100991246321,
+    "order": [
+      "crawlee",
+      "stasis"
+    ],
+    "warmups": 0,
+    "retries": false,
+    "sleeps": false,
+    "fallbacks": false,
+    "discardedObservations": false,
+    "statistics": false,
+    "pooling": "none"
+  },
+  "actionsArtifacts": {
+    "bundle": {
+      "name": "stasis-v0.3.3-crawl-phase-diagnostic-bundle-attempt-1",
+      "availability": "outcome_dependent",
+      "validRequiredEntries": [
+        "comparison-input-verification.json",
+        "crawl-phase-crawlee-raw.json",
+        "crawl-phase-localization-evidence.json",
+        "crawl-phase-stasis-raw.json",
+        "diagnostic-outcome.json",
+        "diagnostic-verification.json"
+      ],
+      "invalidRequiredEntries": [
+        "diagnostic-outcome.json"
+      ],
+      "optionalEntries": []
+    }
+  },
+  "publicationOutcomes": {
+    "VALID_NON_AUTHORITATIVE": [
+      "SHA256SUMS.txt",
+      "actions-diagnostic-bundle.zip",
+      "comparison-artifact-binding.json",
+      "comparison-evidence-release-commit.json",
+      "comparison-evidence-release.json",
+      "comparison-fresh-crawl-raw.json",
+      "comparison-input-verification.json",
+      "contract-commit.json",
+      "contract-release.json",
+      "crawl-phase-crawlee-raw.json",
+      "crawl-phase-localization-evidence.json",
+      "crawl-phase-stasis-raw.json",
+      "diagnostic-artifact-binding.json",
+      "diagnostic-outcome.json",
+      "diagnostic-verification.json",
+      "hosted-provenance.json",
+      "privacy-scan.json",
+      "workflow-artifacts.json",
+      "workflow-jobs.json",
+      "workflow-run.json",
+      "workflow-runs.json",
+      "workflow-source-commit.json"
+    ],
+    "DIAGNOSTIC_INVALID_WITH_STATUS": [
+      "SHA256SUMS.txt",
+      "actions-diagnostic-bundle.zip",
+      "comparison-artifact-binding.json",
+      "comparison-evidence-release-commit.json",
+      "comparison-evidence-release.json",
+      "comparison-fresh-crawl-raw.json",
+      "contract-commit.json",
+      "contract-release.json",
+      "diagnostic-artifact-binding.json",
+      "diagnostic-outcome.json",
+      "hosted-provenance.json",
+      "privacy-scan.json",
+      "workflow-artifacts.json",
+      "workflow-jobs.json",
+      "workflow-run.json",
+      "workflow-runs.json",
+      "workflow-source-commit.json"
+    ],
+    "INFRASTRUCTURE_INVALID_NO_ARTIFACT": [
+      "SHA256SUMS.txt",
+      "comparison-artifact-binding.json",
+      "comparison-evidence-release-commit.json",
+      "comparison-evidence-release.json",
+      "comparison-fresh-crawl-raw.json",
+      "contract-commit.json",
+      "contract-release.json",
+      "diagnostic-outcome.json",
+      "hosted-provenance.json",
+      "privacy-scan.json",
+      "workflow-artifacts.json",
+      "workflow-jobs.json",
+      "workflow-run.json",
+      "workflow-runs.json",
+      "workflow-source-commit.json"
+    ]
+  },
+  "claimBoundary": {
+    "authorityEligible": false,
+    "timingEligible": false,
+    "statisticsEligible": false,
+    "comparisonEligible": false,
+    "optimizationEligible": false,
+    "generalizedSpeedClaimAuthorized": false,
+    "implementationWorkAuthorized": false,
+    "decisionState": "STAY_0_4_UNASSIGNED"
+  }
+}

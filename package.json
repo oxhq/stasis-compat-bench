@@ -54,7 +54,10 @@
     "performance:replication:publication:verify": "node src/performance/replication-publication-cli.mjs verify",
     "performance:replication:publication:verify-public": "node src/performance/replication-publication-cli.mjs verify-public",
     "performance:crawl:phase-diagnostic": "node src/performance/run-crawl-phase-diagnostic.mjs",
-    "performance:crawl:phase-diagnostic:verify": "node src/performance/crawl-phase-diagnostic-verification-cli.mjs verify"
+    "performance:crawl:phase-diagnostic:verify": "node src/performance/crawl-phase-diagnostic-verification-cli.mjs verify",
+    "performance:crawl:phase-diagnostic:publication:build": "node src/performance/crawl-phase-diagnostic-publication-cli.mjs build",
+    "performance:crawl:phase-diagnostic:publication:verify": "node src/performance/crawl-phase-diagnostic-publication-cli.mjs verify",
+    "performance:crawl:phase-diagnostic:publication:verify-public": "node src/performance/crawl-phase-diagnostic-publication-cli.mjs verify-public"
   },
   "dependencies": {
     "@oxhq/stasis": "0.2.1",
