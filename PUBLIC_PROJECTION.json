@@ -5,8 +5,8 @@
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
     "fileCount": 306,
-    "totalBytes": 5332714,
-    "sha256": "583d9788b72aeb81f3dacf2e195b93085409618d499d52b2672556f7b71e0595",
+    "totalBytes": 5333881,
+    "sha256": "6dcc964ad4df2fa3d75518288e7a14d1fdb01916fb000c07d9d4a5969d7099b4",
     "files": [
       {
         "bytes": 19,
@@ -269,9 +269,9 @@
         "sha256": "a94629f82483a3a1920785cde27f4404ad93acc884f5aef7226bf46e94a8e05f"
       },
       {
-        "bytes": 19844,
+        "bytes": 20455,
         "path": "src/performance/publication.mjs",
-        "sha256": "b3e3d997b6c2c37e50f28ff659a13f7d98d351b47f306f86f414b1fe42310220"
+        "sha256": "16bf3ef8b4bd3747ab3c74a026e3950b2e62bb03bc4108bf689174f6aec0bd0a"
       },
       {
         "bytes": 11783,
@@ -1319,9 +1319,9 @@
         "sha256": "f8d2237f7dcc8d73ccfbea045f0e1a702f58066c3b13523831d22a4cc223ccda"
       },
       {
-        "bytes": 26846,
+        "bytes": 27402,
         "path": "test/performance-publication.test.mjs",
-        "sha256": "6d34a008f5249aa0b17c37898bdd07f2832a20dbb408c3f7a16e666aa37bdbea"
+        "sha256": "fdbb4481d3be244f57af2c29e8e2f102a5dc0636553b3092c53f18ee76ff459d"
       },
       {
         "bytes": 24959,

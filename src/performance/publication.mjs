@@ -345,7 +345,7 @@ export async function combinePerformanceEvidenceFiles({
   assertEvidence(evidence, { rwaRaw, crawlRaw });
   assertPrivacy(evidence);
   const markdown = renderEvidence(evidence);
-  assertPrivacy(markdown);
+  assertRenderedPerformanceEvidencePrivacy(markdown, assertPrivacy);
 
   const artifactRoot = await assertFreshArtifactRoot();
   const evidencePath = await writeEvidenceJson(
@@ -362,6 +362,19 @@ export async function combinePerformanceEvidenceFiles({
     markdownPath,
     evidence,
   });
+}
+
+function assertRenderedPerformanceEvidencePrivacy(markdown, assertPrivacy) {
+  if (typeof markdown !== "string") {
+    throw new TypeError("Combined performance evidence Markdown is not text");
+  }
+  // The structured evidence is already scanned above. Keep the rendered report's
+  // segmented-Base64 search bounded while still checking every line boundary.
+  const lines = markdown.split(/\r?\n/u);
+  assertPrivacy(lines);
+  assertPrivacy(
+    lines.slice(0, -1).map((line, index) => `${line}\n${lines[index + 1]}`),
+  );
 }
 
 export async function verifyCombinedPerformanceEvidenceFiles({
@@ -394,7 +407,7 @@ export async function verifyCombinedPerformanceEvidenceFiles({
   assertEvidence(evidence, { rwaRaw, crawlRaw });
   assertPrivacy(evidence);
   const expectedMarkdown = renderEvidence(evidence);
-  assertPrivacy(expectedMarkdown);
+  assertRenderedPerformanceEvidencePrivacy(expectedMarkdown, assertPrivacy);
   if (markdown !== expectedMarkdown) {
     throw new TypeError(
       "Combined performance evidence Markdown does not replay exactly from the retained JSON",

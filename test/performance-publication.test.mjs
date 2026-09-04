@@ -39,6 +39,14 @@ import {
 import { repositoryRoot } from "../src/shared/io.mjs";
 import { FROZEN_IDENTITIES } from "../src/shared/manifest.mjs";
 
+function longSafePerformanceMarkdown() {
+  return `${Array.from(
+    { length: 20 },
+    (_value, index) =>
+      `- Evidence line ${index + 1} contains deterministic bounded timing metadata and no private material.`,
+  ).join("\n")}\n`;
+}
+
 test("RWA hosted wrapper binds its identity, host, continuity, and valid raw authority", () => {
   const raw = rwaRawStub();
   const artifact = rwaArtifactStub(raw);
@@ -322,7 +330,7 @@ test("hosted combine writes fixed outputs once under one fresh sealed root", asy
   const artifact = rwaArtifactStub(raw);
   const crawl = { marker: "crawl-raw" };
   const evidence = { schema: "test-combined-evidence-v1", status: "valid" };
-  const markdown = "# Deterministic combined evidence\n";
+  const markdown = longSafePerformanceMarkdown();
 
   try {
     await Promise.all([
@@ -379,6 +387,18 @@ test("hosted combine writes fixed outputs once under one fresh sealed root", asy
         rwaArtifactPath: rwaPath,
         crawlRawPath: crawlPath,
         ...dependencies,
+        renderEvidence() {
+          return "Authorization: Bearer PRIVATE_SENTINEL\n";
+        },
+      }),
+      /credential-like text/u,
+    );
+
+    await assert.rejects(
+      () => combinePerformanceEvidenceFiles({
+        rwaArtifactPath: rwaPath,
+        crawlRawPath: crawlPath,
+        ...dependencies,
       }),
       /already exists/u,
     );
@@ -405,7 +425,7 @@ test("downloaded-file verifier replays only the four explicit local files", asyn
   const artifact = rwaArtifactStub(raw);
   const crawl = { marker: "crawl" };
   const evidence = { schema: "combined" };
-  const markdown = "# Exact report\n";
+  const markdown = longSafePerformanceMarkdown();
   const jsonByPath = new Map([
     [paths.rwa, artifact],
     [paths.crawl, crawl],
