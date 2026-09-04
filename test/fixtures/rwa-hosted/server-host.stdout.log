@@ -1,0 +1,22 @@
+sealed RWA frontend host pid=56688 port=3000
+sealed RWA backend host pid=52652 port=3001
+[HPM] Proxy created: [ '/login', '/callback', '/logout', '/checkAuth', 'graphql' ]  ->  http://localhost:undefined
+[HPM] Subscribed to http-proxy events:  [ 'error', 'close' ]
+Backend server running at http://localhost:3001
+[0mGET / [32m200[0m 1.633 ms - 31[0m
+[0mPOST /testData/seed [32m200[0m 4.189 ms - 2[0m
+[0mPOST /testData/seed [32m200[0m 3.006 ms - 2[0m
+[0mGET /testData/users [32m200[0m 2.218 ms - 2314[0m
+[0mPOST /login [32m200[0m 54.859 ms - 462[0m
+[0mPOST /testData/seed [32m200[0m 2.967 ms - 2[0m
+[0mGET /testData/users [32m200[0m 0.711 ms - 2314[0m
+[0mPOST /login [32m200[0m 41.403 ms - 462[0m
+[0mPOST /testData/seed [32m200[0m 1.919 ms - 2[0m
+[0mPOST /users [32m201[0m 45.436 ms - 300[0m
+[0mPOST /testData/seed [32m200[0m 1.896 ms - 2[0m
+[0mPOST /testData/seed [32m200[0m 3.031 ms - 2[0m
+[0mPOST /testData/seed [32m200[0m 2.962 ms - 2[0m
+[0mPOST /login [33m401[0m 0.716 ms - -[0m
+[0mPOST /testData/seed [32m200[0m 2.008 ms - 2[0m
+[0mGET /testData/users [32m200[0m 0.511 ms - 2314[0m
+[0mPOST /login [33m401[0m 40.916 ms - -[0m

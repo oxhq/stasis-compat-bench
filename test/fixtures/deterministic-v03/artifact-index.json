@@ -1,0 +1,43 @@
+{
+  "schema": "stasis-post-0.3-deterministic-artifact-index-v1",
+  "protocol": "stasis-post-0.3-census-v1",
+  "harnessCommit": "56175c97aad270063494c4c6bcf606a131d7dc48",
+  "candidate": {
+    "sourceRevision": "cd471fb2f515e1f7227581fb8930e04bd6414767",
+    "executableSha256": "bd6715f5cc30ec66ea2d3b9c0889698ecea54373a3c3ab2c1893c934573916d1",
+    "sdkArchiveSha256": "56bd1860c0f1b4a05a32feb6ee41e71ff1c5947dbe44c2c4e30a31ca40b6bbb4",
+    "profile": "controlled-web-session-v2"
+  },
+  "result": {
+    "baselineValid": true,
+    "candidateValid": true,
+    "primaryDenominator": 20,
+    "counts": {
+      "PASS_EQUIVALENT": 20
+    },
+    "scheduledUrlJaccard": 1,
+    "designedControlsExcludedFromPrevalence": true
+  },
+  "files": [
+    {
+      "path": "stasis-post-0.3-census-v1/deterministic/compatibility.json",
+      "bytes": 12404,
+      "sha256": "26d4204d71e8b7f651e0930015f20cc7f6c8f1953c27a1768eacd0801b691206"
+    },
+    {
+      "path": "stasis-post-0.3-census-v1/deterministic/playwright-raw.json",
+      "bytes": 9334,
+      "sha256": "1622627885aa3153ad1d8e4cd637eeed19aa5e722edc7d80aacbc72ab550fe38"
+    },
+    {
+      "path": "stasis-post-0.3-census-v1/deterministic/report.md",
+      "bytes": 1764,
+      "sha256": "769d98eb5139165f318bd0b4bb8259054740df18ae31becaa73a0f2cf866c9c3"
+    },
+    {
+      "path": "stasis-post-0.3-census-v1/deterministic/stasis-raw.json",
+      "bytes": 9448,
+      "sha256": "43ea58350709e228d04a2492e90927bce198ec9bc7987fb1eb7b958bb0906d54"
+    }
+  ]
+}

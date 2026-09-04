@@ -1,0 +1,430 @@
+{
+  "protocol": "stasis-post-0.3-census-v1",
+  "track": "deterministic-crawling",
+  "baselineValid": true,
+  "baselineIdentityValid": true,
+  "candidateIdentityValid": true,
+  "candidateValid": true,
+  "primaryBaselineValid": true,
+  "negativeControlsBaselineValid": true,
+  "primaryDenominator": 20,
+  "counts": {
+    "PASS_EQUIVALENT": 20
+  },
+  "exactEquivalentRate": 1,
+  "behaviorallySupportedRate": 1,
+  "scheduledUrlJaccard": 1,
+  "primaryCases": [
+    {
+      "requestedUrl": "http://stasis-compat.test/",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/static",
+          "http://stasis-compat.test/canonical",
+          "http://stasis-compat.test/microtask",
+          "http://stasis-compat.test/timer",
+          "http://stasis-compat.test/raf",
+          "http://stasis-compat.test/fetch",
+          "http://stasis-compat.test/xhr",
+          "http://stasis-compat.test/state",
+          "http://stasis-compat.test/navigation-start",
+          "http://stasis-compat.test/interval"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/static",
+          "http://stasis-compat.test/canonical",
+          "http://stasis-compat.test/microtask",
+          "http://stasis-compat.test/timer",
+          "http://stasis-compat.test/raf",
+          "http://stasis-compat.test/fetch",
+          "http://stasis-compat.test/xhr",
+          "http://stasis-compat.test/state",
+          "http://stasis-compat.test/navigation-start",
+          "http://stasis-compat.test/interval"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/static",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/static",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/static"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/static",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/static"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/canonical",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/canonical",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/canonical"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/canonical",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/canonical"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/microtask",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/microtask",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/microtask"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/microtask",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/microtask"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/timer",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/timer",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/timer"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/timer",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/timer"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/raf",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/raf",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/raf"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/raf",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/raf"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/fetch",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/fetch",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/fetch"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/fetch",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/fetch"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/xhr",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/xhr",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/xhr"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/xhr",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/xhr"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/state",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/state/ready/",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/state/ready/leaf"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/state/ready/",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/state/ready/leaf"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/navigation-start",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/navigation-final",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/navigation"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/navigation-final",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": [
+          "http://stasis-compat.test/leaf/navigation"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/interval",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/interval",
+        "status": "crawled",
+        "links": [
+          "http://stasis-compat.test/leaf/static"
+        ]
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/interval",
+        "status": "crawled",
+        "settleOutcome": "quiescent_with_persistent_work",
+        "links": [
+          "http://stasis-compat.test/leaf/static"
+        ]
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/static",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/static",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/static",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/canonical",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/canonical",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/canonical",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/microtask",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/microtask",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/microtask",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/timer",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/timer",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/timer",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/raf",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/raf",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/raf",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/fetch",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/fetch",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/fetch",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/xhr",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/xhr",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/xhr",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/state/ready/leaf",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/state/ready/leaf",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/state/ready/leaf",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    },
+    {
+      "requestedUrl": "http://stasis-compat.test/leaf/navigation",
+      "classification": "PASS_EQUIVALENT",
+      "baseline": {
+        "url": "http://stasis-compat.test/leaf/navigation",
+        "status": "crawled",
+        "links": []
+      },
+      "stasis": {
+        "url": "http://stasis-compat.test/leaf/navigation",
+        "status": "crawled",
+        "settleOutcome": "quiescent",
+        "links": []
+      }
+    }
+  ],
+  "negativeControls": [
+    {
+      "id": "worker",
+      "classification": "PROFILE_UNSUPPORTED",
+      "expectedSurface": "worker",
+      "candidateError": {
+        "name": "StasisProtocolError",
+        "code": "unsupported_work",
+        "fatal": true,
+        "stateEffect": "partial",
+        "messageOmitted": true,
+        "stderrTailOmitted": true,
+        "stderrTailBytes": 1860,
+        "opaqueIdentifiersOmitted": true
+      },
+      "surface": "worker",
+      "diagnosisConfidence": "typed_designed_control",
+      "terminal": {
+        "kind": "error",
+        "code": "unsupported_work"
+      }
+    },
+    {
+      "id": "iframe",
+      "classification": "PROFILE_UNSUPPORTED",
+      "expectedSurface": "iframe",
+      "candidateError": {
+        "name": "StasisProtocolError",
+        "code": "navigation_authority_changed",
+        "fatal": true,
+        "stateEffect": "partial",
+        "messageOmitted": true,
+        "stderrTailOmitted": true,
+        "stderrTailBytes": 2273,
+        "opaqueIdentifiersOmitted": true
+      },
+      "surface": "iframe",
+      "diagnosisConfidence": "typed_designed_control",
+      "terminal": {
+        "kind": "error",
+        "code": "navigation_authority_changed"
+      }
+    }
+  ],
+  "diagnosticWallTimeMs": {
+    "crawleePlaywright": 2334.7477,
+    "stasisFreshProcessPerPage": 1432.2819,
+    "comparisonClaim": "none; execution units differ and performance is outside the pass criterion"
+  }
+}
