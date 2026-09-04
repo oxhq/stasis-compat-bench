@@ -48,10 +48,13 @@
     "publication:build": "node src/publication/cli.mjs build",
     "publication:verify": "node src/publication/cli.mjs verify",
     "publication:archive": "node src/publication/cli.mjs archive",
-    "publication:archive:verify": "node src/publication/cli.mjs archive-verify"
+    "publication:archive:verify": "node src/publication/cli.mjs archive-verify",
+    "performance:replication": "node src/performance/replication-cli.mjs",
+    "performance:crawl:phase-diagnostic": "node src/performance/run-crawl-phase-diagnostic.mjs"
   },
   "dependencies": {
     "@oxhq/stasis": "0.2.1",
+    "adm-zip": "0.6.0",
     "crawlee": "3.18.1",
     "playwright": "1.62.1"
   }

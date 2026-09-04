@@ -19,6 +19,7 @@ import {
   isCanonicalPublicRemoteUrl,
   rawCommitParents,
   verifyPublicProjectionTree,
+  verifySourceSnapshotReachability,
 } from "../src/publication/public-projection.mjs";
 
 const executeFile = promisify(execFile);
@@ -102,6 +103,53 @@ test("complete projection inventory rejects missing, extra, and mutated code in 
     "origin",
     "https://github.com/oxhq/stasis-compat-bench.git",
   ]);
+
+  const successorRoot = path.join(scratchRoot, "public-successor");
+  await git(scratchRoot, ["clone", projectedRoot, successorRoot]);
+  await git(successorRoot, ["config", "user.name", "Projection Test"]);
+  await git(successorRoot, [
+    "config",
+    "user.email",
+    ["projection", "example.test"].join("@"),
+  ]);
+  await git(successorRoot, ["commit", "--allow-empty", "-m", "Public successor"]);
+  const successor = await verifyPublicProjectionTree({
+    repositoryRoot: successorRoot,
+    manifest,
+  });
+  assert.equal(successor.sourceHistoryExcluded, true);
+  assert.equal(successor.sourceSnapshotVerified, false);
+  assert.equal(successor.sourceHistoryCommitCount, 2);
+  assert.equal(successor.rawHeadParentCount, 1);
+  assert.equal(successor.freshRootCommitRequired, false);
+
+  const reachableSourceRevision = (await git(projectedRoot, ["rev-parse", "HEAD"])).trim();
+  const reachableSourceTree = (
+    await git(projectedRoot, ["show", "-s", "--format=%T", reachableSourceRevision])
+  ).trim();
+  const reachableSource = await verifySourceSnapshotReachability({
+    repositoryRoot: successorRoot,
+    historyRevisions: (await git(successorRoot, ["rev-list", "HEAD"]))
+      .trim()
+      .split(/\r?\n/u),
+    sourceSnapshot: {
+      revision: reachableSourceRevision,
+      tree: reachableSourceTree,
+    },
+  });
+  assert.equal(reachableSource.sourceHistoryExcluded, false);
+  assert.equal(reachableSource.sourceSnapshotVerified, true);
+  await assert.rejects(
+    verifySourceSnapshotReachability({
+      repositoryRoot: successorRoot,
+      historyRevisions: [reachableSourceRevision],
+      sourceSnapshot: {
+        revision: reachableSourceRevision,
+        tree: "0".repeat(40),
+      },
+    }),
+    /source snapshot tree differs/u,
+  );
 
   const mutationPath = manifest.projectedTree.files.find(
     (entry) => entry.path.startsWith("src/") && entry.path.endsWith(".mjs"),
@@ -199,9 +247,14 @@ test("complete projection inventory rejects missing, extra, and mutated code in 
     ).length,
     1,
   );
-  await assert.rejects(
-    verifyPublicProjectionTree({ repositoryRoot: replaceRoot, manifest }),
-  );
+  const replacementResult = await verifyPublicProjectionTree({
+    repositoryRoot: replaceRoot,
+    manifest,
+  });
+  assert.equal(replacementResult.headRevision, childRevision);
+  assert.equal(replacementResult.sourceHistoryCommitCount, 2);
+  assert.equal(replacementResult.rawHeadParentCount, 1);
+  assert.equal(replacementResult.sourceHistoryExcluded, true);
 
   await writeFile(mutationTarget, Buffer.concat([originalMutationBytes, Buffer.from("\n")]));
   await assert.rejects(
@@ -249,6 +302,10 @@ test("complete projection inventory rejects missing, extra, and mutated code in 
   assert.equal((await git(shallowRoot, ["rev-list", "--count", "HEAD"])).trim(), "1");
   const rawShallow = await git(shallowRoot, ["cat-file", "-p", "HEAD"]);
   assert.equal(rawCommitParents(rawShallow).length, 1);
+  await assert.rejects(
+    verifyPublicProjectionTree({ repositoryRoot: shallowRoot, manifest }),
+    /complete non-shallow history/u,
+  );
 });
 
 async function git(cwd, args) {

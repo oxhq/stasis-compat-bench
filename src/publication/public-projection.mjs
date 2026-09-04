@@ -262,27 +262,29 @@ export async function verifyPublicProjectionTree({
 }) {
   validatePublicProjectionManifest(manifest);
   const root = path.resolve(repositoryRoot);
+  const headRevision = (await git(root, ["rev-parse", "HEAD"])).trim();
+  pattern(headRevision, revisionPattern, "prepared projection revision");
   const [
-    revision,
     tree,
     status,
     trackedOutput,
     historyCountOutput,
+    historyRevisionsOutput,
+    shallowRepositoryOutput,
     rawHeadCommit,
     headIdentityOutput,
   ] = await Promise.all([
-    git(root, ["rev-parse", "HEAD"]),
-    git(root, ["show", "-s", "--format=%T", "HEAD"]),
+    git(root, ["show", "-s", "--format=%T", headRevision]),
     git(root, ["status", "--porcelain=v1", "--untracked-files=all"]),
     git(root, ["ls-files", "-z"]),
-    git(root, ["rev-list", "--count", "HEAD"]),
-    git(root, ["cat-file", "-p", "HEAD"]),
-    git(root, ["show", "-s", "--format=%an%x00%ae%x00%cn%x00%ce", "HEAD"]),
+    git(root, ["rev-list", "--count", headRevision]),
+    git(root, ["rev-list", headRevision]),
+    git(root, ["rev-parse", "--is-shallow-repository"]),
+    git(root, ["cat-file", "-p", headRevision]),
+    git(root, ["show", "-s", "--format=%an%x00%ae%x00%cn%x00%ce", headRevision]),
   ]);
-  const headRevision = revision.trim();
   const headTree = tree.trim();
   const historyCommitCount = Number.parseInt(historyCountOutput.trim(), 10);
-  pattern(headRevision, revisionPattern, "prepared projection revision");
   pattern(headTree, revisionPattern, "prepared projection tree");
   if (requireClean && status.length !== 0) {
     throw new Error("Public projection verification requires one tracked-clean checkout");
@@ -290,24 +292,29 @@ export async function verifyPublicProjectionTree({
   if (!Number.isSafeInteger(historyCommitCount) || historyCommitCount < 1) {
     throw new Error("Public projection could not count source history");
   }
-  const headParents = rawCommitParents(rawHeadCommit);
-  const sourceHistoryExcluded = headParents.length === 0;
-  let sourceSnapshotVerified = false;
-  if (!sourceHistoryExcluded) {
-    await git(root, [
-      "merge-base",
-      "--is-ancestor",
-      manifest.sourceSnapshot.revision,
-      "HEAD",
-    ]);
-    const sourceSnapshotTree = (
-      await git(root, ["show", "-s", "--format=%T", manifest.sourceSnapshot.revision])
-    ).trim();
-    if (sourceSnapshotTree !== manifest.sourceSnapshot.tree) {
-      throw new Error("Public projection source snapshot tree differs from its declaration");
-    }
-    sourceSnapshotVerified = true;
+  if (shallowRepositoryOutput.trim() !== "false") {
+    throw new Error("Public projection verification requires complete non-shallow history");
   }
+  const historyRevisions = historyRevisionsOutput.trim().split(/\r?\n/u).filter(Boolean);
+  if (
+    historyRevisions.length !== historyCommitCount ||
+    new Set(historyRevisions).size !== historyRevisions.length
+  ) {
+    throw new Error("Public projection source history enumeration is incomplete or duplicated");
+  }
+  for (const historyRevision of historyRevisions) {
+    pattern(historyRevision, revisionPattern, "source history revision");
+  }
+  if (historyRevisions[0] !== headRevision) {
+    throw new Error("Public projection source history is not anchored to the prepared revision");
+  }
+  const headParents = rawCommitParents(rawHeadCommit);
+  const { sourceHistoryExcluded, sourceSnapshotVerified } =
+    await verifySourceSnapshotReachability({
+      repositoryRoot: root,
+      historyRevisions,
+      sourceSnapshot: manifest.sourceSnapshot,
+    });
 
   const [
     headAuthorName,
@@ -337,7 +344,7 @@ export async function verifyPublicProjectionTree({
   let headWorktreeIdentityVerified = false;
   if (requireClean) {
     const [headEntriesOutput, objectFormatOutput] = await Promise.all([
-      git(root, ["ls-tree", "-r", "-z", "--full-tree", "HEAD"]),
+      git(root, ["ls-tree", "-r", "-z", "--full-tree", headRevision]),
       git(root, ["rev-parse", "--show-object-format"]),
     ]);
     await assertHeadWorktreeIdentity({
@@ -519,6 +526,42 @@ export async function verifyPublicProjectionTree({
       rootAuthorMatchesChoice &&
       rootCommitterMatchesChoice &&
       licenseBytesMatchChoice,
+  });
+}
+
+export async function verifySourceSnapshotReachability({
+  repositoryRoot,
+  historyRevisions,
+  sourceSnapshot,
+}) {
+  if (!Array.isArray(historyRevisions) || historyRevisions.length === 0) {
+    throw new Error("Public projection source history must be one nonempty revision list");
+  }
+  for (const historyRevision of historyRevisions) {
+    pattern(historyRevision, revisionPattern, "source history revision");
+  }
+  pattern(sourceSnapshot?.revision, revisionPattern, "source snapshot revision");
+  pattern(sourceSnapshot?.tree, revisionPattern, "source snapshot tree");
+  if (!historyRevisions.includes(sourceSnapshot.revision)) {
+    return Object.freeze({
+      sourceHistoryExcluded: true,
+      sourceSnapshotVerified: false,
+    });
+  }
+  const sourceSnapshotTree = (
+    await git(path.resolve(repositoryRoot), [
+      "show",
+      "-s",
+      "--format=%T",
+      sourceSnapshot.revision,
+    ])
+  ).trim();
+  if (sourceSnapshotTree !== sourceSnapshot.tree) {
+    throw new Error("Public projection source snapshot tree differs from its declaration");
+  }
+  return Object.freeze({
+    sourceHistoryExcluded: false,
+    sourceSnapshotVerified: true,
   });
 }
 

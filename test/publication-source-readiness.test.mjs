@@ -24,6 +24,7 @@ test("publication source readiness rejects private history, exclusions, metadata
     ["author", (value) => { value.rootAuthorMatchesChoice = false; }, /parentless public root/u],
     ["license", (value) => { value.licenseBytesMatchChoice = false; }, /parentless public root/u],
     ["worktree", (value) => { value.headWorktreeIdentityVerified = false; }, /parentless public root/u],
+    ["source", (value) => { value.sourceHistoryExcluded = false; }, /parentless public root/u],
     ["fresh", (value) => { value.freshProjectionRequired = true; }, /parentless public root/u],
     ["revision", (value) => { value.headRevision = "not-a-revision"; }, /exact public root revision/u],
   ];

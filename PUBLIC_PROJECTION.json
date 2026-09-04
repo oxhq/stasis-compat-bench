@@ -4,9 +4,9 @@
   "projectedTree": {
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
-    "fileCount": 306,
-    "totalBytes": 5333867,
-    "sha256": "559cc1d6abb6a872b981cb327bd0ad34d6a2d49088449e085a0a74b6932a7420",
+    "fileCount": 320,
+    "totalBytes": 5668606,
+    "sha256": "14a2f75f7a3c042ecaeb52d300f03d13636604f3489bed1f92e5d1cd8e91af5b",
     "files": [
       {
         "bytes": 19,
@@ -39,9 +39,9 @@
         "sha256": "5914daea101f28d653e29da38cb75f38b4772c7167605f6fa9db6c925ae8b36a"
       },
       {
-        "bytes": 11978,
+        "bytes": 12678,
         "path": "README.md",
-        "sha256": "c272ab1dc40ec7377d0111edfe5e2588722230f2775f67f95a43dd68da14645d"
+        "sha256": "923acbfee9a36d8dfb3d21608ad2532fd00be3413438123a074822ee71a45ee6"
       },
       {
         "bytes": 2893,
@@ -64,14 +64,14 @@
         "sha256": "6c21593669547e96aabebb507ed6530fb2d92efe074c43ddd08790e886a36124"
       },
       {
-        "bytes": 136991,
+        "bytes": 137019,
         "path": "package-lock.json",
-        "sha256": "1c56ce698d9548bb33cfbdd6646572cf0ca5fca08a78252bf46da9233b1f1bc5"
+        "sha256": "d17fe6f8f7c67b4bfeed0b5f413f513c9c4d94bde1a6bf78115ef1b70591cf8a"
       },
       {
-        "bytes": 3096,
+        "bytes": 3292,
         "path": "package.json",
-        "sha256": "bbcee25864301e5160abc4bf9128e5c3efcc53eb7bc79590c0d887d321b94373"
+        "sha256": "c4fc375b152c35505bb20f6e9cae876a15ba8fe57e6f94d22f27b9a8563e7f05"
       },
       {
         "bytes": 12491,
@@ -107,6 +107,11 @@
         "bytes": 11646,
         "path": "protocol/stasis-v0.3.3-performance-crawl-v1.md",
         "sha256": "9a8e4c00bf57514b66f7ed1f15c1ce3e3599a90c336ccc884fd38016839c72ff"
+      },
+      {
+        "bytes": 11702,
+        "path": "protocol/stasis-v0.3.3-performance-replication-v1.md",
+        "sha256": "fe0ef201c36e9fcbdd2fb822aa9204b8d4f98707d5659c043c4fdabd5a43acef"
       },
       {
         "bytes": 15525,
@@ -234,6 +239,11 @@
         "sha256": "49725e698071e17a8f348038c1a3daf722f3fd690bb8c651cfd0bb1ea2a261fc"
       },
       {
+        "bytes": 70573,
+        "path": "src/performance/crawl-phase-diagnostic.mjs",
+        "sha256": "9b8c54d14fb8fae6debd06172f600cdcf8c2a0e541829ed21ef3f9e9739c80e5"
+      },
+      {
         "bytes": 45319,
         "path": "src/performance/crawl.mjs",
         "sha256": "852887f9d1d2bdbbcc1d4d84e9d72ebb77723920d539d437cf79924d7e878818"
@@ -272,6 +282,36 @@
         "bytes": 20455,
         "path": "src/performance/publication.mjs",
         "sha256": "16bf3ef8b4bd3747ab3c74a026e3950b2e62bb03bc4108bf689174f6aec0bd0a"
+      },
+      {
+        "bytes": 22437,
+        "path": "src/performance/replication-artifact-binding.mjs",
+        "sha256": "e628a6c36694a35810f3cda681c755c0f2fb4caa8ac02025bebbf67e12e3d9da"
+      },
+      {
+        "bytes": 17436,
+        "path": "src/performance/replication-cli.mjs",
+        "sha256": "b41bde5d13940010b963963f8f4bd143a74c05d7386dcd18ba8b18782c13cab9"
+      },
+      {
+        "bytes": 24285,
+        "path": "src/performance/replication-hosted-provenance.mjs",
+        "sha256": "1f1b34f886fcbbed0d3febe1aa4bbb33e70981cbc4209c1c270c52393e170a62"
+      },
+      {
+        "bytes": 15643,
+        "path": "src/performance/replication-invalid.mjs",
+        "sha256": "b6e45848c5fda9c817a865fc3f12f4d0f681cbf476d78cb487e5ec7d9b9d1dcf"
+      },
+      {
+        "bytes": 17166,
+        "path": "src/performance/replication.mjs",
+        "sha256": "f44aca8d6e901cdb2fb18cc6c038e2e1ce4f3fbd257784fae2d0486e07f27869"
+      },
+      {
+        "bytes": 8877,
+        "path": "src/performance/run-crawl-phase-diagnostic.mjs",
+        "sha256": "8ebee0c6ce3a4402281795a8d022586a474a20a73ecd931725edb6fade2a3a8a"
       },
       {
         "bytes": 11783,
@@ -409,9 +449,9 @@
         "sha256": "2cc6297cc3467719b9ef8397b263feed67f15883cbc9c756259fdc863f894c34"
       },
       {
-        "bytes": 30617,
+        "bytes": 32324,
         "path": "src/publication/public-projection.mjs",
-        "sha256": "775497b0614ae326c7b57ec0322ecf75002263e4d420302eda534b1a404ce2e6"
+        "sha256": "3369ed1e753b3587c416fa0589ac808fd9cf6c826f68a2c6141888cbbcb57630"
       },
       {
         "bytes": 4994,
@@ -1299,6 +1339,11 @@
         "sha256": "83210a939ef0696e8f4c35b388301d75ab4cfc20e8cebb4eab1c9331631a97cd"
       },
       {
+        "bytes": 41774,
+        "path": "test/performance-crawl-phase-diagnostic.test.mjs",
+        "sha256": "ef0b07240a1301ba9a98e9c10ed79caf77c9f6779149d306ff7093cd8e02e2f3"
+      },
+      {
         "bytes": 24069,
         "path": "test/performance-crawl.test.mjs",
         "sha256": "f52e4b033df2cfea10866d00bc3c5b9754772424f080ac4f99123dd2128d2d63"
@@ -1322,6 +1367,31 @@
         "bytes": 27388,
         "path": "test/performance-publication.test.mjs",
         "sha256": "d7afe7114bd80c5fbefffdf0a21466c95dc7c81c3ed1ba073e59d46f7ecec714"
+      },
+      {
+        "bytes": 18509,
+        "path": "test/performance-replication-artifact-binding.test.mjs",
+        "sha256": "2c0c5e672e9baa8062b9ffd83f406e6b3f549061e4dd9d8b6e5b6cc52cfa7151"
+      },
+      {
+        "bytes": 25860,
+        "path": "test/performance-replication-cli.test.mjs",
+        "sha256": "30f63e00c087e31906847d95f2013b396a61bde7f09aba5218797e449fa3ef76"
+      },
+      {
+        "bytes": 16225,
+        "path": "test/performance-replication-hosted-provenance.test.mjs",
+        "sha256": "fd1c4b7406887ed1a9c35b9663d53c851f2591d88f9935440d25bdff7fd41060"
+      },
+      {
+        "bytes": 13217,
+        "path": "test/performance-replication-invalid.test.mjs",
+        "sha256": "f634e0d532ff37549e6405874d66197224012da0151946e00a94a5c4a666f996"
+      },
+      {
+        "bytes": 26052,
+        "path": "test/performance-replication.test.mjs",
+        "sha256": "3373880f762b83e159bd4bf4d110da524869e092d0ff743926e07bc392473a89"
       },
       {
         "bytes": 24959,
@@ -1404,14 +1474,14 @@
         "sha256": "7aee7eee0d0ba77b55b731478aac2b92c20e95af0e7bd21d8c9f968a797bcba7"
       },
       {
-        "bytes": 9625,
+        "bytes": 11821,
         "path": "test/publication-projection-root.test.mjs",
-        "sha256": "61e5474f5bbd053721f41cb6d089989a9ce434ada6cd29af31afb80e7dd8469c"
+        "sha256": "a8340f7f3f153a85a7f71fccb41966c0dff7de85f69f0593deaf6cb7c9e6c6e1"
       },
       {
-        "bytes": 7585,
+        "bytes": 7645,
         "path": "test/publication-projection.test.mjs",
-        "sha256": "52e3a6db86fb570129290bd1bc722fe2576406540673c29cf6bc3baaf2805bca"
+        "sha256": "f03418ac292a2dda296ca9427dbdde3f1991228f34a980642b6c4f58e3d23d83"
       },
       {
         "bytes": 2100,
@@ -1419,9 +1489,9 @@
         "sha256": "768ba944ef139ec7f2dce23b85385780effbdfa345882d214c5b79f5f369c608"
       },
       {
-        "bytes": 2660,
+        "bytes": 2756,
         "path": "test/publication-source-readiness.test.mjs",
-        "sha256": "333a66f343086c0bc252a38d9188b77595d501858bb44b760c6e2bbb292c191f"
+        "sha256": "cd45b38374a7345e2fe35bef833e6b56859de5018cf29876caadac6b0a448f4a"
       },
       {
         "bytes": 8645,
@@ -1611,6 +1681,11 @@
       "sha256": "9a8e4c00bf57514b66f7ed1f15c1ce3e3599a90c336ccc884fd38016839c72ff"
     },
     {
+      "bytes": 11702,
+      "path": "protocol/stasis-v0.3.3-performance-replication-v1.md",
+      "sha256": "fe0ef201c36e9fcbdd2fb822aa9204b8d4f98707d5659c043c4fdabd5a43acef"
+    },
+    {
       "bytes": 15525,
       "path": "protocol/stasis-v0.3.3-performance-rwa-v1.md",
       "sha256": "3d89a771891766fcfc27cf37cc82be6fa8b43f31599bccfcefe5057e2b60ed68"
@@ -1621,16 +1696,16 @@
     "rejectMachineLocalPaths": true,
     "emailLiteralExceptions": [
       {
-        "bytes": 11978,
+        "bytes": 12678,
         "path": "README.md",
         "reason": "confirmed public email in the README author attribution",
-        "sha256": "c272ab1dc40ec7377d0111edfe5e2588722230f2775f67f95a43dd68da14645d"
+        "sha256": "923acbfee9a36d8dfb3d21608ad2532fd00be3413438123a074822ee71a45ee6"
       },
       {
-        "bytes": 3096,
+        "bytes": 3292,
         "path": "package.json",
         "reason": "confirmed public author email in package metadata",
-        "sha256": "bbcee25864301e5160abc4bf9128e5c3efcc53eb7bc79590c0d887d321b94373"
+        "sha256": "c4fc375b152c35505bb20f6e9cae876a15ba8fe57e6f94d22f27b9a8563e7f05"
       },
       {
         "bytes": 9803,
@@ -1701,10 +1776,10 @@
         "sha256": "065131a58544c51effbab08f1007f6f4f66aa85a1941dd682dbe98c97fa804c7"
       },
       {
-        "bytes": 11978,
+        "bytes": 12678,
         "path": "README.md",
         "reason": "reviewed generic reviewer path example",
-        "sha256": "c272ab1dc40ec7377d0111edfe5e2588722230f2775f67f95a43dd68da14645d"
+        "sha256": "923acbfee9a36d8dfb3d21608ad2532fd00be3413438123a074822ee71a45ee6"
       },
       {
         "bytes": 2893,

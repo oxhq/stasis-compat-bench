@@ -220,6 +220,18 @@ causal diagnostics only and do not replace any sealed corpus or release gate.
 ## Post-v0.3.3 successor evidence
 
 The immutable `stasis-v0.3.3-evidence` tag remains the frozen release baseline.
+
+The published performance measurements remain frozen at the parentless harness
+commit `c5678b045852a29b89ed4b853da0aa39e6e3bf06`. The separate
+[`stasis-v0.3.3-performance-replication-v1`](protocol/stasis-v0.3.3-performance-replication-v1.md)
+protocol preregisters one fresh-host repeat of the Windows RWA and Ubuntu crawl
+tracks. The RWA track is the complete frozen eight-intent authentication
+workload, not the full 45-test upstream suite. The protocol accepts a valid
+opposite-direction result, keeps each host separate, and grants no general
+speed claim. Its crawl phase records are explicitly
+non-authoritative diagnostics and cannot change, repair, or replace a frozen
+benchmark observation.
+
 [`protocol/stasis-post-0.3-census-v1-erratum-3.md`](protocol/stasis-post-0.3-census-v1-erratum-3.md)
 preregisters a separate successor measurement that corrects the public wild
 runner to consume the owner-attested `settle().url` already shipped by explicit
