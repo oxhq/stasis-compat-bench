@@ -54,7 +54,7 @@ export function navigationCausalHostOutcomeArtifactPath(hostLane) {
 }
 
 export async function runNavigationCausalCommand({
-  environment = process.env,
+  environment = { ...process.env },
   now = () => process.hrtime.bigint(),
   assertFreshArtifactRoot = assertFreshSealedArtifactRoot,
   loadCandidateSpec = loadLinuxPerformanceCandidateSpec,
