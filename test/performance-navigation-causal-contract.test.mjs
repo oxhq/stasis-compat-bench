@@ -16,7 +16,7 @@ const protocolRoot = new URL("../protocol/", import.meta.url);
 
 test("the V4 selection binding is exact canonical preregistration input", async () => {
   const bytes = await readFile(new URL(
-    "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json",
     import.meta.url,
   ));
   const value = JSON.parse(bytes);
@@ -37,9 +37,9 @@ test("both job step topologies are frozen before observation", () => {
   }
 });
 
-test("the contract workflow mirror must equal the exact S5 bytes", async () => {
+test("the V3 contract workflow mirror must equal the exact S6 bytes", async () => {
   const bytes = await readFile(new URL(
-    "../protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v3.yml",
     import.meta.url,
   ));
   assert.strictEqual(assertNavigationCausalWorkflowMirror(bytes), bytes);
@@ -48,12 +48,14 @@ test("the contract workflow mirror must equal the exact S5 bytes", async () => {
   assert.throws(() => assertNavigationCausalWorkflowMirror(changed));
 });
 
-test("the four contract assets have one exact byte inventory", async () => {
+test("the six V3 contract assets require both exact retained V2 failure assets", async () => {
   const names = [
-    "stasis-v0.3.3-performance-navigation-causal-v2.md",
-    "stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
-    "stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
-    "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
+    "stasis-v0.3.3-performance-navigation-causal-v3.md",
+    "stasis-v0.3.3-performance-navigation-causal-preflight-v3.json",
+    "stasis-v0.3.3-performance-navigation-causal-workflow-v3.yml",
+    "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json",
+    "stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json",
+    "stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip",
   ];
   const assets = Object.fromEntries(await Promise.all(names.map(async (name) => [
     name,
@@ -65,12 +67,22 @@ test("the four contract assets have one exact byte inventory", async () => {
   const changed = { ...assets, [names[0]]: Buffer.from(assets[names[0]]) };
   changed[names[0]][10] ^= 1;
   assert.throws(() => assertNavigationCausalContractAssets(changed));
+  for (const name of names.slice(4)) {
+    const missing = { ...assets };
+    delete missing[name];
+    assert.throws(() => assertNavigationCausalContractAssets(missing), name);
+    const mutated = { ...assets, [name]: Buffer.from(assets[name]) };
+    mutated[name][10] ^= 1;
+    assert.throws(() => assertNavigationCausalContractAssets(mutated), name);
+  }
 });
 
 test("the preregistered evidence inventory exactly matches the publication builder", async () => {
   const preflight = JSON.parse(await readFile(new URL(
-    "../protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v3.json",
     import.meta.url,
   )));
   assert.deepEqual(preflight.evidenceReleaseAssetNames, navigationCausalPublicationAssetNames);
+  assert.equal(navigationCausalPublicationAssetNames.length, 29);
+  assert.equal(preflight.contract.assetNames.length, 6);
 });

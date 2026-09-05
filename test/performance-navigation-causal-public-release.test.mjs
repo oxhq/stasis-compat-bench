@@ -8,6 +8,9 @@ import {
   navigationCausalContractIdentity,
 } from "../src/performance/navigation-causal-contract.mjs";
 import {
+  navigationCausalHarnessIdentity,
+} from "../src/performance/navigation-causal-replication.mjs";
+import {
   navigationCausalAnonymousContractPreflightSchema,
   navigationCausalV4EvidenceAssets,
   assertNavigationCausalAnonymousContractPreflightReceipt,
@@ -17,6 +20,9 @@ import {
 import {
   navigationCausalInvalidV1Fixture,
 } from "./fixtures/navigation-causal-invalid-v1-fixture.mjs";
+import {
+  navigationCausalInvalidV2Fixture,
+} from "./fixtures/navigation-causal-invalid-v2-fixture.mjs";
 
 test("anonymous preflight binds contract bytes, direct tag, remote absence, and public V4 selection", async () => {
   const receipt = verifyNavigationCausalAnonymousContractPreflight(await validInput());
@@ -24,10 +30,13 @@ test("anonymous preflight binds contract bytes, direct tag, remote absence, and 
   assert.equal(receipt.status, "passed");
   assert.equal(receipt.credentialsUsed, false);
   assert.equal(receipt.contract.lightweightTagDirectToTarget, true);
-  assert.equal(receipt.contract.publishedAt, "2026-09-04T21:00:00Z");
+  assert.equal(receipt.contract.publishedAt, "2026-09-05T02:11:00Z");
   assert.equal(receipt.invalidV1PreObservation.status, "INVALID_PREFLIGHT_CHRONOLOGY_MODEL");
   assert.equal(receipt.invalidV1PreObservation.observationStarted, false);
-  assert.equal(receipt.invalidV1PreObservation.authorizedS5CreationPushesRemaining, 1);
+  assert.equal(receipt.invalidV2Infrastructure.status,
+    "INVALID_PRE_MEASUREMENT_HARNESS_INVOCATION");
+  assert.equal(receipt.invalidV2Infrastructure.productMeasurementStarted, false);
+  assert.equal(receipt.executionHarness.revision, navigationCausalHarnessIdentity.revision);
   assert.equal(receipt.oneShotRules.contractReleaseLatest, false);
   assert.equal(receipt.sourceAbsence.workflowRunCount, 0);
   assert.deepEqual(receipt.sourceAbsence.httpStatuses, {
@@ -49,7 +58,7 @@ test("anonymous preflight binds contract bytes, direct tag, remote absence, and 
   }), receipt);
 });
 
-test("contract target, tag kind, Git blobs, and exact four assets fail closed", async (t) => {
+test("contract target, tag kind, Git blobs, and exact six assets fail closed", async (t) => {
   const cases = [
     ["main target", (value) => { value.contractReleaseRecord.target_commitish = "main"; }],
     ["annotated tag", (value) => { value.contractTagRefRecord.object.type = "tag"; }],
@@ -57,10 +66,10 @@ test("contract target, tag kind, Git blobs, and exact four assets fail closed", 
     ["wrong tree", (value) => { value.contractCommitRecord.commit.tree.sha = "bad"; }],
     ["wrong blob", (value) => { value.contractCommitRecord.files[0].sha = "b".repeat(40); }],
     ["created after publication", (value) => {
-      value.contractReleaseRecord.created_at = "2026-09-04T21:00:01Z";
+      value.contractReleaseRecord.created_at = "2026-09-05T02:11:01Z";
     }],
-    ["not published after invalid V1", (value) => {
-      value.contractReleaseRecord.published_at = "2026-09-04T20:41:03Z";
+    ["not published after invalid V2 terminal", (value) => {
+      value.contractReleaseRecord.published_at = "2026-09-05T01:59:17Z";
     }],
     ["extra release asset", (value) => { value.contractReleaseRecord.assets.push({ name: "extra", size: 1, digest: `sha256:${"a".repeat(64)}` }); }],
     ["changed released bytes", (value) => { value.contractAssets[Object.keys(value.contractAssets)[0]][10] ^= 1; }],
@@ -72,7 +81,7 @@ test("contract target, tag kind, Git blobs, and exact four assets fail closed", 
   });
 });
 
-test("same-target created_at does not order V1 and V2 releases", async () => {
+test("cross-release created_at does not order the V2 and V3 releases", async () => {
   const value = await validInput();
   value.contractReleaseRecord.created_at = value.invalidV1.preflightReleaseRecord.created_at;
   assert.equal(
@@ -84,7 +93,7 @@ test("same-target created_at does not order V1 and V2 releases", async () => {
 test("offline preflight replay rejects a self-consistent contract created after publication", async () => {
   const value = await validInput();
   const receipt = verifyNavigationCausalAnonymousContractPreflight(value);
-  value.contractReleaseRecord.created_at = "2026-09-04T21:00:01Z";
+  value.contractReleaseRecord.created_at = "2026-09-05T02:11:01Z";
   const forged = structuredClone(receipt);
   forged.contract.createdAt = value.contractReleaseRecord.created_at;
   assert.throws(() => assertNavigationCausalAnonymousContractPreflightReceipt(forged, {
@@ -196,8 +205,8 @@ async function validInput() {
     immutable: true,
     draft: false,
     prerelease: false,
-    created_at: "2026-09-04T20:50:00Z",
-    published_at: "2026-09-04T21:00:00Z",
+    created_at: "2026-09-05T02:10:00Z",
+    published_at: "2026-09-05T02:11:00Z",
     assets: Object.entries(navigationCausalContractAssetIdentities).map(([name, value]) => ({
       name,
       size: value.bytes,
@@ -231,6 +240,8 @@ async function validInput() {
     contractAssets,
     latestReleaseRecord: { id: 382000000 },
     invalidV1: await navigationCausalInvalidV1Fixture(),
+    invalidV2: await navigationCausalInvalidV2Fixture(),
+    harnessCommitRecord: executionHarnessCommitRecord(),
     absence: {
       sourceRef: { status: 404 },
       sourceCommit: { status: 422 },
@@ -250,6 +261,23 @@ async function validInput() {
       "fixtures/crawl-phase-localization-evidence-v4-public.json",
       import.meta.url,
     )),
+  };
+}
+
+function executionHarnessCommitRecord() {
+  return {
+    sha: navigationCausalHarnessIdentity.revision,
+    url:
+      `https://api.github.com/repos/${navigationCausalHarnessIdentity.repository}/commits/${navigationCausalHarnessIdentity.revision}`,
+    parents: [{ sha: navigationCausalHarnessIdentity.parentRevision }],
+    commit: { tree: { sha: navigationCausalHarnessIdentity.tree } },
+    files: Object.values(navigationCausalHarnessIdentity.files).map((identity) => ({
+      filename: identity.path,
+      status: identity.path === "test/performance-navigation-causal-environment-v3.test.mjs"
+        ? "added"
+        : "modified",
+      sha: identity.blob,
+    })),
   };
 }
 

@@ -40,7 +40,7 @@ test("host provenance requires the exact explicit job, ref, attempt, and clean c
   assert.equal(provenance.runAttempt, "1");
   assert.equal(
     provenance.workflowSourceRef,
-    "refs/heads/codex/stasis-v033-navigation-causal-source",
+    "refs/heads/codex/stasis-v033-navigation-causal-source-v3",
   );
 
   await assert.rejects(
@@ -199,9 +199,9 @@ test("canonical raw and outcome files replay exactly and altered bytes fail clos
 function githubEnvironment(hostLane) {
   return {
     GITHUB_REPOSITORY: "oxhq/stasis",
-    GITHUB_WORKFLOW: "Stasis v0.3.3 navigation causal experiment",
+    GITHUB_WORKFLOW: "Stasis v0.3.3 navigation causal experiment V3",
     GITHUB_JOB: `navigation-causal-${hostLane}`,
-    GITHUB_REF: "refs/heads/codex/stasis-v033-navigation-causal-source",
+    GITHUB_REF: "refs/heads/codex/stasis-v033-navigation-causal-source-v3",
     GITHUB_RUN_ID: "33900000000",
     GITHUB_RUN_ATTEMPT: "1",
     GITHUB_SHA: "e".repeat(40),

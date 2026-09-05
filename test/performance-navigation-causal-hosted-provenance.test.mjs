@@ -21,6 +21,15 @@ test("one run, two exact jobs, and two retained artifacts produce a bounded rece
   assert.deepEqual(receipt.jobs.map(({ lane }) => lane), ["host-a", "host-b"]);
   assert.deepEqual(receipt.artifacts.map(({ lane }) => lane), ["host-a", "host-b"]);
   assert.equal(receipt.verification.exactPreregisteredStepTopologies, true);
+  assert.equal(receipt.verification.contractTargetHasSoleH8cParent, true);
+  assert.equal(receipt.verification.sourceHasSoleS5Parent, true);
+  assert.equal(navigationCausalWorkflowSourceIdentity.revision,
+    "6a785f438ecffaf3433ec907059f4df4fd4eedfa");
+  assert.equal(navigationCausalWorkflowSourceIdentity.parentRevision,
+    "cb5bba41cda038fce82d2a5da6e4f853f1e97440");
+  assert.equal(navigationCausalContractIdentity.soleParentSha,
+    "a1352f2d31cb21bed7fae200c7fd638f850274f4");
+  assert.equal(Object.keys(navigationCausalContractAssetIdentities).length, 6);
   assert.equal(receipt.verification.artifactPayloadBindingDeferred, true);
   assert.equal(JSON.stringify(receipt).includes("https://"), false);
   assert.equal(Object.isFrozen(receipt), true);
@@ -101,9 +110,9 @@ test("late or mutable contract and wrong source ancestry fail closed", async (t)
   const cases = [
     ["mutable", (value) => { value.contractReleaseRecord.immutable = false; }],
     ["created after publication", (value) => {
-      value.contractReleaseRecord.created_at = "2026-09-04T21:00:01Z";
+      value.contractReleaseRecord.created_at = "2026-09-05T21:00:01Z";
     }],
-    ["late", (value) => { value.contractReleaseRecord.published_at = "2026-09-04T20:00:00Z"; }],
+    ["late", (value) => { value.contractReleaseRecord.published_at = "2026-09-05T20:00:00Z"; }],
     ["main target", (value) => { value.contractReleaseRecord.target_commitish = "main"; }],
     ["extra parent", (value) => { value.contractCommitRecord.parents.push({ sha: "a".repeat(40) }); }],
     ["wrong source parent", (value) => { value.workflowSourceCommitRecord.parents[0].sha = "b".repeat(40); }],
@@ -134,16 +143,16 @@ test("run conclusion must equal the aggregate of both job conclusions", () => {
 test("job and step timestamps must stay within the terminal run window", async (t) => {
   const cases = [
     ["job before run", (value) => {
-      value.jobsListing.jobs[0].started_at = "2026-09-04T19:00:04Z";
+      value.jobsListing.jobs[0].started_at = "2026-09-05T19:00:04Z";
     }],
     ["job after run", (value) => {
-      value.jobsListing.jobs[0].completed_at = "2026-09-04T19:05:01Z";
+      value.jobsListing.jobs[0].completed_at = "2026-09-05T19:05:01Z";
     }],
     ["step before job", (value) => {
-      value.jobsListing.jobs[0].steps[0].started_at = "2026-09-04T19:00:09Z";
+      value.jobsListing.jobs[0].steps[0].started_at = "2026-09-05T19:00:09Z";
     }],
     ["step after job", (value) => {
-      value.jobsListing.jobs[0].steps[0].completed_at = "2026-09-04T19:04:51Z";
+      value.jobsListing.jobs[0].steps[0].completed_at = "2026-09-05T19:04:51Z";
     }],
   ];
   for (const [name, mutate] of cases) await t.test(name, () => {
@@ -170,9 +179,9 @@ function validInput() {
     head_sha: navigationCausalWorkflowSourceIdentity.revision,
     path: navigationCausalWorkflowSourceIdentity.workflow.path,
     name: navigationCausalWorkflowSourceIdentity.workflow.name,
-    created_at: "2026-09-04T19:00:00Z",
-    run_started_at: "2026-09-04T19:00:05Z",
-    updated_at: "2026-09-04T19:05:00Z",
+    created_at: "2026-09-05T19:00:00Z",
+    run_started_at: "2026-09-05T19:00:05Z",
+    updated_at: "2026-09-05T19:05:00Z",
     url: `https://api.github.com/repos/oxhq/stasis/actions/runs/${runId}`,
     repository: { full_name: "oxhq/stasis" },
     head_repository: { full_name: "oxhq/stasis" },
@@ -186,16 +195,16 @@ function validInput() {
     status: "completed",
     conclusion: "success",
     labels: ["ubuntu-22.04"],
-    started_at: "2026-09-04T19:00:10Z",
-    completed_at: "2026-09-04T19:04:50Z",
+    started_at: "2026-09-05T19:00:10Z",
+    completed_at: "2026-09-05T19:04:50Z",
     url: `https://api.github.com/repos/oxhq/stasis/actions/jobs/${101200000000 + index}`,
     steps: navigationCausalExpectedJobStepTopology[index === 0 ? "host-a" : "host-b"]
       .map((step) => ({
         ...step,
         status: "completed",
         conclusion: "success",
-        started_at: "2026-09-04T19:00:11Z",
-        completed_at: "2026-09-04T19:04:49Z",
+        started_at: "2026-09-05T19:00:11Z",
+        completed_at: "2026-09-05T19:04:49Z",
       })),
   }));
   const artifacts = navigationCausalWorkflowSourceIdentity.workflow.jobs.map((expected, index) => ({
@@ -233,8 +242,8 @@ function validInput() {
       immutable: true,
       draft: false,
       prerelease: false,
-      created_at: "2026-09-04T18:50:00Z",
-      published_at: "2026-09-04T18:55:00Z",
+      created_at: "2026-09-05T18:50:00Z",
+      published_at: "2026-09-05T18:55:00Z",
       url: "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/382950000",
       assets: contractAssets,
     },

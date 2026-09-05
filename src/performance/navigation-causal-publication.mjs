@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 
 import AdmZip from "adm-zip";
 
@@ -23,25 +24,35 @@ import {
   verifyNavigationCausalHostedProvenance,
 } from "./navigation-causal-hosted-provenance.mjs";
 import {
+  inspectNavigationCausalV2FailureLogPrivacy,
+  navigationCausalInvalidV2Evidence,
+  navigationCausalV2FailureAuthorityRoutes,
+  verifyNavigationCausalV2FailureArchive,
+} from "./navigation-causal-v2-failure.mjs";
+import {
   assertNavigationCausalAnonymousContractPreflightReceipt,
   verifyNavigationCausalInvalidV1PreObservationEvidence,
   verifyNavigationCausalV4SelectionEvidence,
 } from "./navigation-causal-public-release.mjs";
 
 export const navigationCausalPublicationSchema =
-  "stasis-v0.3.3-performance-navigation-causal-publication-v2";
+  "stasis-v0.3.3-performance-navigation-causal-publication-v3";
 export const navigationCausalPrivacyScanSchema =
-  "stasis-v0.3.3-performance-navigation-causal-privacy-scan-v2";
+  "stasis-v0.3.3-performance-navigation-causal-privacy-scan-v3";
 
 const githubReleaseAuthorityAssetNames = new Set([
   "contract-release.json",
   "invalid-v1-contract-release.json",
   "invalid-v1-preflight-release.json",
+  "invalid-v2-contract-release.json",
+  "invalid-v2-preflight-release.json",
   "v4-evidence-release.json",
 ]);
 const githubCommitAuthorityAssetNames = new Set([
   "contract-commit.json",
   "invalid-v1-contract-commit.json",
+  "invalid-v2-contract-commit.json",
+  "invalid-v2-workflow-source-commit.json",
   "workflow-source-commit.json",
 ]);
 const githubUserTemplateSuffixes = Object.freeze({
@@ -49,6 +60,31 @@ const githubUserTemplateSuffixes = Object.freeze({
   gists_url: "/gists{/gist_id}",
   starred_url: "/starred{/owner}{/repo}",
   events_url: "/events{/privacy}",
+});
+const githubRepositoryTemplateSuffixes = Object.freeze({
+  keys_url: "/keys{/key_id}",
+  collaborators_url: "/collaborators{/collaborator}",
+  issue_events_url: "/issues/events{/number}",
+  assignees_url: "/assignees{/user}",
+  branches_url: "/branches{/branch}",
+  blobs_url: "/git/blobs{/sha}",
+  git_tags_url: "/git/tags{/sha}",
+  git_refs_url: "/git/refs{/sha}",
+  trees_url: "/git/trees{/sha}",
+  statuses_url: "/statuses/{sha}",
+  commits_url: "/commits{/sha}",
+  git_commits_url: "/git/commits{/sha}",
+  comments_url: "/comments{/number}",
+  issue_comment_url: "/issues/comments{/number}",
+  contents_url: "/contents/{+path}",
+  compare_url: "/compare/{base}...{head}",
+  archive_url: "/{archive_format}{/ref}",
+  issues_url: "/issues{/number}",
+  pulls_url: "/pulls{/number}",
+  milestones_url: "/milestones{/number}",
+  notifications_url: "/notifications{?since,all,participating}",
+  labels_url: "/labels{/name}",
+  releases_url: "/releases{/id}",
 });
 const invalidV1ReviewedAuthorizationPrefix = ["authorization:", "Bearer"].join(" ");
 const invalidV1ReviewedSourcePatchOccurrences = Object.freeze([
@@ -80,8 +116,10 @@ export const navigationCausalInvalidV1PublicationInputNames = Object.freeze([
 export const navigationCausalPublicationInputNames = Object.freeze([
   "actions-navigation-causal-host-a.zip",
   "actions-navigation-causal-host-b.zip",
-  "anonymous-contract-preflight-v2.json",
+  "anonymous-contract-preflight-v3.json",
   ...navigationCausalInvalidV1PublicationInputNames,
+  navigationCausalInvalidV2Evidence.capture.authorityAsset,
+  navigationCausalInvalidV2Evidence.capture.actionsLogsAsset,
   "contract-release.json",
   "contract-commit.json",
   "workflow-run.json",
@@ -148,7 +186,7 @@ export function buildNavigationCausalPublication({ inputs, v4TagRefRecord }) {
   verifyNavigationCausalInvalidV1PreObservationEvidence(invalidV1);
   assertNavigationCausalAnonymousContractPreflightReceipt(
     parseCanonicalNavigationCausalJson(
-      inputs["anonymous-contract-preflight-v2.json"],
+      inputs["anonymous-contract-preflight-v3.json"],
       "anonymous contract preflight",
     ),
     {
@@ -157,6 +195,10 @@ export function buildNavigationCausalPublication({ inputs, v4TagRefRecord }) {
       v4ReleaseRecord: parseJson(inputs["v4-evidence-release.json"], "V4 evidence release"),
     },
   );
+  verifyNavigationCausalV2FailureArchive({
+    authorityBundleBytes: inputs[navigationCausalInvalidV2Evidence.capture.authorityAsset],
+    actionsLogsZipBytes: inputs[navigationCausalInvalidV2Evidence.capture.actionsLogsAsset],
+  });
   const archives = {
     "stasis-v0.3.3-navigation-causal-host-a-attempt-1":
       inputs["actions-navigation-causal-host-a.zip"],
@@ -231,6 +273,17 @@ export function verifyNavigationCausalGitHubAuthorityPrivacy(value, name) {
   return Object.freeze(structuredClone(retained[0]));
 }
 
+export function verifyNavigationCausalV2FailureAuthorityPrivacy(value) {
+  const retained = [];
+  assertNoDocumentHtmlKey(value, navigationCausalInvalidV2Evidence.capture.authorityAsset);
+  const projected = projectInvalidV2FailureAuthorityForPrivacy(value, retained);
+  assertPostSupportArtifactPrivacy(projected);
+  if (retained.length < 1) {
+    throw new TypeError("Navigation causal V2 failure authority had no validated GitHub records");
+  }
+  return Object.freeze(structuredClone(retained));
+}
+
 export async function buildNavigationCausalPublicationDirectory(
   inputDirectory,
   outputDirectory,
@@ -292,7 +345,25 @@ function createNavigationCausalPrivacyScan(assets, binding) {
   const scanned = [];
   const controlledDomIdentitiesByHost = [];
   const githubAuthorityProjections = [];
+  const capturedLogArchives = [];
   for (const [name, bytes] of Object.entries(assets)) {
+    if (name === navigationCausalInvalidV2Evidence.capture.actionsLogsAsset) {
+      const inspected = inspectNavigationCausalV2FailureLogPrivacy(
+        bytes,
+        assertPostSupportPublicSourcePatchPrivacy,
+      );
+      capturedLogArchives.push({
+        name,
+        bytes: bytes.length,
+        sha256: sha256(bytes),
+        entryCount: inspected.entryCount,
+        totalUncompressedBytes: inspected.entries.reduce(
+          (total, entry) => total + entry.bytes,
+          0,
+        ),
+      });
+      continue;
+    }
     if (name.endsWith(".zip")) continue;
     const value = parseJson(bytes, `privacy payload ${name}`);
     const lane = name === navigationCausalHostArtifactNames["host-a"].raw
@@ -341,8 +412,16 @@ function createNavigationCausalPrivacyScan(assets, binding) {
       controlledDocumentHtmlIdentities: identities,
       controlledDocumentHtmlByHost: controlledDomIdentitiesByHost,
       githubAuthorityProjectionCount: githubAuthorityProjections.length,
+      githubApiRouteProjectionCount: githubAuthorityProjections.reduce(
+        (total, entry) => total + entry.apiRouteProjectionCount,
+        0,
+      ),
       githubUriTemplateProjectionCount: githubAuthorityProjections.reduce(
         (total, entry) => total + entry.uriTemplateProjectionCount,
+        0,
+      ),
+      githubRepositoryUriTemplateProjectionCount: githubAuthorityProjections.reduce(
+        (total, entry) => total + entry.repositoryUriTemplateProjectionCount,
         0,
       ),
       githubReleaseAssetStateProjectionCount: githubAuthorityProjections.reduce(
@@ -362,6 +441,8 @@ function createNavigationCausalPrivacyScan(assets, binding) {
         0,
       ),
       githubAuthorityProjections,
+      capturedLogArchiveCount: capturedLogArchives.length,
+      capturedLogArchives,
     },
     scannedAssets: scanned.sort((a, b) => a.name.localeCompare(b.name)),
     verification: {
@@ -373,6 +454,8 @@ function createNavigationCausalPrivacyScan(assets, binding) {
       rawGitHubAuthorityBytesRetained: true,
       onlyExactValidatedGitHubUriTemplatesProjectedForPrivacy: true,
       everyProjectedGitHubSourcePatchPrivacyScannedAndIdentityRetained: true,
+      everyInvalidV2CapturedLogEntryPrivacyScanned: true,
+      invalidV2CapturedLogsAnonymousLiveRefetchSupported: false,
       credentialsRetained: false,
       rawHeadersRetained: false,
       generalizedSpeedClaimAuthorized: false,
@@ -433,12 +516,14 @@ function projectExactPublicFixturePath(documentHtml, fixturePath, marker) {
 
 function rejectUnvalidatedDocumentHtml(value, name, githubAuthorityProjections) {
   assertNoDocumentHtmlKey(value, name);
-  const projected = projectValidatedGitHubAuthorityForPrivacy(
-    value,
-    name,
-    githubAuthorityProjections,
-  );
-  if (name === "anonymous-contract-preflight-v2.json" ||
+  const projected = name === navigationCausalInvalidV2Evidence.capture.authorityAsset
+    ? projectInvalidV2FailureAuthorityForPrivacy(value, githubAuthorityProjections)
+    : projectValidatedGitHubAuthorityForPrivacy(
+      value,
+      name,
+      githubAuthorityProjections,
+    );
+  if (name === "anonymous-contract-preflight-v3.json" ||
     name === "invalid-v1-anonymous-contract-preflight.json") {
     if (projected?.v4?.selectedJsonPointer !== "/observations/stasis/phases/poolRuns/9") {
       throw new TypeError("Navigation causal anonymous preflight JSON pointer changed");
@@ -448,22 +533,75 @@ function rejectUnvalidatedDocumentHtml(value, name, githubAuthorityProjections) 
   return projected;
 }
 
+function projectInvalidV2FailureAuthorityForPrivacy(value, retained) {
+  const projected = structuredClone(value);
+  if (!isDeepStrictEqual(projected.routes, navigationCausalV2FailureAuthorityRoutes)) {
+    throw new TypeError("Navigation causal invalid V2 GitHub API routes changed");
+  }
+  const routeCount = Object.keys(projected.routes).length;
+  projected.routes = Object.fromEntries(Object.keys(projected.routes).map((key) => [
+    key,
+    "validated-public-github-api-route",
+  ]));
+  retained.push({
+    sourceAsset: navigationCausalInvalidV2Evidence.capture.authorityAsset,
+    apiRouteProjectionCount: routeCount,
+    uriTemplateProjectionCount: 0,
+    repositoryUriTemplateProjectionCount: 0,
+    releaseAssetStateProjectionCount: 0,
+    sourcePatchCount: 0,
+    sourcePatchBytes: 0,
+    reviewedSourcePatchLiteralProjectionCount: 0,
+    sourcePatchIdentities: [],
+  });
+  const mappings = [
+    ["contractRelease", "invalid-v2-contract-release.json"],
+    ["contractCommit", "invalid-v2-contract-commit.json"],
+    ["contractTagRef", "invalid-v2-contract-tag-ref.json"],
+    ["preflightRelease", "invalid-v2-preflight-release.json"],
+    ["preflightTagRef", "invalid-v2-preflight-tag-ref.json"],
+    ["sourceBranchRef", "invalid-v2-source-branch-ref.json"],
+    ["workflowSourceCommit", "invalid-v2-workflow-source-commit.json"],
+    ["workflowRun", "invalid-v2-workflow-run.json"],
+    ["workflowRunsByBranch", "invalid-v2-workflow-runs-branch.json"],
+    ["workflowRunsByHeadSha", "invalid-v2-workflow-runs-head-sha.json"],
+    ["workflowJobsAllAttempts", "invalid-v2-workflow-jobs.json"],
+    ["workflowArtifacts", "invalid-v2-workflow-artifacts.json"],
+  ];
+  for (const [key, virtualName] of mappings) {
+    projected.records[key] = projectValidatedGitHubAuthorityForPrivacy(
+      projected.records[key],
+      virtualName,
+      retained,
+    );
+  }
+  if (projected.records.preflightReceipt?.v4?.selectedJsonPointer !==
+    "/observations/stasis/phases/poolRuns/9") {
+    throw new TypeError("Navigation causal invalid V2 preflight JSON pointer changed");
+  }
+  projected.records.preflightReceipt.v4.selectedJsonPointer =
+    "validated-public-v4-selection-pointer";
+  return projected;
+}
+
 function projectValidatedGitHubAuthorityForPrivacy(value, name, retained) {
   const isRelease = githubReleaseAuthorityAssetNames.has(name);
   const isCommit = githubCommitAuthorityAssetNames.has(name);
   const projected = structuredClone(value);
   const receipt = {
     sourceAsset: name,
+    apiRouteProjectionCount: 0,
     uriTemplateProjectionCount: 0,
     releaseAssetStateProjectionCount: 0,
     sourcePatchCount: 0,
     sourcePatchBytes: 0,
     reviewedSourcePatchLiteralProjectionCount: 0,
+    repositoryUriTemplateProjectionCount: 0,
     sourcePatchIdentities: [],
   };
   if (isRelease) projectGitHubReleaseForPrivacy(projected, name, receipt);
   if (isCommit) projectGitHubCommitForPrivacy(projected, name, receipt);
-  projectGitHubUserTemplates(projected, name, receipt);
+  projectGitHubUriTemplates(projected, name, receipt);
   if (isRelease || isCommit || receipt.uriTemplateProjectionCount > 0) {
     retained.push(receipt);
   }
@@ -472,7 +610,9 @@ function projectValidatedGitHubAuthorityForPrivacy(value, name, retained) {
 
 function projectGitHubReleaseForPrivacy(value, name, receipt) {
   const fullRecordRequired = name === "invalid-v1-contract-release.json" ||
-    name === "invalid-v1-preflight-release.json";
+    name === "invalid-v1-preflight-release.json" ||
+    name === "invalid-v2-contract-release.json" ||
+    name === "invalid-v2-preflight-release.json";
   if (value === null || typeof value !== "object" || Array.isArray(value) ||
     !Number.isSafeInteger(value.id) || value.id < 1 || !Array.isArray(value.assets) ||
     (fullRecordRequired && value.url !==
@@ -502,7 +642,8 @@ function projectGitHubReleaseForPrivacy(value, name, receipt) {
 }
 
 function projectGitHubCommitForPrivacy(value, name, receipt) {
-  const repository = name === "workflow-source-commit.json"
+  const repository = name === "workflow-source-commit.json" ||
+    name === "invalid-v2-workflow-source-commit.json"
     ? "oxhq/stasis"
     : "oxhq/stasis-compat-bench";
   if (value === null || typeof value !== "object" || Array.isArray(value) ||
@@ -593,19 +734,48 @@ function countOccurrences(value, needle) {
   return count;
 }
 
-function projectGitHubUserTemplates(value, name, receipt) {
+function projectGitHubUriTemplates(value, name, receipt) {
   const pending = [value];
   const seen = new Set();
   while (pending.length > 0) {
     const current = pending.pop();
     if (current === null || typeof current !== "object" || seen.has(current)) continue;
     seen.add(current);
-    if (!Array.isArray(current) && Object.keys(githubUserTemplateSuffixes).some(
-      (key) => Object.hasOwn(current, key),
-    )) {
+    if (!Array.isArray(current) && Object.hasOwn(current, "login") &&
+      Object.keys(githubUserTemplateSuffixes).some(
+        (key) => Object.hasOwn(current, key),
+      )) {
       projectOneGitHubUser(current, name, receipt);
     }
+    if (!Array.isArray(current) && Object.hasOwn(current, "full_name") &&
+      Object.keys(githubRepositoryTemplateSuffixes).some(
+        (key) => Object.hasOwn(current, key),
+      )) {
+      projectOneGitHubRepository(current, name, receipt);
+    }
     for (const item of Object.values(current)) pending.push(item);
+  }
+}
+
+function projectOneGitHubRepository(value, name, receipt) {
+  if (typeof value.full_name !== "string" ||
+    !/^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/u.test(value.full_name) ||
+    !Number.isSafeInteger(value.id) || value.id < 1) {
+    throw new TypeError(`Navigation causal GitHub repository identity is invalid: ${name}`);
+  }
+  const base = `https://api.github.com/repos/${value.full_name}`;
+  if (value.url !== base) {
+    throw new TypeError(`Navigation causal GitHub repository API URL is invalid: ${name}`);
+  }
+  for (const [key, suffix] of Object.entries(githubRepositoryTemplateSuffixes)) {
+    if (value[key] !== `${base}${suffix}`) {
+      throw new TypeError(
+        `Navigation causal GitHub repository URI template is invalid: ${name}:${key}`,
+      );
+    }
+    value[key] = `${base}/${key.replace(/_url$/u, "")}/validated-uri-template`;
+    receipt.uriTemplateProjectionCount += 1;
+    receipt.repositoryUriTemplateProjectionCount += 1;
   }
 }
 

@@ -5,44 +5,54 @@ import {
   navigationCausalHarnessIdentity,
   navigationCausalWorkflowSourceIdentity,
 } from "./navigation-causal-replication.mjs";
+import {
+  navigationCausalInvalidV2Evidence,
+  navigationCausalV2FailureAssetIdentities,
+  verifyNavigationCausalV2FailureArchive,
+} from "./navigation-causal-v2-failure.mjs";
 
 export const navigationCausalPreflightSchema =
-  "stasis-v0.3.3-performance-navigation-causal-preflight-v2";
+  "stasis-v0.3.3-performance-navigation-causal-preflight-v3";
 export const navigationCausalSelectionBindingSchema =
-  "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2";
+  "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3";
 
 export const navigationCausalContractIdentity = deepFreeze({
   repository: "oxhq/stasis-compat-bench",
-  tag: "stasis-v0.3.3-performance-navigation-causal-contract-v2",
-  preflightTag: "stasis-v0.3.3-performance-navigation-causal-preflight-v2",
-  preflightAsset: "anonymous-contract-preflight-v2.json",
-  evidenceTag: "stasis-v0.3.3-performance-navigation-causal-evidence-v2",
-  soleParentSha: "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
+  tag: "stasis-v0.3.3-performance-navigation-causal-contract-v3",
+  preflightTag: "stasis-v0.3.3-performance-navigation-causal-preflight-v3",
+  preflightAsset: "anonymous-contract-preflight-v3.json",
+  evidenceTag: "stasis-v0.3.3-performance-navigation-causal-evidence-v3",
+  soleParentSha: "a1352f2d31cb21bed7fae200c7fd638f850274f4",
   assets: {
-    protocol: "stasis-v0.3.3-performance-navigation-causal-v2.md",
-    preflight: "stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
-    workflow: "stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
-    selection: "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
+    protocol: "stasis-v0.3.3-performance-navigation-causal-v3.md",
+    preflight: "stasis-v0.3.3-performance-navigation-causal-preflight-v3.json",
+    workflow: "stasis-v0.3.3-performance-navigation-causal-workflow-v3.yml",
+    selection: "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json",
+    invalidV2FailureAuthority:
+      "stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json",
+    invalidV2ActionsLogs:
+      "stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip",
   },
 });
 
 export const navigationCausalContractAssetIdentities = deepFreeze({
-  "stasis-v0.3.3-performance-navigation-causal-v2.md": {
-    bytes: 17_688,
-    sha256: "f09ea8a415ec353744c95e24196142f553881c403172c3ce3701c4c626dec558",
+  "stasis-v0.3.3-performance-navigation-causal-v3.md": {
+    bytes: 19_525,
+    sha256: "99fe27a0258d30ad93e4b6466538c33a11878182ff751dd91a6981166049f6ee",
   },
-  "stasis-v0.3.3-performance-navigation-causal-preflight-v2.json": {
-    bytes: 12_257,
-    sha256: "c4c0ffc0c8802e2a1b3169330a64fbda0c91bd3ced30085da53fd60de290f9a6",
+  "stasis-v0.3.3-performance-navigation-causal-preflight-v3.json": {
+    bytes: 23_034,
+    sha256: "b8a7d776fcaed3df61a066c9c658e9941636d883c3444c8d24cc7ee30ccbf91f",
   },
-  "stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml": {
-    bytes: 40_758,
-    sha256: "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472",
+  "stasis-v0.3.3-performance-navigation-causal-workflow-v3.yml": {
+    bytes: 40_950,
+    sha256: "d46cfeb840d139b2cbd10c834e114fc0df7a53fd677e026cfe0145549307bdd0",
   },
-  "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json": {
+  "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json": {
     bytes: 2_004,
-    sha256: "1594337623688f9c15fe4b205639d67b3a7947bea16332b425ded26fb53848f9",
+    sha256: "1e56dc8b92da31fa9a197cb430cae3bfac457c63823ca5662d3007a8775cd35c",
   },
+  ...navigationCausalV2FailureAssetIdentities,
 });
 
 export const navigationCausalInvalidV1Evidence = deepFreeze({
@@ -55,7 +65,7 @@ export const navigationCausalInvalidV1Evidence = deepFreeze({
     tag: "stasis-v0.3.3-performance-navigation-causal-contract-v1",
     targetCommitSha: "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
     targetTreeSha: "a73d8a07a8c6e81032ff14640e63de4e4fc905ac",
-    soleParentSha: navigationCausalHarnessIdentity.revision,
+    soleParentSha: "11948d347204e3392fb960ed2966fcc63d769271",
     createdAt: "2026-09-04T20:39:28Z",
     publishedAt: "2026-09-04T20:40:00Z",
     assetCount: 4,
@@ -187,7 +197,7 @@ export function assertNavigationCausalWorkflowMirror(bytes) {
     countByte(bytes, 0x0a) !== navigationCausalWorkflowSourceIdentity.workflow.lineCount ||
     countByte(bytes, 0x0d) !== 0 || bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf ||
     bytes.at(-1) !== 0x0a) {
-    throw new TypeError("Navigation causal workflow mirror differs from frozen S5 bytes");
+    throw new TypeError("Navigation causal workflow mirror differs from frozen S6 bytes");
   }
   return bytes;
 }
@@ -207,6 +217,12 @@ export function assertNavigationCausalContractAssets(assets) {
     }
   }
   assertNavigationCausalWorkflowMirror(assets[navigationCausalContractIdentity.assets.workflow]);
+  verifyNavigationCausalV2FailureArchive({
+    authorityBundleBytes:
+      assets[navigationCausalContractIdentity.assets.invalidV2FailureAuthority],
+    actionsLogsZipBytes:
+      assets[navigationCausalContractIdentity.assets.invalidV2ActionsLogs],
+  });
   const selection = parseCanonicalJson(
     assets[navigationCausalContractIdentity.assets.selection],
     "Navigation causal V4 selection binding",
@@ -226,6 +242,7 @@ export function assertNavigationCausalContractAssets(assets) {
     preflight.contract.preflightAsset !== navigationCausalContractIdentity.preflightAsset ||
     preflight.workflowSource.revision !== navigationCausalWorkflowSourceIdentity.revision ||
     preflight.harness.revision !== navigationCausalHarnessIdentity.revision ||
+    !isDeepStrictEqual(preflight.harness, navigationCausalHarnessIdentity) ||
     preflight.bootIndependence.sameSaltRequiredAcrossJobs !== true ||
     preflight.bootIndependence.distinctHostClassDigestRequired !== false ||
     preflight.replication.statisticsPooledAcrossHosts !== false ||
@@ -239,8 +256,18 @@ export function assertNavigationCausalContractAssets(assets) {
     preflight.publicVerification.liveActionsReverificationRetentionBounded !== true ||
     preflight.publicVerification.indefiniteLiveActionsReverificationClaimed !== false ||
     !isDeepStrictEqual(preflight.invalidV1PreObservation, navigationCausalInvalidV1Evidence) ||
+    !isDeepStrictEqual(preflight.invalidV2Infrastructure, navigationCausalInvalidV2Evidence) ||
+    preflight.executionCorrection.environmentSnapshotExpression !== "{ ...process.env }" ||
+    preflight.executionCorrection.environmentSnapshotCreatedOncePerCliInvocation !== true ||
+    preflight.executionCorrection.ownEnumerableStringKeyValueEquivalenceRequired !== true ||
+    preflight.executionCorrection.snapshotPrototypeRequired !== "Object.prototype" ||
+    preflight.executionCorrection.measurementRunnerChanged !== false ||
+    preflight.executionCorrection.candidateChanged !== false ||
+    preflight.executionCorrection.armScheduleChanged !== false ||
+    preflight.executionCorrection.successfulRerunAcceptedAsCorrectnessEvidence !== false ||
     preflight.chronology.crossReleaseOrderingField !== "published_at" ||
     preflight.chronology.createdAtOrderedAcrossSameTargetReleases !== false ||
+    preflight.chronology.v2FailureTerminalBeforeV3ContractPublished !== true ||
     preflight.claimBoundary.decisionState !== "STAY_0_4_UNASSIGNED") {
     throw new TypeError("Navigation causal preflight boundary changed");
   }

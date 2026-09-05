@@ -1,0 +1,606 @@
+{
+  "schema": "stasis-v0.3.3-performance-navigation-causal-preflight-v3",
+  "status": "preregistered",
+  "contract": {
+    "repository": "oxhq/stasis-compat-bench",
+    "soleParentSha": "a1352f2d31cb21bed7fae200c7fd638f850274f4",
+    "tag": "stasis-v0.3.3-performance-navigation-causal-contract-v3",
+    "preflightTag": "stasis-v0.3.3-performance-navigation-causal-preflight-v3",
+    "preflightAsset": "anonymous-contract-preflight-v3.json",
+    "evidenceTag": "stasis-v0.3.3-performance-navigation-causal-evidence-v3",
+    "assetNames": [
+      "stasis-v0.3.3-performance-navigation-causal-v3.md",
+      "stasis-v0.3.3-performance-navigation-causal-preflight-v3.json",
+      "stasis-v0.3.3-performance-navigation-causal-workflow-v3.yml",
+      "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json",
+      "stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json",
+      "stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip"
+    ],
+    "knownAssetIdentities": {
+      "workflow": {
+        "name": "stasis-v0.3.3-performance-navigation-causal-workflow-v3.yml",
+        "bytes": 40950,
+        "sha256": "d46cfeb840d139b2cbd10c834e114fc0df7a53fd677e026cfe0145549307bdd0"
+      },
+      "selection": {
+        "name": "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json",
+        "bytes": 2004,
+        "sha256": "1e56dc8b92da31fa9a197cb430cae3bfac457c63823ca5662d3007a8775cd35c"
+      },
+      "invalidV2FailureAuthority": {
+        "name": "stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json",
+        "bytes": 370631,
+        "sha256": "2fd870809f4c3198c23c8f1118d2b8f2461b318fcd8790b81f66c2ea2a9dc51a"
+      },
+      "invalidV2ActionsLogs": {
+        "name": "stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip",
+        "bytes": 113247,
+        "sha256": "a7415037cbe660f632625b6b43a19ff845148a0f33669810f1171086b97e2297"
+      },
+      "protocolAndPreflightIdentitiesBoundByContractCommitAndRelease": true
+    }
+  },
+  "harness": {
+    "repository": "oxhq/stasis-compat-bench",
+    "revision": "84efe2bbc7e41a7b01e4feae12db7a7e7344c539",
+    "parentRevision": "11948d347204e3392fb960ed2966fcc63d769271",
+    "tree": "4a2b5ec6364b2d24f95166883db23e03293d2e43",
+    "topology": "one_commit_h9a_execution_successor_from_h8a",
+    "files": {
+      "runner": {
+        "path": "src/performance/navigation-causal.mjs",
+        "blob": "623323b78991fb02c1980f7bed66242b2e91194f",
+        "bytes": 40512,
+        "sha256": "1ea7ff361729e5ea200c77858e8b715a67f5fdec6946973626bee47ed6317646"
+      },
+      "cli": {
+        "path": "src/performance/run-navigation-causal.mjs",
+        "blob": "c3c79a85cb7d2ae4cdf157a83478ad96e5844de7",
+        "bytes": 7703,
+        "sha256": "38140a5785fd44e6aef8763776e624b97ad6f96922fbb507c9d1e0d35556b359"
+      },
+      "environmentRegression": {
+        "path": "test/performance-navigation-causal-environment-v3.test.mjs",
+        "blob": "82c9dce0b7ff1158a8058867ba1e97ab31378f44",
+        "bytes": 4935,
+        "sha256": "824db18fc3ce3ca9c8874397bb8c4bb32b50c985f986c912eba2a9f46c1f1fe8"
+      },
+      "hostFixture": {
+        "path": "test/fixtures/navigation-causal-host-fixture.mjs",
+        "blob": "7320b82df3dd063d747765e52e03b5325f95ffe1",
+        "bytes": 5252,
+        "sha256": "3a4508ef3a2c2f5fcef409da78b3e9527497ad61f024fd5c9c0652dd78dd18e3"
+      },
+      "runnerTest": {
+        "path": "test/performance-navigation-causal.test.mjs",
+        "blob": "becf3135160fb5755d21bc61586168576096fbfb",
+        "bytes": 15333,
+        "sha256": "2fa10b305abc0ba43d47eeae61bbb11e212f52304e0054e4becfabde03360493"
+      },
+      "cliTest": {
+        "path": "test/performance-run-navigation-causal.test.mjs",
+        "blob": "cb9da78c0778160a33795a583701ea5ba44a92bc",
+        "bytes": 7442,
+        "sha256": "e5cb9f0a9cb032ac0f0359d0d3318d7123cdf32af1e446b4919d51d4bd2fc6d0"
+      }
+    }
+  },
+  "workflowSource": {
+    "repository": "oxhq/stasis",
+    "branch": "codex/stasis-v033-navigation-causal-source-v3",
+    "ref": "refs/heads/codex/stasis-v033-navigation-causal-source-v3",
+    "revision": "6a785f438ecffaf3433ec907059f4df4fd4eedfa",
+    "parentRevision": "cb5bba41cda038fce82d2a5da6e4f853f1e97440",
+    "tree": "5868bafc2843cb16e2f33c4d739dd484705f4fd4",
+    "workflow": {
+      "path": ".github/workflows/stasis-v0.3.3-performance-navigation-causal-v3.yml",
+      "blob": "9c01b6ad4b02d1d21426d31c85c451c685b80a1a",
+      "bytes": 40950,
+      "sha256": "d46cfeb840d139b2cbd10c834e114fc0df7a53fd677e026cfe0145549307bdd0",
+      "lineCount": 831,
+      "name": "Stasis v0.3.3 navigation causal experiment V3"
+    }
+  },
+  "invocation": {
+    "event": "push",
+    "createdBranch": true,
+    "runAttempt": 1,
+    "workflowDispatch": false,
+    "schedule": false,
+    "matrix": false,
+    "rerun": false,
+    "replacementRun": false,
+    "secondPush": false,
+    "immutablePreflightReceiptReleaseRequired": true,
+    "contractReleaseLatest": false,
+    "preflightReceiptReleaseLatest": false,
+    "evidenceReleaseLatest": false,
+    "oneS6CreationPush": true,
+    "oneS5CreationPush": false
+  },
+  "invalidV1PreObservation": {
+    "status": "INVALID_PREFLIGHT_CHRONOLOGY_MODEL",
+    "observationStarted": false,
+    "authorizedS5CreationPushesConsumed": 0,
+    "authorizedS5CreationPushesRemaining": 1,
+    "contract": {
+      "releaseId": 383003193,
+      "tag": "stasis-v0.3.3-performance-navigation-causal-contract-v1",
+      "targetCommitSha": "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
+      "targetTreeSha": "a73d8a07a8c6e81032ff14640e63de4e4fc905ac",
+      "soleParentSha": "11948d347204e3392fb960ed2966fcc63d769271",
+      "createdAt": "2026-09-04T20:39:28Z",
+      "publishedAt": "2026-09-04T20:40:00Z",
+      "assetCount": 4
+    },
+    "preflight": {
+      "releaseId": 383003691,
+      "tag": "stasis-v0.3.3-performance-navigation-causal-preflight-v1",
+      "targetCommitSha": "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
+      "createdAt": "2026-09-04T20:39:28Z",
+      "publishedAt": "2026-09-04T20:41:03Z",
+      "asset": {
+        "id": 544876950,
+        "name": "anonymous-contract-preflight.json",
+        "bytes": 1923,
+        "sha256": "2ce4fb18d32d59c653e44aa6c9bc866b1ff5aa4c977ce1106f88ddcd79e90fc1"
+      }
+    },
+    "gate": {
+      "command": "verify-preflight-public",
+      "error": "Navigation causal preflight receipt release was not published after its contract",
+      "rootCause": "v1_ordered_same_target_preflight_created_at_after_contract_published_at",
+      "invalidPredicateObserved": "preflight.created_at <= contract.published_at",
+      "contractPublishedBeforePreflightPublished": true,
+      "sourceBranchObserved": false,
+      "sourceCommitObserved": false,
+      "workflowRunsObserved": 0,
+      "v1EvidenceTag": "stasis-v0.3.3-performance-navigation-causal-evidence-v1",
+      "v1EvidenceReleaseObserved": false,
+      "v1EvidenceTagObserved": false
+    }
+  },
+  "chronology": {
+    "ownCreatedAtNotAfterPublishedAt": true,
+    "crossReleaseOrderingField": "published_at",
+    "createdAtOrderedAcrossSameTargetReleases": false,
+    "publishedOrder": "invalid_v1_contract < invalid_v1_preflight < v2_contract < v2_preflight < failed_s5_run < v3_contract < v3_preflight < s6_run",
+    "v2FailureTerminalBeforeV3ContractPublished": true,
+    "evidencePublishedAfterRunTerminal": true,
+    "evidenceCreatedAfterRunTerminalRequired": false
+  },
+  "hosts": [
+    {
+      "lane": "host-a",
+      "jobId": "navigation-causal-host-a",
+      "jobName": "Native Ubuntu 22.04 navigation causal host A",
+      "runnerLabel": "ubuntu-22.04",
+      "artifactName": "stasis-v0.3.3-navigation-causal-host-a-attempt-1",
+      "warmupOrder": "AB",
+      "pairOrder": [
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA"
+      ]
+    },
+    {
+      "lane": "host-b",
+      "jobId": "navigation-causal-host-b",
+      "jobName": "Native Ubuntu 22.04 navigation causal host B",
+      "runnerLabel": "ubuntu-22.04",
+      "artifactName": "stasis-v0.3.3-navigation-causal-host-b-attempt-1",
+      "warmupOrder": "BA",
+      "pairOrder": [
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB",
+        "BA",
+        "AB"
+      ]
+    }
+  ],
+  "bootIndependence": {
+    "saltDomain": "stasis-v0.3.3-navigation-causal-boot-salt-v1",
+    "saltInputs": [
+      "GITHUB_RUN_ID",
+      "GITHUB_SHA"
+    ],
+    "sameSaltRequiredAcrossJobs": true,
+    "distinctBootInstanceDigestRequired": true,
+    "distinctHostClassDigestRequired": false,
+    "hostClassDigestIsDescriptiveOnly": true
+  },
+  "measurement": {
+    "package": "@oxhq/stasis@0.3.3",
+    "nodeVersion": "v22.20.0",
+    "armA": "http://stasis-compat.test/navigation-start",
+    "armB": "http://stasis-compat.test/navigation-final",
+    "oneChangedVariable": "requested_url",
+    "freshNativeProcessesPerHost": 22,
+    "untimedCorrectnessWarmupsPerHost": 2,
+    "timedAdjacentPairsPerHost": 10,
+    "gracefulTerminalOperation": "Session.close",
+    "successfulRuntimeClose": false,
+    "lifecyclePhases": [
+      "processProtocolLaunch",
+      "engineAndInitialOpen",
+      "settle",
+      "extract",
+      "physicalClose"
+    ],
+    "retries": false,
+    "sleeps": false,
+    "fallbacks": false,
+    "discardedObservations": false,
+    "caching": false,
+    "pooling": "none"
+  },
+  "effectRulePerHost": {
+    "exactCorrectEquivalentPairs": 10,
+    "minimumPositiveEngineAndInitialOpenDeltas": 9,
+    "positiveMedianEngineAndInitialOpenDelta": true,
+    "positiveMedianTotalDelta": true,
+    "minimumOpenDeltaDominatesAbsoluteCombinedOtherPhaseDeltas": 8
+  },
+  "replication": {
+    "bothHostsMustIndependentlyMeetEveryRule": true,
+    "statisticsPooledAcrossHosts": false,
+    "exactFinalDocumentHtmlAcrossHosts": true,
+    "validStatuses": [
+      "VALID_REPLICATED_EFFECT",
+      "VALID_NO_REPLICATED_EFFECT"
+    ],
+    "invalidStatuses": [
+      "INVALID_HOST_MEASUREMENT",
+      "INVALID_CROSS_HOST_INDEPENDENCE",
+      "INVALID_CROSS_HOST_CORRECTNESS"
+    ],
+    "validNoReplicatedEffectMeansZeroEffect": false
+  },
+  "hostedTopology": {
+    "declaredStepsPerJob": 16,
+    "stepNumbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      33,
+      34,
+      35
+    ],
+    "postSteps": [
+      {
+        "number": 33,
+        "name": "Post Set up exact Node 22.20.0 x64"
+      },
+      {
+        "number": 34,
+        "name": "Post Check out the exact navigation causal runner"
+      },
+      {
+        "number": 35,
+        "name": "Complete job"
+      }
+    ],
+    "implicitSetupStep": {
+      "number": 1,
+      "name": "Set up job"
+    },
+    "retainedInvalidConclusionPattern": {
+      "propagationStep17": "failure",
+      "postNodeStep33": "skipped",
+      "postCheckoutStep34": "success",
+      "completeJobStep35": "success",
+      "job": "failure"
+    },
+    "artifactCount": 2,
+    "filesPerArtifact": 2
+  },
+  "v4SelectionBinding": {
+    "releaseId": 382939276,
+    "localizationAssetId": 544735276,
+    "localizationAssetSha256": "fdc8cd495f8cd6116763ddbbc84ec896123bde828d6fb17bcb508b1bc772f34f",
+    "jsonPointer": "/observations/stasis/phases/poolRuns/9",
+    "selectedOrdinal": 10,
+    "v4TimingImportedIntoCausalStatistics": false
+  },
+  "evidenceReleaseAssetNames": [
+    "actions-navigation-causal-host-a.zip",
+    "actions-navigation-causal-host-b.zip",
+    "navigation-causal-host-a-raw.json",
+    "navigation-causal-host-a-outcome.json",
+    "navigation-causal-host-b-raw.json",
+    "navigation-causal-host-b-outcome.json",
+    "navigation-causal-artifact-binding.json",
+    "navigation-causal-hosted-provenance.json",
+    "navigation-causal-replication.json",
+    "anonymous-contract-preflight-v3.json",
+    "invalid-v1-contract-release.json",
+    "invalid-v1-contract-commit.json",
+    "invalid-v1-contract-tag-ref.json",
+    "invalid-v1-preflight-release.json",
+    "invalid-v1-preflight-tag-ref.json",
+    "invalid-v1-anonymous-contract-preflight.json",
+    "stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json",
+    "stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip",
+    "contract-release.json",
+    "contract-commit.json",
+    "workflow-run.json",
+    "workflow-runs.json",
+    "workflow-jobs.json",
+    "workflow-artifacts.json",
+    "workflow-source-commit.json",
+    "v4-evidence-release.json",
+    "v4-localization-evidence.json",
+    "privacy-scan.json",
+    "SHA256SUMS.txt"
+  ],
+  "publicationPrivacy": {
+    "documentHtmlValidatedBeforeProjection": true,
+    "documentHtmlPrivacyScannedBeforeOmission": true,
+    "onlyReplacedLiteral": "/leaf/navigation",
+    "replacementMarker": "stasis-navigation-causal-public-fixture-path",
+    "originalDocumentHtmlIdentityRetained": true,
+    "credentialLikeTextMayBeOmittedWithoutRejection": false,
+    "rawGitHubAuthorityRecordsRetained": true,
+    "exactGitHubUriTemplatesValidatedBeforeScanProjection": true,
+    "onlyValidatedUploadedReleaseAssetStateProjected": true,
+    "publicSourcePatchBytesAndSha256Retained": true,
+    "publicSourcePatchDirectCredentialScan": true,
+    "publicSourcePatchEmbeddedBase64CredentialScan": true,
+    "publicSourcePatchPrivateTaskPathScan": true,
+    "genericLocalPathRuleAppliedToSourcePatch": false,
+    "invalidV1ReviewedPatchLiteralCount": 2,
+    "invalidV1ReviewedPatchFileAndJsonPointerBound": true,
+    "invalidV1ReviewedPatchContextAndOccurrenceBound": true,
+    "invalidV2RawAuthorityBundleRetained": true,
+    "invalidV2AuthorityRecordsProjectedOnlyAfterExactValidation": true,
+    "invalidV2CapturedLogZipRetained": true,
+    "everyInvalidV2CapturedLogEntryPrivacyScanned": true,
+    "invalidV2CapturedLogCredentialsRetained": false,
+    "githubRepositoryUriTemplatesValidatedBeforeScanProjection": true
+  },
+  "publicVerification": {
+    "invalidV1RecordsAndReceiptRetainedSeparately": true,
+    "invalidV1RecordsAndReceiptLiveVerified": true,
+    "invalidV1ReleaseDownloadCountOnlyVolatileComparisonField": true,
+    "preflightReceiptReleaseAnchoredBeforeS5": false,
+    "preflightReceiptReleaseAssetCount": 1,
+    "liveSourceBranchAndCommitRefetched": true,
+    "completeWorkflowBranchListingRefetched": true,
+    "selectedRunAllAttemptJobsAndArtifactsRefetched": true,
+    "hostedZipAndReplicationReceiptsReplayed": true,
+    "actionsArtifactMetadataRequiredPresentAndNonexpired": true,
+    "liveActionsReverificationRetentionBounded": true,
+    "indefiniteLiveActionsReverificationClaimed": false,
+    "contractPreflightAndEvidenceReleasesLatest": false,
+    "invalidV2ContractAndPreflightLiveVerified": true,
+    "invalidV2AllEventBranchAndHeadShaCensusesRefetched": true,
+    "invalidV2SelectedRunAllAttemptJobsAndArtifactsRefetched": true,
+    "invalidV2EvidenceReleaseAndTagRequiredAbsent": true,
+    "invalidV2CapturedLogsExactInContractAndEvidenceReleases": true,
+    "invalidV2CapturedLogsAnonymousLiveRefetchSupported": false,
+    "invalidV2ZeroActionsArtifactsProvesZeroNativeLaunches": false,
+    "preflightReceiptReleaseAnchoredBeforeS6": true
+  },
+  "claimBoundary": {
+    "comparisonCorpusChanged": false,
+    "generalizedSpeedClaimAuthorized": false,
+    "implementationWorkAuthorized": false,
+    "decisionState": "STAY_0_4_UNASSIGNED"
+  },
+  "invalidV2Infrastructure": {
+    "status": "INVALID_PRE_MEASUREMENT_HARNESS_INVOCATION",
+    "reasonCode": "NON_PLAIN_PROCESS_ENV_REJECTED_BEFORE_RUN_HOST",
+    "workflowObservationStarted": true,
+    "productMeasurementStarted": false,
+    "noRetainedMeasurementArtifacts": true,
+    "nativeLaunchCountProvenByPublicMetadata": false,
+    "authorizedS5CreationPushesConsumed": 1,
+    "authorizedS5CreationPushesRemaining": 0,
+    "contract": {
+      "releaseId": 383100231,
+      "tag": "stasis-v0.3.3-performance-navigation-causal-contract-v2",
+      "targetCommitSha": "a1352f2d31cb21bed7fae200c7fd638f850274f4",
+      "targetTreeSha": "6ad9c9e0cddcfe3b7317c9b76b1d1e38677b14b9",
+      "soleParentSha": "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
+      "createdAt": "2026-09-05T01:56:14Z",
+      "publishedAt": "2026-09-05T01:56:58Z",
+      "assetCount": 4
+    },
+    "preflight": {
+      "releaseId": 383100433,
+      "tag": "stasis-v0.3.3-performance-navigation-causal-preflight-v2",
+      "targetCommitSha": "a1352f2d31cb21bed7fae200c7fd638f850274f4",
+      "createdAt": "2026-09-05T01:56:14Z",
+      "publishedAt": "2026-09-05T01:57:47Z",
+      "asset": {
+        "id": 545213184,
+        "name": "anonymous-contract-preflight-v2.json",
+        "bytes": 4269,
+        "sha256": "cef8e82a20fb0a91de26ebbecec485af8595db6602c4e52c6013ce1ecfe74a04"
+      }
+    },
+    "workflowSource": {
+      "repository": "oxhq/stasis",
+      "branch": "codex/stasis-v033-navigation-causal-source",
+      "ref": "refs/heads/codex/stasis-v033-navigation-causal-source",
+      "revision": "cb5bba41cda038fce82d2a5da6e4f853f1e97440",
+      "parentRevision": "b4c847b6543e34677630c311b20d9e3ff64d0925",
+      "tree": "9883ccb6fd3ddf72c3e4745e9fa3b1d9cc1d95da",
+      "workflow": {
+        "path": ".github/workflows/stasis-v0.3.3-performance-navigation-causal.yml",
+        "blob": "f24f67ac0d2c8b7b7cbd3a1e2bfc8a304c1c8038",
+        "bytes": 40758,
+        "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472",
+        "lineCount": 829,
+        "name": "Stasis v0.3.3 navigation causal experiment"
+      }
+    },
+    "hostedFailure": {
+      "runId": 33937724071,
+      "workflowId": 350638492,
+      "runAttempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "createdAt": "2026-09-05T01:58:17Z",
+      "runStartedAt": "2026-09-05T01:58:17Z",
+      "completedAt": "2026-09-05T01:59:17Z",
+      "branchRunCount": 1,
+      "headShaRunCount": 1,
+      "artifactCount": 0,
+      "jobs": [
+        {
+          "lane": "host-a",
+          "id": 101228807491,
+          "name": "Native Ubuntu 22.04 navigation causal host A",
+          "startedAt": "2026-09-05T01:58:20Z",
+          "completedAt": "2026-09-05T01:59:01Z"
+        },
+        {
+          "lane": "host-b",
+          "id": 101228807574,
+          "name": "Native Ubuntu 22.04 navigation causal host B",
+          "startedAt": "2026-09-05T01:58:20Z",
+          "completedAt": "2026-09-05T01:59:16Z"
+        }
+      ],
+      "failedStepNumbers": [
+        14,
+        15,
+        17
+      ],
+      "skippedStepNumbers": [
+        16,
+        33
+      ],
+      "capturedError": "The launch environment must be an object"
+    },
+    "capture": {
+      "authorityAsset": "stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json",
+      "actionsLogsAsset": "stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip",
+      "actionsLogsEntryCount": 40,
+      "actionsLogsAuthenticatedCapture": true,
+      "actionsLogsAnonymousLiveRefetchSupported": false,
+      "credentialsRetained": false
+    },
+    "evidenceAbsence": {
+      "tag": "stasis-v0.3.3-performance-navigation-causal-evidence-v2",
+      "releaseStatus": 404,
+      "tagRefStatus": 404
+    },
+    "exclusion": {
+      "v2TimingImportedIntoV3": false,
+      "v2StatisticsImportedIntoV3": false,
+      "v2EvidencePublicationAuthorized": false,
+      "v2RerunAuthorized": false,
+      "secondS5PushAuthorized": false,
+      "successfulRerunAcceptedAsCorrectnessEvidence": false,
+      "replacementProtocol": "stasis-v0.3.3-performance-navigation-causal-v3"
+    },
+    "claimBoundary": {
+      "authorityEligible": false,
+      "timingEligible": false,
+      "statisticsEligible": false,
+      "matchedEffectEligible": false,
+      "generalizedSpeedClaimAuthorized": false,
+      "implementationWorkAuthorized": false,
+      "decisionState": "STAY_0_4_UNASSIGNED"
+    }
+  },
+  "executionCorrection": {
+    "status": "preregistered_before_s6_observation",
+    "originalHarness": {
+      "repository": "oxhq/stasis-compat-bench",
+      "revision": "11948d347204e3392fb960ed2966fcc63d769271",
+      "parentRevision": "6b51796f646133dd74feb727a3edeb3ae1a8a443",
+      "grandparentRevision": "de1c9a000cba734c549f2fcee182e92c0565dff5",
+      "tree": "c8ba9cf9ddd6bcc85abf10c017349882544e0b1b",
+      "topology": "two_commit_h8a_stack_from_h7"
+    },
+    "executionHarness": {
+      "repository": "oxhq/stasis-compat-bench",
+      "revision": "84efe2bbc7e41a7b01e4feae12db7a7e7344c539",
+      "parentRevision": "11948d347204e3392fb960ed2966fcc63d769271",
+      "tree": "4a2b5ec6364b2d24f95166883db23e03293d2e43",
+      "topology": "one_commit_h9a_execution_successor_from_h8a",
+      "files": {
+        "runner": {
+          "path": "src/performance/navigation-causal.mjs",
+          "blob": "623323b78991fb02c1980f7bed66242b2e91194f",
+          "bytes": 40512,
+          "sha256": "1ea7ff361729e5ea200c77858e8b715a67f5fdec6946973626bee47ed6317646"
+        },
+        "cli": {
+          "path": "src/performance/run-navigation-causal.mjs",
+          "blob": "c3c79a85cb7d2ae4cdf157a83478ad96e5844de7",
+          "bytes": 7703,
+          "sha256": "38140a5785fd44e6aef8763776e624b97ad6f96922fbb507c9d1e0d35556b359"
+        },
+        "environmentRegression": {
+          "path": "test/performance-navigation-causal-environment-v3.test.mjs",
+          "blob": "82c9dce0b7ff1158a8058867ba1e97ab31378f44",
+          "bytes": 4935,
+          "sha256": "824db18fc3ce3ca9c8874397bb8c4bb32b50c985f986c912eba2a9f46c1f1fe8"
+        },
+        "hostFixture": {
+          "path": "test/fixtures/navigation-causal-host-fixture.mjs",
+          "blob": "7320b82df3dd063d747765e52e03b5325f95ffe1",
+          "bytes": 5252,
+          "sha256": "3a4508ef3a2c2f5fcef409da78b3e9527497ad61f024fd5c9c0652dd78dd18e3"
+        },
+        "runnerTest": {
+          "path": "test/performance-navigation-causal.test.mjs",
+          "blob": "becf3135160fb5755d21bc61586168576096fbfb",
+          "bytes": 15333,
+          "sha256": "2fa10b305abc0ba43d47eeae61bbb11e212f52304e0054e4becfabde03360493"
+        },
+        "cliTest": {
+          "path": "test/performance-run-navigation-causal.test.mjs",
+          "blob": "cb9da78c0778160a33795a583701ea5ba44a92bc",
+          "bytes": 7442,
+          "sha256": "e5cb9f0a9cb032ac0f0359d0d3318d7123cdf32af1e446b4919d51d4bd2fc6d0"
+        }
+      }
+    },
+    "changedBoundary": "one_plain_enumerable_process_environment_snapshot_plus_v3_workflow_name_and_ref_metadata",
+    "environmentSnapshotExpression": "{ ...process.env }",
+    "environmentSnapshotCreatedOncePerCliInvocation": true,
+    "ownEnumerableStringKeyValueEquivalenceRequired": true,
+    "snapshotPrototypeRequired": "Object.prototype",
+    "retryAdded": false,
+    "sleepAdded": false,
+    "fallbackAdded": false,
+    "measurementRunnerChanged": false,
+    "candidateChanged": false,
+    "armScheduleChanged": false,
+    "dedicatedNoNativeLaunchRegressionRunsBeforeOriginalCli": true,
+    "successfulRerunAcceptedAsCorrectnessEvidence": false
+  }
+}

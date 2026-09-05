@@ -13,9 +13,14 @@ import {
   navigationCausalHarnessIdentity,
   navigationCausalWorkflowSourceIdentity,
 } from "./navigation-causal-replication.mjs";
+import {
+  navigationCausalInvalidV2Evidence,
+  navigationCausalV2WorkflowSourceIdentity,
+  verifyNavigationCausalV2FailureLiveAuthority,
+} from "./navigation-causal-v2-failure.mjs";
 
 export const navigationCausalAnonymousContractPreflightSchema =
-  "stasis-v0.3.3-performance-navigation-causal-anonymous-contract-preflight-v2";
+  "stasis-v0.3.3-performance-navigation-causal-anonymous-contract-preflight-v3";
 
 export const navigationCausalV4EvidenceAssets = deepFreeze({
   "actions-diagnostic-bundle.zip": [24504, "8b7459bed0699d561a1a0e1af8502f02a5865bd0b0558fb5718fd7ad735f0ff4"],
@@ -54,15 +59,15 @@ export const navigationCausalExpectedV1Receipt = deepFreeze({
     targetCommitSha: "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
     targetTreeSha: "a73d8a07a8c6e81032ff14640e63de4e4fc905ac",
     lightweightTagDirectToTarget: true,
-    soleParentSha: navigationCausalHarnessIdentity.revision,
+    soleParentSha: "11948d347204e3392fb960ed2966fcc63d769271",
     publishedAt: "2026-09-04T20:40:00Z",
     assetCount: 4,
   },
   sourceAbsence: {
-    repository: navigationCausalWorkflowSourceIdentity.repository,
-    branch: navigationCausalWorkflowSourceIdentity.branch,
-    ref: navigationCausalWorkflowSourceIdentity.ref,
-    commitSha: navigationCausalWorkflowSourceIdentity.revision,
+    repository: navigationCausalV2WorkflowSourceIdentity.repository,
+    branch: navigationCausalV2WorkflowSourceIdentity.branch,
+    ref: navigationCausalV2WorkflowSourceIdentity.ref,
+    commitSha: navigationCausalV2WorkflowSourceIdentity.revision,
     evidenceTag: "stasis-v0.3.3-performance-navigation-causal-evidence-v1",
     httpStatuses: {
       sourceRef: 404,
@@ -189,6 +194,8 @@ export function verifyNavigationCausalAnonymousContractPreflight({
   contractAssets,
   latestReleaseRecord,
   invalidV1,
+  invalidV2,
+  harnessCommitRecord,
   absence,
   workflowRunsListing,
   v4ReleaseRecord,
@@ -203,6 +210,11 @@ export function verifyNavigationCausalAnonymousContractPreflight({
     contractTagRefRecord,
     contractAssets,
   );
+  const executionHarness = verifyNavigationCausalExecutionHarness(harnessCommitRecord);
+  const invalidV2Infrastructure = verifyNavigationCausalV2FailureLiveAuthority(invalidV2);
+  if (invalidV2Infrastructure.livePublicAuthorityReplayed !== true) {
+    throw new TypeError("Navigation causal V2 infrastructure disposition was not live-replayed");
+  }
   assertReleaseIsNotLatest(contractReleaseRecord, latestReleaseRecord, "contract");
   assertReleaseIsNotLatest(invalidV1.contractReleaseRecord, latestReleaseRecord, "V1 contract");
   assertReleaseIsNotLatest(
@@ -211,8 +223,8 @@ export function verifyNavigationCausalAnonymousContractPreflight({
     "V1 preflight receipt",
   );
   if (Date.parse(contract.publishedAt) <=
-    Date.parse(invalidV1PreObservation.preflight.publishedAt)) {
-    throw new TypeError("Navigation causal V2 contract was not published after invalid V1 preflight evidence");
+    Date.parse(invalidV2Infrastructure.hostedFailure.completedAt)) {
+    throw new TypeError("Navigation causal V3 contract was not published after the failed S5 run became terminal");
   }
   verifyPreObservationAbsence({
     absence,
@@ -222,6 +234,8 @@ export function verifyNavigationCausalAnonymousContractPreflight({
   return deepFreeze(createAnonymousContractPreflightReceipt({
     contract,
     invalidV1PreObservation,
+    invalidV2Infrastructure,
+    executionHarness,
     v4,
   }));
 }
@@ -264,6 +278,8 @@ export function assertNavigationCausalAnonymousContractPreflightReceipt(
       assetCount: Object.keys(navigationCausalContractAssetIdentities).length,
     },
     invalidV1PreObservation: navigationCausalInvalidV1Evidence,
+    invalidV2Infrastructure: navigationCausalInvalidV2Evidence,
+    executionHarness: expectedExecutionHarnessReceipt(),
     v4: expectedV4Receipt(v4ReleaseRecord),
   });
   if (!isDeepStrictEqual(value, expected)) {
@@ -272,7 +288,13 @@ export function assertNavigationCausalAnonymousContractPreflightReceipt(
   return value;
 }
 
-function createAnonymousContractPreflightReceipt({ contract, invalidV1PreObservation, v4 }) {
+function createAnonymousContractPreflightReceipt({
+  contract,
+  invalidV1PreObservation,
+  invalidV2Infrastructure,
+  executionHarness,
+  v4,
+}) {
   return {
     schema: navigationCausalAnonymousContractPreflightSchema,
     status: "passed",
@@ -281,6 +303,8 @@ function createAnonymousContractPreflightReceipt({ contract, invalidV1PreObserva
     redirectPolicy: "manual_https_github_owned_hosts_only",
     contract,
     invalidV1PreObservation,
+    invalidV2Infrastructure: structuredClone(navigationCausalInvalidV2Evidence),
+    executionHarness,
     sourceAbsence: {
       repository: navigationCausalWorkflowSourceIdentity.repository,
       branch: navigationCausalWorkflowSourceIdentity.branch,
@@ -304,11 +328,15 @@ function createAnonymousContractPreflightReceipt({ contract, invalidV1PreObserva
       ownCreatedAtNotAfterPublishedAt: true,
       crossReleaseOrderingField: "published_at",
       createdAtOrderedAcrossSameTargetReleases: false,
-      publishedOrder: "invalid_v1_contract < invalid_v1_preflight < v2_contract < v2_preflight < run",
+      publishedOrder:
+        "invalid_v1_contract < invalid_v1_preflight < v2_contract < v2_preflight < failed_s5_run < v3_contract < v3_preflight < s6_run",
     },
     v4,
     oneShotRules: {
-      oneS5CreationPush: true,
+      oneS6CreationPush: true,
+      invalidV2EvidencePublicationAuthorized: false,
+      invalidV2RerunAuthorized: false,
+      secondS5PushAuthorized: false,
       invalidV1EvidencePublicationAuthorized: false,
       contractReleaseLatest: false,
       rerun: false,
@@ -340,6 +368,28 @@ export function verifyNavigationCausalPublicContract({
     contractTagRefRecord,
     contractAssets,
   ));
+}
+
+export function verifyNavigationCausalExecutionHarness(value) {
+  const expected = navigationCausalHarnessIdentity;
+  if (value?.sha !== expected.revision || value?.commit?.tree?.sha !== expected.tree ||
+    !isDeepStrictEqual(value?.parents?.map(({ sha }) => sha), [expected.parentRevision]) ||
+    value.url !==
+      `https://api.github.com/repos/${expected.repository}/commits/${expected.revision}` ||
+    !Array.isArray(value.files) || value.files.length !== Object.keys(expected.files).length) {
+    throw new TypeError("Navigation causal H9a execution harness commit identity changed");
+  }
+  const seen = new Set();
+  for (const identity of Object.values(expected.files)) {
+    const file = value.files.find(({ filename }) => filename === identity.path);
+    const wantedStatus = identity.path ===
+      "test/performance-navigation-causal-environment-v3.test.mjs" ? "added" : "modified";
+    if (file?.status !== wantedStatus || file.sha !== identity.blob || seen.has(file.filename)) {
+      throw new TypeError(`Navigation causal H9a execution harness file changed: ${identity.path}`);
+    }
+    seen.add(file.filename);
+  }
+  return deepFreeze(expectedExecutionHarnessReceipt());
 }
 
 function verifyContractPublication(release, commit, tagRef, assets) {
@@ -374,7 +424,7 @@ function verifyContractPublication(release, commit, tagRef, assets) {
     const path = `protocol/${name}`;
     const file = commit.files.find((entry) => entry.filename === path);
     if (file?.status !== "added" || file.sha !== gitBlobSha(bytes)) {
-      throw new TypeError(`Navigation causal contract asset is not its H8c Git blob: ${name}`);
+      throw new TypeError(`Navigation causal contract asset is not its V3 contract Git blob: ${name}`);
     }
   }
   return {
@@ -480,6 +530,21 @@ function expectedV4Receipt(release) {
     selectedJsonPointer: "/observations/stasis/phases/poolRuns/9",
     selectedOrdinal: binding.selection.ordinal,
     timingImportedIntoCausalStatistics: false,
+  };
+}
+
+function expectedExecutionHarnessReceipt() {
+  const expected = navigationCausalHarnessIdentity;
+  return {
+    repository: expected.repository,
+    revision: expected.revision,
+    parentRevision: expected.parentRevision,
+    tree: expected.tree,
+    fileCount: Object.keys(expected.files).length,
+    environmentSnapshotBoundary: "one_plain_enumerable_process_environment_snapshot",
+    measurementRunnerChanged: false,
+    candidateChanged: false,
+    armScheduleChanged: false,
   };
 }
 

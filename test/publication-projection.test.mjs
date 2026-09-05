@@ -78,12 +78,18 @@ test("public projection freezes every corpus and protocol byte", async () => {
     "protocol/stasis-v0.3.3-performance-crawl-v1.md",
     "protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v1.json",
     "protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
+    "protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v3.json",
     "protocol/stasis-v0.3.3-performance-navigation-causal-v1.md",
+    "protocol/stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip",
+    "protocol/stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json",
     "protocol/stasis-v0.3.3-performance-navigation-causal-v2.md",
+    "protocol/stasis-v0.3.3-performance-navigation-causal-v3.md",
     "protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
     "protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
+    "protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json",
     "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
     "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
+    "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v3.yml",
     "protocol/stasis-v0.3.3-performance-replication-v1.md",
     "protocol/stasis-v0.3.3-performance-rwa-v1.md",
   ];
@@ -211,7 +217,7 @@ test("prepared projection tree reports the remaining fresh-root operation explic
     !result.sourceHistoryExcluded || !result.sourceExclusionsAbsent,
   );
   if (!result.sourceHistoryExcluded) assert.equal(result.sourceSnapshotVerified, true);
-  assert.equal(result.unchangedInputCount, 34);
+  assert.equal(result.unchangedInputCount, 40);
   assert.equal(result.pathProjectionReceiptVerified, true);
   assert.equal(result.pathProjectionJsonPointerCount, 4);
   assert.equal(result.pathProjectionLogLineCount, 1);

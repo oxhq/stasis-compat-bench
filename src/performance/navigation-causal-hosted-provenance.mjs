@@ -63,8 +63,8 @@ export function verifyNavigationCausalHostedProvenance({
     artifacts,
     verification: {
       immutableContractPublishedBeforeRun: true,
-      contractTargetHasSoleH8aParent: true,
-      sourceHasSoleS4Parent: true,
+      contractTargetHasSoleH8cParent: true,
+      sourceHasSoleS5Parent: true,
       completeWorkflowRunsListing: true,
       exactlyOneFirstAttemptRun: true,
       exactlyTwoTerminalJobs: true,
@@ -173,7 +173,7 @@ function verifyContract(release, commit, run) {
     throw new TypeError("Navigation causal contract was created after it was published");
   }
   if (published.epoch >= run.createdEpoch) {
-    throw new TypeError("Navigation causal contract was not published before the run");
+      throw new TypeError("Navigation causal V3 contract was not published before the S6 run");
   }
   assertApiUrl(release.url, harnessRepository, `/releases/${release.id}`, "contract release URL");
   assertApiUrl(commit.url, harnessRepository, `/commits/${commit.sha}`, "contract commit URL");

@@ -10,7 +10,7 @@ import {
 export const navigationCausalReplicationSchema =
   "stasis-v0.3.3-performance-navigation-causal-replication-v1";
 
-export const navigationCausalHarnessIdentity = deepFreeze({
+export const navigationCausalHistoricalH8aIdentity = deepFreeze({
   repository: "oxhq/stasis-compat-bench",
   revision: "11948d347204e3392fb960ed2966fcc63d769271",
   parentRevision: "6b51796f646133dd74feb727a3edeb3ae1a8a443",
@@ -19,25 +19,71 @@ export const navigationCausalHarnessIdentity = deepFreeze({
   topology: "two_commit_h8a_stack_from_h7",
 });
 
+export const navigationCausalHarnessIdentity = deepFreeze({
+  repository: "oxhq/stasis-compat-bench",
+  revision: "84efe2bbc7e41a7b01e4feae12db7a7e7344c539",
+  parentRevision: navigationCausalHistoricalH8aIdentity.revision,
+  tree: "4a2b5ec6364b2d24f95166883db23e03293d2e43",
+  topology: "one_commit_h9a_execution_successor_from_h8a",
+  files: {
+    runner: {
+      path: "src/performance/navigation-causal.mjs",
+      blob: "623323b78991fb02c1980f7bed66242b2e91194f",
+      bytes: 40_512,
+      sha256: "1ea7ff361729e5ea200c77858e8b715a67f5fdec6946973626bee47ed6317646",
+    },
+    cli: {
+      path: "src/performance/run-navigation-causal.mjs",
+      blob: "c3c79a85cb7d2ae4cdf157a83478ad96e5844de7",
+      bytes: 7_703,
+      sha256: "38140a5785fd44e6aef8763776e624b97ad6f96922fbb507c9d1e0d35556b359",
+    },
+    environmentRegression: {
+      path: "test/performance-navigation-causal-environment-v3.test.mjs",
+      blob: "82c9dce0b7ff1158a8058867ba1e97ab31378f44",
+      bytes: 4_935,
+      sha256: "824db18fc3ce3ca9c8874397bb8c4bb32b50c985f986c912eba2a9f46c1f1fe8",
+    },
+    hostFixture: {
+      path: "test/fixtures/navigation-causal-host-fixture.mjs",
+      blob: "7320b82df3dd063d747765e52e03b5325f95ffe1",
+      bytes: 5_252,
+      sha256: "3a4508ef3a2c2f5fcef409da78b3e9527497ad61f024fd5c9c0652dd78dd18e3",
+    },
+    runnerTest: {
+      path: "test/performance-navigation-causal.test.mjs",
+      blob: "becf3135160fb5755d21bc61586168576096fbfb",
+      bytes: 15_333,
+      sha256: "2fa10b305abc0ba43d47eeae61bbb11e212f52304e0054e4becfabde03360493",
+    },
+    cliTest: {
+      path: "test/performance-run-navigation-causal.test.mjs",
+      blob: "cb9da78c0778160a33795a583701ea5ba44a92bc",
+      bytes: 7_442,
+      sha256: "e5cb9f0a9cb032ac0f0359d0d3318d7123cdf32af1e446b4919d51d4bd2fc6d0",
+    },
+  },
+});
+
 export const navigationCausalWorkflowSourceIdentity = deepFreeze({
   repository: "oxhq/stasis",
-  branch: "codex/stasis-v033-navigation-causal-source",
-  ref: "refs/heads/codex/stasis-v033-navigation-causal-source",
-  revision: "cb5bba41cda038fce82d2a5da6e4f853f1e97440",
-  parentRevision: "b4c847b6543e34677630c311b20d9e3ff64d0925",
-  tree: "9883ccb6fd3ddf72c3e4745e9fa3b1d9cc1d95da",
+  branch: "codex/stasis-v033-navigation-causal-source-v3",
+  ref: "refs/heads/codex/stasis-v033-navigation-causal-source-v3",
+  revision: "6a785f438ecffaf3433ec907059f4df4fd4eedfa",
+  parentRevision: "cb5bba41cda038fce82d2a5da6e4f853f1e97440",
+  tree: "5868bafc2843cb16e2f33c4d739dd484705f4fd4",
   workflow: {
-    path: ".github/workflows/stasis-v0.3.3-performance-navigation-causal.yml",
-    blob: "f24f67ac0d2c8b7b7cbd3a1e2bfc8a304c1c8038",
-    bytes: 40_758,
-    sha256: "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472",
-    lineCount: 829,
+    path: ".github/workflows/stasis-v0.3.3-performance-navigation-causal-v3.yml",
+    blob: "9c01b6ad4b02d1d21426d31c85c451c685b80a1a",
+    bytes: 40_950,
+    sha256: "d46cfeb840d139b2cbd10c834e114fc0df7a53fd677e026cfe0145549307bdd0",
+    lineCount: 831,
     bootSalt: {
       domain: "stasis-v0.3.3-navigation-causal-boot-salt-v1",
       inputs: ["GITHUB_RUN_ID", "GITHUB_SHA"],
       identicalAcrossJobs: true,
     },
-    name: "Stasis v0.3.3 navigation causal experiment",
+    name: "Stasis v0.3.3 navigation causal experiment V3",
     jobs: [
       {
         id: "navigation-causal-host-a",

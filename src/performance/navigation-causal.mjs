@@ -23,7 +23,7 @@ export const navigationCausalTrack = "navigation-initial-open-one-variable";
 export const navigationCausalHostOutcomeSchema =
   "stasis-v0.3.3-navigation-causal-host-outcome-v1";
 export const navigationCausalWorkflowName =
-  "Stasis v0.3.3 navigation causal experiment";
+  "Stasis v0.3.3 navigation causal experiment V3";
 
 export const navigationCausalHostLanes = Object.freeze(["host-a", "host-b"]);
 export const navigationCausalArms = Object.freeze(["A", "B"]);
@@ -984,7 +984,7 @@ function assertNavigationCausalProvenance(value, hostLane) {
     value.workflow !== navigationCausalWorkflowName || value.hostLane !== hostLane ||
     value.job !== `navigation-causal-${hostLane}` || !positiveIntegerString(value.runId) ||
     value.runAttempt !== "1" || !gitShaPattern.test(value.workflowSourceSha ?? "") ||
-    value.workflowSourceRef !== "refs/heads/codex/stasis-v033-navigation-causal-source" ||
+    value.workflowSourceRef !== "refs/heads/codex/stasis-v033-navigation-causal-source-v3" ||
     !gitShaPattern.test(value.harnessCheckoutRevision ?? "") ||
     !gitShaPattern.test(value.harnessCheckoutTree ?? "") ||
     assertCleanHarnessWorktreeEvidence(value.harnessCheckoutWorktree) !==

@@ -35,9 +35,14 @@ import {
   navigationCausalHarnessIdentity,
   navigationCausalWorkflowSourceIdentity,
 } from "../src/performance/navigation-causal-replication.mjs";
+import {
+  navigationCausalInvalidV2Evidence,
+  navigationCausalV2FailureAuthorityRoutes,
+} from "../src/performance/navigation-causal-v2-failure.mjs";
 import { navigationCausalHostFixtureRaw } from "./fixtures/navigation-causal-host-fixture.mjs";
 import { navigationCausalHostedFixtureInput } from "./fixtures/navigation-causal-hosted-fixture.mjs";
 import { navigationCausalInvalidV1Fixture } from "./fixtures/navigation-causal-invalid-v1-fixture.mjs";
+import { navigationCausalInvalidV2Fixture } from "./fixtures/navigation-causal-invalid-v2-fixture.mjs";
 
 test("publication retains exact hosted inputs, host files, receipts, privacy scan, and checksums", async () => {
   const fixture = await publicationFixture();
@@ -51,18 +56,18 @@ test("publication retains exact hosted inputs, host files, receipts, privacy sca
     v4TagRefRecord: fixture.v4TagRefRecord,
   });
   assert.equal(verified.status, "verified");
-  assert.equal(verified.assetCount, 27);
+  assert.equal(verified.assetCount, 29);
   assert.equal(verified.validMeasurement, true);
   const scan = JSON.parse(built.assets["privacy-scan.json"]);
   assert.equal(scan.scope.controlledDocumentHtmlOmissionCount, 44);
   assert.equal(scan.scope.uniqueControlledDocumentHtmlCount, 1);
-  assert.equal(scan.scope.githubUriTemplateProjectionCount, 38);
-  assert.equal(scan.scope.githubReleaseAssetStateProjectionCount, 5);
-  assert.equal(scan.scope.githubPublicSourcePatchCount, 1);
+  assert.equal(scan.scope.githubUriTemplateProjectionCount, 270);
+  assert.equal(scan.scope.githubReleaseAssetStateProjectionCount, 10);
+  assert.equal(scan.scope.githubPublicSourcePatchCount, 21);
   assert.equal(scan.scope.githubReviewedSourcePatchLiteralProjectionCount, 2);
   assert.equal(scan.verification.credentialsRetained, false);
   const sums = built.assets["SHA256SUMS.txt"].toString("utf8").trim().split("\n");
-  assert.equal(sums.length, 26);
+  assert.equal(sums.length, 28);
 });
 
 test("full GitHub authority privacy projection is exact and source-patch aware", async (t) => {
@@ -509,8 +514,8 @@ test("anonymous evidence release rejects mutable, indirect, late, reused-ID, and
   const cases = [
     ["mutable", (value) => { value.releaseRecord.immutable = false; }],
     ["annotated tag", (value) => { value.evidenceTagRefRecord.object.type = "tag"; }],
-    ["created after publication", (value) => { value.releaseRecord.created_at = "2026-09-04T21:08:01Z"; }],
-    ["not after terminal", (value) => { value.releaseRecord.published_at = "2026-09-04T21:07:00Z"; }],
+    ["created after publication", (value) => { value.releaseRecord.created_at = "2026-09-05T02:20:01Z"; }],
+    ["not after terminal", (value) => { value.releaseRecord.published_at = "2026-09-05T02:18:00Z"; }],
     ["reused asset ID", (value) => { value.releaseRecord.assets[1].id = value.releaseRecord.assets[0].id; }],
     ["changed downloaded byte", (value) => { value.assets["privacy-scan.json"][10] ^= 1; }],
   ];
@@ -530,6 +535,7 @@ test("credential-free live preflight fetches the contract, V4 anchor, and exact 
     [`${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalContractIdentity.tag)}`, jsonRoute(fixture.hosted.contractReleaseRecord)],
     [`${harnessApi}/releases/latest`, jsonRoute({ id: 382000000 })],
     [`${harnessApi}/commits/${target}`, jsonRoute(fixture.hosted.contractCommitRecord)],
+    [`${harnessApi}/commits/${navigationCausalHarnessIdentity.revision}`, jsonRoute(executionHarnessCommitRecord())],
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalContractIdentity.tag)}`, jsonRoute(fixture.contractTagRefRecord)],
     [`${harnessApi}/releases/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4Release)],
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4TagRefRecord)],
@@ -543,6 +549,7 @@ test("credential-free live preflight fetches the contract, V4 anchor, and exact 
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${fixture.v4Release.tag_name}/crawl-phase-localization-evidence.json`, bytesRoute(fixture.inputs["v4-localization-evidence.json"])],
   ]);
   addInvalidV1Routes(routes, fixture.invalidV1);
+  addInvalidV2Routes(routes, fixture.invalidV2);
   for (const [name, bytes] of Object.entries(fixture.contractAssets)) {
     routes.set(
       `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.tag}/${name}`,
@@ -557,14 +564,14 @@ test("credential-free live preflight fetches the contract, V4 anchor, and exact 
   assert.equal(receipt.sourceAbsence.httpStatuses.sourceCommit, 422);
 });
 
-test("credential-free pre-S5 gate binds the immutable receipt release and rechecks absence", async () => {
+test("credential-free pre-S6 gate binds the immutable receipt release and rechecks absence", async () => {
   const fixture = await publicationFixture();
   const built = buildNavigationCausalPublication(fixture);
-  const { routes } = preS5ReceiptRoutes(fixture, built);
+  const { routes } = preS6ReceiptRoutes(fixture, built);
   const receipt = await verifyAnonymousNavigationCausalPreflightRelease(
     {
       expectedContractTargetSha: fixture.hosted.contractCommitRecord.sha,
-      expectedReceiptBytes: built.assets["anonymous-contract-preflight-v2.json"],
+      expectedReceiptBytes: built.assets["anonymous-contract-preflight-v3.json"],
     },
     { fetchImpl: routedAnonymousFetch(routes) },
   );
@@ -575,7 +582,7 @@ test("credential-free pre-S5 gate binds the immutable receipt release and rechec
   assert.equal(receipt.preflightReceiptReleaseLatest, false);
 });
 
-test("pre-S5 receipt release gate rejects latest, chronology, tag, bytes, and observed source", async (t) => {
+test("pre-S6 receipt release gate rejects latest, chronology, tag, bytes, and observed source", async (t) => {
   const fixture = await publicationFixture();
   const built = buildNavigationCausalPublication(fixture);
   const cases = [
@@ -583,10 +590,10 @@ test("pre-S5 receipt release gate rejects latest, chronology, tag, bytes, and ob
       live.latestRelease.id = live.preflightRelease.id;
     }],
     ["receipt publication predates contract", (live) => {
-      live.preflightRelease.published_at = "2026-09-04T21:00:00Z";
+      live.preflightRelease.published_at = "2026-09-05T02:10:59Z";
     }],
     ["receipt created after its own publication", (live) => {
-      live.preflightRelease.created_at = "2026-09-04T21:01:01Z";
+      live.preflightRelease.created_at = "2026-09-05T02:12:01Z";
     }],
     ["annotated receipt tag", (live) => {
       live.preflightTagRef.object.type = "tag";
@@ -605,11 +612,11 @@ test("pre-S5 receipt release gate rejects latest, chronology, tag, bytes, and ob
     }],
   ];
   for (const [name, mutate] of cases) await t.test(name, async () => {
-    const { routes } = preS5ReceiptRoutes(fixture, built, mutate);
+    const { routes } = preS6ReceiptRoutes(fixture, built, mutate);
     await assert.rejects(() => verifyAnonymousNavigationCausalPreflightRelease(
       {
         expectedContractTargetSha: fixture.hosted.contractCommitRecord.sha,
-        expectedReceiptBytes: built.assets["anonymous-contract-preflight-v2.json"],
+        expectedReceiptBytes: built.assets["anonymous-contract-preflight-v3.json"],
       },
       { fetchImpl: routedAnonymousFetch(routes) },
     ));
@@ -718,7 +725,7 @@ test("live evidence verification rejects source, run, job, artifact, and contrac
       live.hosted.workflowSourceCommitRecord.commit.tree.sha = "d".repeat(40);
     }],
     ["contract published_at drift", (live) => {
-      live.hosted.contractReleaseRecord.published_at = "2026-09-04T20:59:59Z";
+      live.hosted.contractReleaseRecord.published_at = "2026-09-05T02:10:59Z";
     }],
     ["invalid V1 authority drift", (live) => {
       live.invalidV1.preflightReleaseRecord.published_at = "2026-09-04T20:41:04Z";
@@ -736,7 +743,7 @@ test("live evidence verification rejects source, run, job, artifact, and contrac
       live.invalidV1EvidenceTagStatus = 200;
     }],
     ["preflight receipt published after run creation", (live) => {
-      live.preflightRelease.published_at = "2026-09-04T21:02:00Z";
+      live.preflightRelease.published_at = "2026-09-05T02:13:00Z";
     }],
     ["evidence release is latest", (live) => {
       live.latestRelease.id = publicInput.releaseRecord.id;
@@ -806,7 +813,7 @@ async function publicationFixture({
   }
   const v4Binding = JSON.parse(await import("node:fs/promises").then(({ readFile }) =>
     readFile(new URL(
-    "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3.json",
       import.meta.url,
     ))));
   const v4Release = {
@@ -838,6 +845,7 @@ async function publicationFixture({
     import.meta.url,
   ));
   const invalidV1 = await navigationCausalInvalidV1Fixture();
+  const invalidV2 = await navigationCausalInvalidV2Fixture();
   const anonymousPreflight = verifyNavigationCausalAnonymousContractPreflight({
     contractReleaseRecord: hosted.contractReleaseRecord,
     contractCommitRecord: hosted.contractCommitRecord,
@@ -845,6 +853,8 @@ async function publicationFixture({
     contractAssets,
     latestReleaseRecord: { id: 382000000 },
     invalidV1,
+    invalidV2,
+    harnessCommitRecord: executionHarnessCommitRecord(),
     absence: {
       sourceRef: { status: 404 },
       sourceCommit: { status: 422 },
@@ -860,7 +870,7 @@ async function publicationFixture({
     v4LocalizationBytes,
   });
   const inputRecords = {
-    "anonymous-contract-preflight-v2.json": anonymousPreflight,
+    "anonymous-contract-preflight-v3.json": anonymousPreflight,
     "invalid-v1-contract-release.json": invalidV1.contractReleaseRecord,
     "invalid-v1-contract-commit.json": invalidV1.contractCommitRecord,
     "invalid-v1-contract-tag-ref.json": invalidV1.contractTagRefRecord,
@@ -879,11 +889,15 @@ async function publicationFixture({
     inputs: {
       "actions-navigation-causal-host-a.zip": archiveA,
       "actions-navigation-causal-host-b.zip": archiveB,
+      "stasis-v0.3.3-performance-navigation-causal-v2-failure-authority.json":
+        Buffer.from(invalidV2.authorityBundleBytes),
+      "stasis-v0.3.3-performance-navigation-causal-v2-actions-logs.zip":
+        Buffer.from(invalidV2.actionsLogsZipBytes),
       ...Object.fromEntries(Object.entries(inputRecords).map(([name, value]) => [
         name,
         Buffer.from(`${JSON.stringify(value)}\n`, "utf8"),
       ])),
-      "anonymous-contract-preflight-v2.json": canonicalNavigationCausalJsonBytes(
+      "anonymous-contract-preflight-v3.json": canonicalNavigationCausalJsonBytes(
         anonymousPreflight,
       ),
       "invalid-v1-anonymous-contract-preflight.json":
@@ -895,6 +909,7 @@ async function publicationFixture({
     contractTagRefRecord,
     contractAssets,
     invalidV1,
+    invalidV2,
     hosted,
   };
 }
@@ -926,8 +941,8 @@ function publicReleaseFixture(assets, v4TagRefRecord) {
     immutable: true,
     draft: false,
     prerelease: false,
-    created_at: "2026-09-04T20:50:00Z",
-    published_at: "2026-09-04T21:08:00Z",
+    created_at: "2026-09-05T02:19:00Z",
+    published_at: "2026-09-05T02:20:00Z",
     url: "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/382960000",
     assets: navigationCausalPublicationAssetNames.map((name, index) => ({
       id: 544900000 + index,
@@ -954,8 +969,8 @@ function publicReleaseFixture(assets, v4TagRefRecord) {
   };
 }
 
-function preS5ReceiptRoutes(fixture, built, mutate = undefined) {
-  const receiptBytes = built.assets["anonymous-contract-preflight-v2.json"];
+function preS6ReceiptRoutes(fixture, built, mutate = undefined) {
+  const receiptBytes = built.assets["anonymous-contract-preflight-v3.json"];
   const target = fixture.hosted.contractCommitRecord.sha;
   const live = {
     latestRelease: { id: 382000000 },
@@ -973,6 +988,7 @@ function preS5ReceiptRoutes(fixture, built, mutate = undefined) {
   const routes = new Map([
     [`${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalContractIdentity.tag)}`, jsonRoute(fixture.hosted.contractReleaseRecord)],
     [`${harnessApi}/commits/${target}`, jsonRoute(fixture.hosted.contractCommitRecord)],
+    [`${harnessApi}/commits/${navigationCausalHarnessIdentity.revision}`, jsonRoute(executionHarnessCommitRecord())],
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalContractIdentity.tag)}`, jsonRoute(fixture.contractTagRefRecord)],
     [`${harnessApi}/releases/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4Release)],
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4TagRefRecord)],
@@ -990,6 +1006,7 @@ function preS5ReceiptRoutes(fixture, built, mutate = undefined) {
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.preflightTag}/${navigationCausalContractIdentity.preflightAsset}`, bytesRoute(receiptBytes)],
   ]);
   addInvalidV1Routes(routes, fixture.invalidV1);
+  addInvalidV2Routes(routes, fixture.invalidV2);
   for (const [name, bytes] of Object.entries(fixture.contractAssets)) {
     routes.set(
       `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.tag}/${name}`,
@@ -1007,8 +1024,8 @@ function fixturePreflightRelease(target, receiptBytes) {
     immutable: true,
     draft: false,
     prerelease: false,
-    created_at: "2026-09-04T20:50:00Z",
-    published_at: "2026-09-04T21:01:00Z",
+    created_at: "2026-09-05T02:10:00Z",
+    published_at: "2026-09-05T02:12:00Z",
     url: "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/382955000",
     assets: [{
       id: 544850000,
@@ -1023,7 +1040,7 @@ function fixturePreflightRelease(target, receiptBytes) {
 }
 
 function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
-  const receiptBytes = built.assets["anonymous-contract-preflight-v2.json"];
+  const receiptBytes = built.assets["anonymous-contract-preflight-v3.json"];
   const target = fixture.hosted.contractCommitRecord.sha;
   const live = {
     latestRelease: { id: 382000000 },
@@ -1039,6 +1056,7 @@ function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
     },
     invalidV1EvidenceReleaseStatus: 404,
     invalidV1EvidenceTagStatus: 404,
+    invalidV2: cloneInvalidV2Fixture(fixture.invalidV2),
     sourceBranchRef: {
       ref: navigationCausalWorkflowSourceIdentity.ref,
       object: {
@@ -1066,6 +1084,7 @@ function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4TagRefRecord)],
     [`${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalContractIdentity.tag)}`, jsonRoute(live.hosted.contractReleaseRecord)],
     [`${harnessApi}/commits/${target}`, jsonRoute(live.hosted.contractCommitRecord)],
+    [`${harnessApi}/commits/${navigationCausalHarnessIdentity.revision}`, jsonRoute(executionHarnessCommitRecord())],
     [`${harnessApi}/releases/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4Release)],
     [`${harnessApi}/releases/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(live.invalidV1EvidenceReleaseStatus)],
     [`${harnessApi}/git/ref/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(live.invalidV1EvidenceTagStatus)],
@@ -1079,6 +1098,7 @@ function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.preflightTag}/${navigationCausalContractIdentity.preflightAsset}`, bytesRoute(receiptBytes)],
   ]);
   addInvalidV1Routes(routes, live.invalidV1);
+  addInvalidV2Routes(routes, live.invalidV2);
   for (const [name, bytes] of Object.entries(fixture.contractAssets)) {
     routes.set(
       `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.tag}/${name}`,
@@ -1126,6 +1146,75 @@ function addInvalidV1Routes(routes, invalidV1) {
     invalidV1.preflightReleaseRecord.assets[0].browser_download_url,
     bytesRoute(invalidV1.preflightReceiptBytes),
   );
+}
+
+function addInvalidV2Routes(routes, invalidV2) {
+  for (const name of [
+    "contractRelease",
+    "contractCommit",
+    "contractTagRef",
+    "preflightRelease",
+    "preflightTagRef",
+    "sourceBranchRef",
+    "workflowSourceCommit",
+    "workflowRun",
+    "workflowRunsByBranch",
+    "workflowRunsByHeadSha",
+    "workflowJobsAllAttempts",
+    "workflowArtifacts",
+  ]) {
+    routes.set(
+      `https://api.github.com${navigationCausalV2FailureAuthorityRoutes[name]}`,
+      jsonRoute(invalidV2.liveRecords[name]),
+    );
+  }
+  routes.set(
+    `https://api.github.com${navigationCausalV2FailureAuthorityRoutes.v2EvidenceRelease}`,
+    statusRoute(invalidV2.evidenceReleaseStatus),
+  );
+  routes.set(
+    `https://api.github.com${navigationCausalV2FailureAuthorityRoutes.v2EvidenceTagRef}`,
+    statusRoute(invalidV2.evidenceTagRefStatus),
+  );
+  for (const [name, bytes] of Object.entries(invalidV2.v2ContractAssets)) {
+    routes.set(
+      `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalInvalidV2Evidence.contract.tag}/${name}`,
+      bytesRoute(bytes),
+    );
+  }
+  routes.set(
+    `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalInvalidV2Evidence.preflight.tag}/${navigationCausalInvalidV2Evidence.preflight.asset.name}`,
+    bytesRoute(invalidV2.v2PreflightReceiptBytes),
+  );
+}
+
+function cloneInvalidV2Fixture(invalidV2) {
+  return {
+    authorityBundleBytes: Buffer.from(invalidV2.authorityBundleBytes),
+    actionsLogsZipBytes: Buffer.from(invalidV2.actionsLogsZipBytes),
+    liveRecords: structuredClone(invalidV2.liveRecords),
+    v2ContractAssets: cloneAssets(invalidV2.v2ContractAssets),
+    v2PreflightReceiptBytes: Buffer.from(invalidV2.v2PreflightReceiptBytes),
+    evidenceReleaseStatus: invalidV2.evidenceReleaseStatus,
+    evidenceTagRefStatus: invalidV2.evidenceTagRefStatus,
+  };
+}
+
+function executionHarnessCommitRecord() {
+  return {
+    sha: navigationCausalHarnessIdentity.revision,
+    url:
+      `https://api.github.com/repos/${navigationCausalHarnessIdentity.repository}/commits/${navigationCausalHarnessIdentity.revision}`,
+    parents: [{ sha: navigationCausalHarnessIdentity.parentRevision }],
+    commit: { tree: { sha: navigationCausalHarnessIdentity.tree } },
+    files: Object.values(navigationCausalHarnessIdentity.files).map((identity) => ({
+      filename: identity.path,
+      status: identity.path === "test/performance-navigation-causal-environment-v3.test.mjs"
+        ? "added"
+        : "modified",
+      sha: identity.blob,
+    })),
+  };
 }
 
 function sha256(bytes) {

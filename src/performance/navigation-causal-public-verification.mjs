@@ -15,14 +15,22 @@ import {
   verifyNavigationCausalHostedProvenance,
 } from "./navigation-causal-hosted-provenance.mjs";
 import {
+  navigationCausalHarnessIdentity,
   navigationCausalWorkflowSourceIdentity,
 } from "./navigation-causal-replication.mjs";
 import {
   verifyNavigationCausalAnonymousContractPreflight,
+  verifyNavigationCausalExecutionHarness,
   verifyNavigationCausalInvalidV1PreObservationEvidence,
   verifyNavigationCausalPublicContract,
   verifyNavigationCausalV4SelectionEvidence,
 } from "./navigation-causal-public-release.mjs";
+import {
+  navigationCausalInvalidV2Evidence,
+  navigationCausalV2ContractAssetIdentities,
+  navigationCausalV2FailureAuthorityRoutes,
+  verifyNavigationCausalV2FailureLiveAuthority,
+} from "./navigation-causal-v2-failure.mjs";
 import {
   navigationCausalEvidenceReleaseIdentity,
   navigationCausalPublicationAssetNames,
@@ -30,9 +38,9 @@ import {
 } from "./navigation-causal-publication.mjs";
 
 export const navigationCausalAnonymousEvidenceVerificationSchema =
-  "stasis-v0.3.3-performance-navigation-causal-anonymous-evidence-verification-v2";
+  "stasis-v0.3.3-performance-navigation-causal-anonymous-evidence-verification-v3";
 export const navigationCausalAnonymousPreflightReleaseVerificationSchema =
-  "stasis-v0.3.3-performance-navigation-causal-anonymous-preflight-release-verification-v2";
+  "stasis-v0.3.3-performance-navigation-causal-anonymous-preflight-release-verification-v3";
 export const navigationCausalAnonymousFetchPolicy = deepFreeze({
   authentication: "none",
   credentials: "omit",
@@ -133,7 +141,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     fetchImpl,
   );
   if (contractReleaseRecord.target_commitish !== target) {
-    throw new TypeError("Navigation causal contract release target differs from the expected H8c SHA");
+    throw new TypeError("Navigation causal contract release target differs from the expected V3 contract SHA");
   }
   const contractCommitRecord = await fetchAnonymousJson(
     `${harnessApi}/commits/${target}`,
@@ -141,6 +149,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     fetchImpl,
   );
   const [contractTagRefRecord, v4ReleaseRecord, v4TagRefRecord,
+    harnessCommitRecord,
     latestReleaseRecord] = await Promise.all([
     fetchAnonymousJson(
       `${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalContractIdentity.tag)}`,
@@ -155,6 +164,11 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     fetchAnonymousJson(
       `${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalV4SelectionBinding.source.tag)}`,
       "V4 evidence tag",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${harnessApi}/commits/${navigationCausalHarnessIdentity.revision}`,
+      "navigation causal H9a execution harness commit",
       fetchImpl,
     ),
     fetchAnonymousJson(
@@ -186,12 +200,16 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     },
   );
   const invalidV1 = await fetchInvalidV1Authority({ fetchImpl });
+  const invalidV2 = await fetchInvalidV2Authority({
+    contractAssets,
+    fetchImpl,
+  });
   const absence = {
     sourceRef: {
       status: await fetchAnonymousStatus(
         `${sourceApi}/git/ref/heads/${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}`,
         404,
-        "S5 source ref absence",
+        "S6 source ref absence",
         fetchImpl,
       ),
     },
@@ -199,7 +217,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
       status: await fetchAnonymousStatus(
         `${sourceApi}/commits/${navigationCausalWorkflowSourceIdentity.revision}`,
         422,
-        "S5 source commit absence",
+        "S6 source commit absence",
         fetchImpl,
       ),
     },
@@ -239,7 +257,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
   };
   const workflowRunsListing = await fetchAnonymousJson(
     `${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&per_page=100`,
-    "S5 workflow runs absence",
+    "S6 workflow runs absence",
     fetchImpl,
   );
   return verifyNavigationCausalAnonymousContractPreflight({
@@ -249,6 +267,8 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     contractAssets,
     latestReleaseRecord,
     invalidV1,
+    invalidV2,
+    harnessCommitRecord,
     absence,
     workflowRunsListing,
     v4ReleaseRecord,
@@ -402,7 +422,14 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
     contractTagRefRecord,
     contractAssets,
   });
+  const harnessCommitRecord = await fetchAnonymousJson(
+    `${apiRoot}/commits/${navigationCausalHarnessIdentity.revision}`,
+    "navigation causal live H9a execution harness commit",
+    fetchImpl,
+  );
+  const executionHarness = verifyNavigationCausalExecutionHarness(harnessCommitRecord);
   const invalidV1 = await fetchInvalidV1Authority({ fetchImpl });
+  const invalidV2 = await fetchInvalidV2Authority({ contractAssets, fetchImpl });
   const [invalidV1EvidenceReleaseStatus, invalidV1EvidenceTagStatus] = await Promise.all([
     fetchAnonymousStatus(
       `${apiRoot}/releases/tags/${encodeURIComponent(navigationCausalInvalidV1Evidence.gate.v1EvidenceTag)}`,
@@ -427,9 +454,19 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
     latestReleaseRecord,
     "invalid V1 preflight receipt",
   );
+  assertReleaseIsNotLatest(
+    invalidV2.liveRecords.contractRelease,
+    latestReleaseRecord,
+    "invalid V2 contract",
+  );
+  assertReleaseIsNotLatest(
+    invalidV2.liveRecords.preflightRelease,
+    latestReleaseRecord,
+    "invalid V2 preflight receipt",
+  );
   if (Date.parse(contractReleaseRecord.published_at) <=
-    Date.parse(invalidV1.disposition.preflight.publishedAt)) {
-    throw new TypeError("Navigation causal V2 contract was not published after invalid V1 preflight evidence");
+    Date.parse(invalidV2.disposition.hostedFailure.completedAt)) {
+    throw new TypeError("Navigation causal V3 contract was not published after failed S5 became terminal");
   }
   const liveV4Release = await fetchAnonymousJson(
     `${apiRoot}/releases/tags/${encodeURIComponent(navigationCausalV4SelectionBinding.source.tag)}`,
@@ -466,6 +503,21 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
       },
     );
   }
+  for (const name of [
+    navigationCausalInvalidV2Evidence.capture.authorityAsset,
+    navigationCausalInvalidV2Evidence.capture.actionsLogsAsset,
+  ]) {
+    if (!assets[name].equals(contractAssets[name])) {
+      throw new TypeError(`Navigation causal retained V2 failure asset differs from its contract: ${name}`);
+    }
+  }
+  const retainedInvalidV2 = verifyNavigationCausalV2FailureLiveAuthority({
+    ...invalidV2,
+    authorityBundleBytes:
+      assets[navigationCausalInvalidV2Evidence.capture.authorityAsset],
+    actionsLogsZipBytes:
+      assets[navigationCausalInvalidV2Evidence.capture.actionsLogsAsset],
+  });
   verifyRetainedInvalidV1Assets(assets, invalidV1);
   const retainedContract = parseJson(assets["contract-release.json"], "retained contract release");
   const retainedCommit = parseJson(assets["contract-commit.json"], "retained contract commit");
@@ -486,7 +538,7 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
   });
   const preflightReceiptRelease = await fetchPreflightReceiptReleaseAuthority({
     target,
-    expectedReceiptBytes: assets["anonymous-contract-preflight-v2.json"],
+    expectedReceiptBytes: assets["anonymous-contract-preflight-v3.json"],
     contractReleaseRecord,
     latestReleaseRecord,
     mustBePublishedBefore: liveHostedAuthority.workflowRunCreatedAt,
@@ -508,6 +560,8 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
         tagRefStatus: invalidV1EvidenceTagStatus,
       },
     },
+    invalidV2Disposition: retainedInvalidV2,
+    executionHarness,
     preflightReceiptRelease,
     liveHostedAuthority,
   });
@@ -626,6 +680,107 @@ async function fetchInvalidV1Authority({ fetchImpl }) {
   return { ...records, disposition };
 }
 
+async function fetchInvalidV2Authority({ contractAssets, fetchImpl }) {
+  const authorityBundleBytes = contractAssets?.[
+    navigationCausalInvalidV2Evidence.capture.authorityAsset
+  ];
+  const actionsLogsZipBytes = contractAssets?.[
+    navigationCausalInvalidV2Evidence.capture.actionsLogsAsset
+  ];
+  const route = (name) => `https://api.github.com${navigationCausalV2FailureAuthorityRoutes[name]}`;
+  const [contractRelease, contractCommit, contractTagRef, preflightRelease,
+    preflightTagRef, sourceBranchRef, workflowSourceCommit, workflowRun,
+    workflowRunsByBranch, workflowRunsByHeadSha, workflowJobsAllAttempts,
+    workflowArtifacts, evidenceReleaseStatus, evidenceTagRefStatus] = await Promise.all([
+    fetchAnonymousJson(route("contractRelease"), "invalid V2 contract release", fetchImpl),
+    fetchAnonymousJson(route("contractCommit"), "invalid V2 contract commit", fetchImpl),
+    fetchAnonymousJson(route("contractTagRef"), "invalid V2 contract tag", fetchImpl),
+    fetchAnonymousJson(route("preflightRelease"), "invalid V2 preflight release", fetchImpl),
+    fetchAnonymousJson(route("preflightTagRef"), "invalid V2 preflight tag", fetchImpl),
+    fetchAnonymousJson(route("sourceBranchRef"), "invalid V2 source branch ref", fetchImpl),
+    fetchAnonymousJson(
+      route("workflowSourceCommit"),
+      "invalid V2 workflow source commit",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(route("workflowRun"), "invalid V2 workflow run", fetchImpl),
+    fetchAnonymousJson(
+      route("workflowRunsByBranch"),
+      "invalid V2 all-event branch run census",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      route("workflowRunsByHeadSha"),
+      "invalid V2 all-event head-SHA run census",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      route("workflowJobsAllAttempts"),
+      "invalid V2 all-attempt jobs census",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(route("workflowArtifacts"), "invalid V2 artifacts census", fetchImpl),
+    fetchAnonymousStatus(
+      route("v2EvidenceRelease"),
+      404,
+      "invalid V2 evidence release absence",
+      fetchImpl,
+    ),
+    fetchAnonymousStatus(
+      route("v2EvidenceTagRef"),
+      404,
+      "invalid V2 evidence tag absence",
+      fetchImpl,
+    ),
+  ]);
+  const v2ContractAssets = {};
+  for (const [name, identity] of Object.entries(navigationCausalV2ContractAssetIdentities)) {
+    v2ContractAssets[name] = await fetchAnonymousBytes(
+      exactReleaseAssetUrl(navigationCausalInvalidV2Evidence.contract.tag, name),
+      {
+        expectedBytes: identity.bytes,
+        label: `invalid V2 contract asset ${name}`,
+        maximumBytes: identity.bytes,
+        fetchImpl,
+      },
+    );
+  }
+  const preflight = navigationCausalInvalidV2Evidence.preflight;
+  const v2PreflightReceiptBytes = await fetchAnonymousBytes(
+    exactReleaseAssetUrl(preflight.tag, preflight.asset.name),
+    {
+      expectedBytes: preflight.asset.bytes,
+      label: "invalid V2 anonymous preflight receipt",
+      maximumBytes: preflight.asset.bytes,
+      fetchImpl,
+    },
+  );
+  const input = {
+    authorityBundleBytes,
+    actionsLogsZipBytes,
+    liveRecords: {
+      contractRelease,
+      contractCommit,
+      contractTagRef,
+      preflightRelease,
+      preflightTagRef,
+      sourceBranchRef,
+      workflowSourceCommit,
+      workflowRun,
+      workflowRunsByBranch,
+      workflowRunsByHeadSha,
+      workflowJobsAllAttempts,
+      workflowArtifacts,
+    },
+    v2ContractAssets,
+    v2PreflightReceiptBytes,
+    evidenceReleaseStatus,
+    evidenceTagRefStatus,
+  };
+  const disposition = verifyNavigationCausalV2FailureLiveAuthority(input);
+  return { ...input, disposition };
+}
+
 async function fetchPreflightReceiptReleaseAuthority({
   target,
   expectedReceiptBytes,
@@ -683,7 +838,7 @@ async function fetchPreflightReceiptReleaseAuthority({
       mustBePublishedBefore,
       "navigation causal live workflow run created_at",
     ).epoch) {
-    throw new TypeError("Navigation causal preflight receipt release was not published before S5 ran");
+    throw new TypeError("Navigation causal preflight receipt release was not published before S6 ran");
   }
   const asset = releaseRecord.assets[0];
   const digest = sha256(receiptBytes);
@@ -850,7 +1005,7 @@ function verifySourceBranchRef(value) {
   if (value?.ref !== navigationCausalWorkflowSourceIdentity.ref ||
     value?.object?.type !== "commit" ||
     value.object.sha !== navigationCausalWorkflowSourceIdentity.revision) {
-    throw new TypeError("Navigation causal live source branch no longer names the sole S5 commit");
+    throw new TypeError("Navigation causal live source branch no longer names the sole S6 commit");
   }
 }
 
@@ -973,7 +1128,7 @@ async function fetchOne(url, { accept, fetchImpl, label, redirectCount }) {
     headers: {
       accept,
       "accept-encoding": "identity",
-      "user-agent": "stasis-navigation-causal-anonymous-verifier-v2",
+      "user-agent": "stasis-navigation-causal-anonymous-verifier-v3",
     },
   });
   if (response === null || typeof response !== "object" ||

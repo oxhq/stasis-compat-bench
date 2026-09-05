@@ -1,0 +1,51 @@
+{
+  "schema": "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v3",
+  "status": "frozen_before_navigation_causal_observation",
+  "purpose": "motivation_and_one_variable_selection_only",
+  "source": {
+    "repository": "oxhq/stasis-compat-bench",
+    "releaseId": 382939276,
+    "tag": "stasis-v0.3.3-performance-crawl-phase-diagnostic-evidence-v4",
+    "targetCommitSha": "de1c9a000cba734c549f2fcee182e92c0565dff5",
+    "immutable": true,
+    "createdAt": "2026-09-04T18:21:35Z",
+    "publishedAt": "2026-09-04T18:31:00Z",
+    "assetCount": 22,
+    "localizationAsset": {
+      "id": 544735276,
+      "name": "crawl-phase-localization-evidence.json",
+      "bytes": 130092,
+      "sha256": "fdc8cd495f8cd6116763ddbbc84ec896123bde828d6fb17bcb508b1bc772f34f",
+      "schema": "stasis-v0.3.3-performance-crawl-phase-localization-evidence-v2",
+      "protocol": "stasis-v0.3.3-performance-crawl-phase-localization-v2"
+    }
+  },
+  "selection": {
+    "runner": "stasis",
+    "phaseCollection": "poolRuns",
+    "ordinal": 10,
+    "requestedUrl": "http://stasis-compat.test/navigation-start",
+    "acquireOpenNs": "2138374998",
+    "settleExtractNs": "1585211",
+    "releasePhysicalCleanupNs": "17473395",
+    "largestRecordedPhase": "acquireOpen",
+    "selectedTreatmentVariable": "requested_url",
+    "armA": "http://stasis-compat.test/navigation-start",
+    "armB": "http://stasis-compat.test/navigation-final"
+  },
+  "interpretation": {
+    "navigationStartUsesJavascriptLocationHref": true,
+    "navigationStartIsNotAnHttpRedirect": true,
+    "selectionWasMadeBeforeEitherCausalHostRun": true,
+    "v4TimingImportedAsCausalSample": false,
+    "v4TimingImportedIntoCausalStatistics": false,
+    "v4ComparisonCorpusChanged": false,
+    "causalEffectAlreadyEstablished": false,
+    "webrenderOwnershipAlreadyEstablished": false
+  },
+  "claimBoundary": {
+    "generalizedSpeedClaimAuthorized": false,
+    "implementationWorkAuthorized": false,
+    "decisionState": "STAY_0_4_UNASSIGNED"
+  }
+}
