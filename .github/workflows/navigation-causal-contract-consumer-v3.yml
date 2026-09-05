@@ -1,0 +1,50 @@
+name: Navigation causal V3 anonymous contract consumer
+
+on:
+  push:
+    branches:
+      - codex/stasis-v033-navigation-causal-contract-consumer-v3
+
+permissions:
+  contents: read
+
+jobs:
+  anonymous-contract:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the immutable public verifier
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: 4041c0cab409999332a1023c1741f602bb8d7917
+          persist-credentials: false
+      - name: Set up exact Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 22.20.0
+          architecture: x64
+          check-latest: false
+      - name: Install only the frozen verifier dependencies
+        shell: bash
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+          NPM_CONFIG_FETCH_RETRIES: "0"
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = '4041c0cab409999332a1023c1741f602bb8d7917'
+          test "$(node --version)" = 'v22.20.0'
+          npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+      - name: Verify the published contract anonymously before S6 exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" = '1'
+          env -u GH_TOKEN -u GITHUB_TOKEN node src/performance/navigation-causal-publication-cli.mjs verify-contract-public 4041c0cab409999332a1023c1741f602bb8d7917 "$RUNNER_TEMP/anonymous-contract-preflight-v3.json"
+      - name: Retain the exact anonymous preflight receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: navigation-causal-v3-anonymous-contract-receipt
+          path: ${{ runner.temp }}/anonymous-contract-preflight-v3.json
+          if-no-files-found: error
+          retention-days: 30
