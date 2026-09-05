@@ -100,6 +100,9 @@ test("duplicate or partial run, job, and artifact listings fail closed", async (
 test("late or mutable contract and wrong source ancestry fail closed", async (t) => {
   const cases = [
     ["mutable", (value) => { value.contractReleaseRecord.immutable = false; }],
+    ["created after publication", (value) => {
+      value.contractReleaseRecord.created_at = "2026-09-04T21:00:01Z";
+    }],
     ["late", (value) => { value.contractReleaseRecord.published_at = "2026-09-04T20:00:00Z"; }],
     ["main target", (value) => { value.contractReleaseRecord.target_commitish = "main"; }],
     ["extra parent", (value) => { value.contractCommitRecord.parents.push({ sha: "a".repeat(40) }); }],
@@ -230,6 +233,7 @@ function validInput() {
       immutable: true,
       draft: false,
       prerelease: false,
+      created_at: "2026-09-04T18:50:00Z",
       published_at: "2026-09-04T18:55:00Z",
       url: "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/382950000",
       assets: contractAssets,

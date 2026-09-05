@@ -12,7 +12,11 @@ import {
   navigationCausalV4EvidenceAssets,
   assertNavigationCausalAnonymousContractPreflightReceipt,
   verifyNavigationCausalAnonymousContractPreflight,
+  verifyNavigationCausalInvalidV1PreObservationEvidence,
 } from "../src/performance/navigation-causal-public-release.mjs";
+import {
+  navigationCausalInvalidV1Fixture,
+} from "./fixtures/navigation-causal-invalid-v1-fixture.mjs";
 
 test("anonymous preflight binds contract bytes, direct tag, remote absence, and public V4 selection", async () => {
   const receipt = verifyNavigationCausalAnonymousContractPreflight(await validInput());
@@ -20,13 +24,18 @@ test("anonymous preflight binds contract bytes, direct tag, remote absence, and 
   assert.equal(receipt.status, "passed");
   assert.equal(receipt.credentialsUsed, false);
   assert.equal(receipt.contract.lightweightTagDirectToTarget, true);
-  assert.equal(receipt.contract.publishedAt, "2026-09-04T18:55:00Z");
+  assert.equal(receipt.contract.publishedAt, "2026-09-04T21:00:00Z");
+  assert.equal(receipt.invalidV1PreObservation.status, "INVALID_PREFLIGHT_CHRONOLOGY_MODEL");
+  assert.equal(receipt.invalidV1PreObservation.observationStarted, false);
+  assert.equal(receipt.invalidV1PreObservation.authorizedS5CreationPushesRemaining, 1);
   assert.equal(receipt.oneShotRules.contractReleaseLatest, false);
   assert.equal(receipt.sourceAbsence.workflowRunCount, 0);
   assert.deepEqual(receipt.sourceAbsence.httpStatuses, {
     sourceRef: 404,
     sourceCommit: 422,
     workflowRuns: 200,
+    invalidV1EvidenceRelease: 404,
+    invalidV1EvidenceTagRef: 404,
     evidenceRelease: 404,
     evidenceTagRef: 404,
   });
@@ -47,6 +56,12 @@ test("contract target, tag kind, Git blobs, and exact four assets fail closed", 
     ["wrong parent", (value) => { value.contractCommitRecord.parents[0].sha = "a".repeat(40); }],
     ["wrong tree", (value) => { value.contractCommitRecord.commit.tree.sha = "bad"; }],
     ["wrong blob", (value) => { value.contractCommitRecord.files[0].sha = "b".repeat(40); }],
+    ["created after publication", (value) => {
+      value.contractReleaseRecord.created_at = "2026-09-04T21:00:01Z";
+    }],
+    ["not published after invalid V1", (value) => {
+      value.contractReleaseRecord.published_at = "2026-09-04T20:41:03Z";
+    }],
     ["extra release asset", (value) => { value.contractReleaseRecord.assets.push({ name: "extra", size: 1, digest: `sha256:${"a".repeat(64)}` }); }],
     ["changed released bytes", (value) => { value.contractAssets[Object.keys(value.contractAssets)[0]][10] ^= 1; }],
   ];
@@ -57,11 +72,67 @@ test("contract target, tag kind, Git blobs, and exact four assets fail closed", 
   });
 });
 
+test("same-target created_at does not order V1 and V2 releases", async () => {
+  const value = await validInput();
+  value.contractReleaseRecord.created_at = value.invalidV1.preflightReleaseRecord.created_at;
+  assert.equal(
+    verifyNavigationCausalAnonymousContractPreflight(value).status,
+    "passed",
+  );
+});
+
+test("offline preflight replay rejects a self-consistent contract created after publication", async () => {
+  const value = await validInput();
+  const receipt = verifyNavigationCausalAnonymousContractPreflight(value);
+  value.contractReleaseRecord.created_at = "2026-09-04T21:00:01Z";
+  const forged = structuredClone(receipt);
+  forged.contract.createdAt = value.contractReleaseRecord.created_at;
+  assert.throws(() => assertNavigationCausalAnonymousContractPreflightReceipt(forged, {
+    contractReleaseRecord: value.contractReleaseRecord,
+    contractCommitRecord: value.contractCommitRecord,
+    v4ReleaseRecord: value.v4ReleaseRecord,
+  }), /created after/u);
+});
+
+test("the exact V1 gate failure replays as typed pre-observation evidence", async (t) => {
+  const valid = await navigationCausalInvalidV1Fixture();
+  const disposition = verifyNavigationCausalInvalidV1PreObservationEvidence(valid);
+  assert.equal(disposition.status, "INVALID_PREFLIGHT_CHRONOLOGY_MODEL");
+  assert.equal(disposition.observationStarted, false);
+  assert.equal(disposition.contract.createdAt, disposition.preflight.createdAt);
+  assert.ok(Date.parse(disposition.contract.publishedAt) <
+    Date.parse(disposition.preflight.publishedAt));
+  const cases = [
+    ["V1 contract metadata drift", (value) => {
+      value.contractReleaseRecord.published_at = "2026-09-04T20:40:01Z";
+    }],
+    ["V1 contract blob drift", (value) => {
+      value.contractCommitRecord.files.find(
+        ({ filename }) => filename ===
+          "protocol/stasis-v0.3.3-performance-navigation-causal-v1.md",
+      ).sha = "a".repeat(40);
+    }],
+    ["V1 preflight tag drift", (value) => {
+      value.preflightTagRefRecord.object.type = "tag";
+    }],
+    ["V1 receipt drift", (value) => {
+      value.preflightReceiptBytes[100] ^= 1;
+    }],
+  ];
+  for (const [name, mutate] of cases) await t.test(name, async () => {
+    const value = await navigationCausalInvalidV1Fixture();
+    mutate(value);
+    assert.throws(() => verifyNavigationCausalInvalidV1PreObservationEvidence(value));
+  });
+});
+
 test("any observed source/run/evidence surface blocks the one-shot authorization", async (t) => {
   const cases = [
     ["source ref", (value) => { value.absence.sourceRef.status = 200; }],
     ["source commit", (value) => { value.absence.sourceCommit.status = 200; }],
     ["workflow run", (value) => { value.workflowRunsListing = { total_count: 1, workflow_runs: [{}] }; }],
+    ["invalid V1 evidence release", (value) => { value.absence.invalidV1EvidenceRelease.status = 200; }],
+    ["invalid V1 evidence tag", (value) => { value.absence.invalidV1EvidenceTagRef.status = 200; }],
     ["evidence release", (value) => { value.absence.evidenceRelease.status = 200; }],
     ["evidence tag", (value) => { value.absence.evidenceTagRef.status = 200; }],
   ];
@@ -125,7 +196,8 @@ async function validInput() {
     immutable: true,
     draft: false,
     prerelease: false,
-    published_at: "2026-09-04T18:55:00Z",
+    created_at: "2026-09-04T20:50:00Z",
+    published_at: "2026-09-04T21:00:00Z",
     assets: Object.entries(navigationCausalContractAssetIdentities).map(([name, value]) => ({
       name,
       size: value.bytes,
@@ -158,10 +230,13 @@ async function validInput() {
     },
     contractAssets,
     latestReleaseRecord: { id: 382000000 },
+    invalidV1: await navigationCausalInvalidV1Fixture(),
     absence: {
       sourceRef: { status: 404 },
       sourceCommit: { status: 422 },
       workflowRuns: { status: 200 },
+      invalidV1EvidenceRelease: { status: 404 },
+      invalidV1EvidenceTagRef: { status: 404 },
       evidenceRelease: { status: 404 },
       evidenceTagRef: { status: 404 },
     },

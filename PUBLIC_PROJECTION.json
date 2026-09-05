@@ -4,9 +4,9 @@
   "projectedTree": {
     "algorithm": "sha256-canonical-json-file-list-v1",
     "manifestPath": "PUBLIC_PROJECTION.json",
-    "fileCount": 422,
-    "totalBytes": 8707744,
-    "sha256": "617672f99c38f96479b261f6a6de03b843b0a49ec6b599a0ee5d9a6db41dd0fb",
+    "fileCount": 427,
+    "totalBytes": 8855618,
+    "sha256": "9b8fe8f731115087a37f7d778e3bbe50ba1f8a9ff3328f287791c20bee61c771",
     "files": [
       {
         "bytes": 19,
@@ -184,9 +184,19 @@
         "sha256": "241757bb9cedc26a5774a74585dc0f7e4c1d56363a4981b4ce944b704b2576bf"
       },
       {
+        "bytes": 12257,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
+        "sha256": "c4c0ffc0c8802e2a1b3169330a64fbda0c91bd3ced30085da53fd60de290f9a6"
+      },
+      {
         "bytes": 13708,
         "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v1.md",
         "sha256": "fc9629bea46426d3455bece3b2688eca8b5da9ccb4ed4b20a74c729420afabe0"
+      },
+      {
+        "bytes": 17688,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v2.md",
+        "sha256": "f09ea8a415ec353744c95e24196142f553881c403172c3ce3701c4c626dec558"
       },
       {
         "bytes": 2004,
@@ -194,8 +204,18 @@
         "sha256": "9fd4efb7138175cc3db6341b0fd8693956390119fd4958dcdf1b27b438cbb436"
       },
       {
+        "bytes": 2004,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
+        "sha256": "1594337623688f9c15fe4b205639d67b3a7947bea16332b425ded26fb53848f9"
+      },
+      {
         "bytes": 40758,
         "path": "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
+        "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472"
+      },
+      {
+        "bytes": 40758,
+        "path": "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
         "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472"
       },
       {
@@ -494,34 +514,34 @@
         "sha256": "aedb2ac43296870046fcab394ad409dc0dad17c12d07fff5c8f06d86634bd7b0"
       },
       {
-        "bytes": 9907,
+        "bytes": 12918,
         "path": "src/performance/navigation-causal-contract.mjs",
-        "sha256": "844715db8d3f6e5e5c23e784f2b780c4e9790e20873bf64540c0d50479c416ad"
+        "sha256": "de0a8dbf100103573b8ccab3b1cec9be28a2beda1e3268ae8124ebec08ab6117"
       },
       {
-        "bytes": 15783,
+        "bytes": 16017,
         "path": "src/performance/navigation-causal-hosted-provenance.mjs",
-        "sha256": "b478b6da0ab66d3c36b6818c296b3c183ae08087bc2c562ff65ee9df8d4ff68d"
+        "sha256": "0d5750d9eb42e3ecb736e8061d5a098b630b90a8e330708b1b94f0bef542a810"
       },
       {
-        "bytes": 14943,
+        "bytes": 24597,
         "path": "src/performance/navigation-causal-public-release.mjs",
-        "sha256": "1a479f5ed38dc0a35ecaf3eae37e494f5d80a9729ab94d54974c78f8802b2771"
+        "sha256": "919ccfbf50b7c26e6686c977125d6c0c509fcf3b1d863c0538de50767abfba72"
       },
       {
-        "bytes": 36742,
+        "bytes": 43217,
         "path": "src/performance/navigation-causal-public-verification.mjs",
-        "sha256": "6db880f1c719773e0da8f82b7c90fd839cda65fb35dd116726a4b1946c9d8432"
+        "sha256": "a1c007137e63d05b042f666fe8ab88d04834b54482f3636cb7797746a9796e7a"
       },
       {
         "bytes": 5966,
         "path": "src/performance/navigation-causal-publication-cli.mjs",
-        "sha256": "26db184bf0933a9accd0792e580462adedcbb30e9b1f998a60b3d58ff16863d2"
+        "sha256": "e848f72a62e8d49037315841e9351ba6804d69029aab778ec46c68a03ff294be"
       },
       {
-        "bytes": 15863,
+        "bytes": 27915,
         "path": "src/performance/navigation-causal-publication.mjs",
-        "sha256": "60ae1d918c8009b13afca30a62af8bc5c657459aa1814f70b1eb1072e26185a0"
+        "sha256": "7ba4d5ff41e7f7cb11f9a65c13b66855d42d08c7da0fb4533ee686f09d43253e"
       },
       {
         "bytes": 8979,
@@ -619,9 +639,9 @@
         "sha256": "d575278bfb3c3bb362f6a088f95926de175d6016843ad44c7247a8b9719943fa"
       },
       {
-        "bytes": 21036,
+        "bytes": 34645,
         "path": "src/post-support/artifact-privacy.mjs",
-        "sha256": "f27793676c4cc8d437a5edfb40280ba3b59b034ffbf3f7d77cbd89365f7f1b43"
+        "sha256": "0e922b3c88e4d106578cf23ca31ccc347b2db0d60b6603f13ce5e80303de69bb"
       },
       {
         "bytes": 35732,
@@ -1054,9 +1074,14 @@
         "sha256": "53caeb48bbdbefaaf2d72b9e480a51d2dff3d81ccd45e57c939a98933d53f0b8"
       },
       {
-        "bytes": 4429,
+        "bytes": 4471,
         "path": "test/fixtures/navigation-causal-hosted-fixture.mjs",
-        "sha256": "d54b3cba37f6b9f358c71b4a5b6b39be4a2ca9b90532493b795b38c6aa16c186"
+        "sha256": "521445f5bed7d87f61663df045450872de8997c2a45a85dd6792cafad810c0b7"
+      },
+      {
+        "bytes": 6052,
+        "path": "test/fixtures/navigation-causal-invalid-v1-fixture.mjs",
+        "sha256": "661a8391fd9293a2a43a8c7edddcb22f5ca412380c4e07af42f1ca7293e8b3b1"
       },
       {
         "bytes": 3371,
@@ -1821,17 +1846,17 @@
       {
         "bytes": 3218,
         "path": "test/performance-navigation-causal-contract.test.mjs",
-        "sha256": "5377f15618ae5c7cadd8b8c586baf24c6c3bdbc437e2d2af9409693d8fcbf62b"
+        "sha256": "99111eba66d91f3e443050f688f7acadb4cbde60913bb1a7506d759ef9acf9da"
       },
       {
-        "bytes": 11226,
+        "bytes": 11394,
         "path": "test/performance-navigation-causal-hosted-provenance.test.mjs",
-        "sha256": "c977a218136c39a1635cf92e670466191b0efd99b0558c34a9ce37d32196f3f4"
+        "sha256": "946ff4425463fed830135b4563692d0e40ae972a9645b5ecefb9ffc17273a651"
       },
       {
-        "bytes": 7597,
+        "bytes": 11125,
         "path": "test/performance-navigation-causal-public-release.test.mjs",
-        "sha256": "914aa1c052951762fcdffd0e84464dc2ef6736d92622c62de25f6a01becd0a37"
+        "sha256": "1a35d9c444854d50073c65919c1bbc65891d2c46d6b50f735d67419088b1de54"
       },
       {
         "bytes": 5028,
@@ -1839,9 +1864,9 @@
         "sha256": "a196420ca76fe0712b88671e32f2b7d0b8d109aeffbe55da5dc368bd37b5e1cd"
       },
       {
-        "bytes": 34071,
+        "bytes": 54104,
         "path": "test/performance-navigation-causal-publication.test.mjs",
-        "sha256": "875447988e2635215c8576e27ed43fa6b542c39e598f81b8b1fea838be5170df"
+        "sha256": "ac023c84bdf104ccccad4c98f43c12b236f73cfd832a2d78d3fcc8eb78c4706e"
       },
       {
         "bytes": 7205,
@@ -1989,9 +2014,9 @@
         "sha256": "a8340f7f3f153a85a7f71fccb41966c0dff7de85f69f0593deaf6cb7c9e6c6e1"
       },
       {
-        "bytes": 9062,
+        "bytes": 9371,
         "path": "test/publication-projection.test.mjs",
-        "sha256": "f4eec33cc72599fd33e59eb19bbaf1e46519d89cc41955d2599a781b710893c0"
+        "sha256": "be02d46b2cd69b53c6e1077140bfd0f30b349015d2cc92d08ed68973bcf5742c"
       },
       {
         "bytes": 2100,
@@ -2266,9 +2291,19 @@
       "sha256": "241757bb9cedc26a5774a74585dc0f7e4c1d56363a4981b4ce944b704b2576bf"
     },
     {
+      "bytes": 12257,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
+      "sha256": "c4c0ffc0c8802e2a1b3169330a64fbda0c91bd3ced30085da53fd60de290f9a6"
+    },
+    {
       "bytes": 13708,
       "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v1.md",
       "sha256": "fc9629bea46426d3455bece3b2688eca8b5da9ccb4ed4b20a74c729420afabe0"
+    },
+    {
+      "bytes": 17688,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v2.md",
+      "sha256": "f09ea8a415ec353744c95e24196142f553881c403172c3ce3701c4c626dec558"
     },
     {
       "bytes": 2004,
@@ -2276,8 +2311,18 @@
       "sha256": "9fd4efb7138175cc3db6341b0fd8693956390119fd4958dcdf1b27b438cbb436"
     },
     {
+      "bytes": 2004,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
+      "sha256": "1594337623688f9c15fe4b205639d67b3a7947bea16332b425ded26fb53848f9"
+    },
+    {
       "bytes": 40758,
       "path": "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
+      "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472"
+    },
+    {
+      "bytes": 40758,
+      "path": "protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
       "sha256": "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472"
     },
     {

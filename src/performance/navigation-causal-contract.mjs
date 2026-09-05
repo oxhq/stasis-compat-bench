@@ -7,39 +7,110 @@ import {
 } from "./navigation-causal-replication.mjs";
 
 export const navigationCausalPreflightSchema =
-  "stasis-v0.3.3-performance-navigation-causal-preflight-v1";
+  "stasis-v0.3.3-performance-navigation-causal-preflight-v2";
 export const navigationCausalSelectionBindingSchema =
-  "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1";
+  "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2";
 
 export const navigationCausalContractIdentity = deepFreeze({
   repository: "oxhq/stasis-compat-bench",
-  tag: "stasis-v0.3.3-performance-navigation-causal-contract-v1",
-  preflightTag: "stasis-v0.3.3-performance-navigation-causal-preflight-v1",
-  preflightAsset: "anonymous-contract-preflight.json",
-  evidenceTag: "stasis-v0.3.3-performance-navigation-causal-evidence-v1",
-  soleParentSha: navigationCausalHarnessIdentity.revision,
+  tag: "stasis-v0.3.3-performance-navigation-causal-contract-v2",
+  preflightTag: "stasis-v0.3.3-performance-navigation-causal-preflight-v2",
+  preflightAsset: "anonymous-contract-preflight-v2.json",
+  evidenceTag: "stasis-v0.3.3-performance-navigation-causal-evidence-v2",
+  soleParentSha: "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
   assets: {
-    protocol: "stasis-v0.3.3-performance-navigation-causal-v1.md",
-    preflight: "stasis-v0.3.3-performance-navigation-causal-preflight-v1.json",
-    workflow: "stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
-    selection: "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
+    protocol: "stasis-v0.3.3-performance-navigation-causal-v2.md",
+    preflight: "stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
+    workflow: "stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
+    selection: "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
   },
 });
 
 export const navigationCausalContractAssetIdentities = deepFreeze({
+  "stasis-v0.3.3-performance-navigation-causal-v2.md": {
+    bytes: 17_688,
+    sha256: "f09ea8a415ec353744c95e24196142f553881c403172c3ce3701c4c626dec558",
+  },
+  "stasis-v0.3.3-performance-navigation-causal-preflight-v2.json": {
+    bytes: 12_257,
+    sha256: "c4c0ffc0c8802e2a1b3169330a64fbda0c91bd3ced30085da53fd60de290f9a6",
+  },
+  "stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml": {
+    bytes: 40_758,
+    sha256: "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472",
+  },
+  "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json": {
+    bytes: 2_004,
+    sha256: "1594337623688f9c15fe4b205639d67b3a7947bea16332b425ded26fb53848f9",
+  },
+});
+
+export const navigationCausalInvalidV1Evidence = deepFreeze({
+  status: "INVALID_PREFLIGHT_CHRONOLOGY_MODEL",
+  observationStarted: false,
+  authorizedS5CreationPushesConsumed: 0,
+  authorizedS5CreationPushesRemaining: 1,
+  contract: {
+    releaseId: 383003193,
+    tag: "stasis-v0.3.3-performance-navigation-causal-contract-v1",
+    targetCommitSha: "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
+    targetTreeSha: "a73d8a07a8c6e81032ff14640e63de4e4fc905ac",
+    soleParentSha: navigationCausalHarnessIdentity.revision,
+    createdAt: "2026-09-04T20:39:28Z",
+    publishedAt: "2026-09-04T20:40:00Z",
+    assetCount: 4,
+  },
+  preflight: {
+    releaseId: 383003691,
+    tag: "stasis-v0.3.3-performance-navigation-causal-preflight-v1",
+    targetCommitSha: "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
+    createdAt: "2026-09-04T20:39:28Z",
+    publishedAt: "2026-09-04T20:41:03Z",
+    asset: {
+      id: 544876950,
+      name: "anonymous-contract-preflight.json",
+      bytes: 1_923,
+      sha256: "2ce4fb18d32d59c653e44aa6c9bc866b1ff5aa4c977ce1106f88ddcd79e90fc1",
+    },
+  },
+  gate: {
+    command: "verify-preflight-public",
+    error: "Navigation causal preflight receipt release was not published after its contract",
+    rootCause:
+      "v1_ordered_same_target_preflight_created_at_after_contract_published_at",
+    invalidPredicateObserved: "preflight.created_at <= contract.published_at",
+    contractPublishedBeforePreflightPublished: true,
+    sourceBranchObserved: false,
+    sourceCommitObserved: false,
+    workflowRunsObserved: 0,
+    v1EvidenceTag: "stasis-v0.3.3-performance-navigation-causal-evidence-v1",
+    v1EvidenceReleaseObserved: false,
+    v1EvidenceTagObserved: false,
+  },
+});
+
+export const navigationCausalV1ContractAssetIdentities = deepFreeze({
   "stasis-v0.3.3-performance-navigation-causal-v1.md": {
+    id: 544875767,
+    blob: "d7010f486720a2bda324d53eb88f03e2dc0f3a01",
     bytes: 13_708,
     sha256: "fc9629bea46426d3455bece3b2688eca8b5da9ccb4ed4b20a74c729420afabe0",
   },
   "stasis-v0.3.3-performance-navigation-causal-preflight-v1.json": {
+    id: 544875768,
+    blob: "b3661b563eb3151bff6176a896b9fa379a3ef7f0",
     bytes: 9_022,
     sha256: "241757bb9cedc26a5774a74585dc0f7e4c1d56363a4981b4ce944b704b2576bf",
   },
   "stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml": {
+    id: 544875765,
+    blob: "f24f67ac0d2c8b7b7cbd3a1e2bfc8a304c1c8038",
     bytes: 40_758,
     sha256: "4ed396bba197d83b5033f506667df744e5d2a8b6c0e7f81081f3b850853ce472",
   },
   "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json": {
+    id: 544875764,
+    blob: "6707176294181154f7caf7c641d7a8133166f704",
     bytes: 2_004,
     sha256: "9fd4efb7138175cc3db6341b0fd8693956390119fd4958dcdf1b27b438cbb436",
   },
@@ -167,6 +238,9 @@ export function assertNavigationCausalContractAssets(assets) {
     preflight.publicVerification.actionsArtifactMetadataRequiredPresentAndNonexpired !== true ||
     preflight.publicVerification.liveActionsReverificationRetentionBounded !== true ||
     preflight.publicVerification.indefiniteLiveActionsReverificationClaimed !== false ||
+    !isDeepStrictEqual(preflight.invalidV1PreObservation, navigationCausalInvalidV1Evidence) ||
+    preflight.chronology.crossReleaseOrderingField !== "published_at" ||
+    preflight.chronology.createdAtOrderedAcrossSameTargetReleases !== false ||
     preflight.claimBoundary.decisionState !== "STAY_0_4_UNASSIGNED") {
     throw new TypeError("Navigation causal preflight boundary changed");
   }

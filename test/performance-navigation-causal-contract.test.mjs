@@ -16,7 +16,7 @@ const protocolRoot = new URL("../protocol/", import.meta.url);
 
 test("the V4 selection binding is exact canonical preregistration input", async () => {
   const bytes = await readFile(new URL(
-    "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
     import.meta.url,
   ));
   const value = JSON.parse(bytes);
@@ -39,7 +39,7 @@ test("both job step topologies are frozen before observation", () => {
 
 test("the contract workflow mirror must equal the exact S5 bytes", async () => {
   const bytes = await readFile(new URL(
-    "../protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
     import.meta.url,
   ));
   assert.strictEqual(assertNavigationCausalWorkflowMirror(bytes), bytes);
@@ -50,10 +50,10 @@ test("the contract workflow mirror must equal the exact S5 bytes", async () => {
 
 test("the four contract assets have one exact byte inventory", async () => {
   const names = [
-    "stasis-v0.3.3-performance-navigation-causal-v1.md",
-    "stasis-v0.3.3-performance-navigation-causal-preflight-v1.json",
-    "stasis-v0.3.3-performance-navigation-causal-workflow-v1.yml",
-    "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
+    "stasis-v0.3.3-performance-navigation-causal-v2.md",
+    "stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
+    "stasis-v0.3.3-performance-navigation-causal-workflow-v2.yml",
+    "stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
   ];
   const assets = Object.fromEntries(await Promise.all(names.map(async (name) => [
     name,
@@ -69,7 +69,7 @@ test("the four contract assets have one exact byte inventory", async () => {
 
 test("the preregistered evidence inventory exactly matches the publication builder", async () => {
   const preflight = JSON.parse(await readFile(new URL(
-    "../protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v1.json",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-preflight-v2.json",
     import.meta.url,
   )));
   assert.deepEqual(preflight.evidenceReleaseAssetNames, navigationCausalPublicationAssetNames);

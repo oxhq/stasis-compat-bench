@@ -13,9 +13,9 @@ import {
 } from "./navigation-causal-public-verification.mjs";
 
 export const navigationCausalPublicationCliSchema =
-  "stasis-v0.3.3-performance-navigation-causal-publication-cli-v1";
+  "stasis-v0.3.3-performance-navigation-causal-publication-cli-v2";
 export const navigationCausalPublicationCliUsage =
-  "Usage: node src/performance/navigation-causal-publication-cli.mjs build <absolute-input-directory> <absolute-new-output-directory> <absolute-v4-tag-ref-json>|verify <absolute-publication-directory> <absolute-v4-tag-ref-json>|verify-contract-public <expected-h8b-sha> <absolute-new-receipt-json>|verify-preflight-public <expected-h8b-sha> <absolute-existing-preflight-receipt-json>|verify-public <expected-h8b-sha> <absolute-new-receipt-json>";
+  "Usage: node src/performance/navigation-causal-publication-cli.mjs build <absolute-input-directory> <absolute-new-output-directory> <absolute-v4-tag-ref-json>|verify <absolute-publication-directory> <absolute-v4-tag-ref-json>|verify-contract-public <expected-h8c-sha> <absolute-new-receipt-json>|verify-preflight-public <expected-h8c-sha> <absolute-existing-preflight-receipt-json>|verify-public <expected-h8c-sha> <absolute-new-receipt-json>";
 
 const gitShaPattern = /^[a-f0-9]{40}$/u;
 
@@ -37,7 +37,7 @@ export function parseNavigationCausalPublicationCommand(argv) {
   }
   if (["verify-contract-public", "verify-public"].includes(argv[0]) && argv.length === 3) {
     if (!gitShaPattern.test(argv[1] ?? "")) {
-      throw new TypeError("Navigation causal expected H8b target must be one lowercase Git SHA");
+      throw new TypeError("Navigation causal expected H8c target must be one lowercase Git SHA");
     }
     return Object.freeze({
       command: argv[0],
@@ -47,7 +47,7 @@ export function parseNavigationCausalPublicationCommand(argv) {
   }
   if (argv[0] === "verify-preflight-public" && argv.length === 3) {
     if (!gitShaPattern.test(argv[1] ?? "")) {
-      throw new TypeError("Navigation causal expected H8b target must be one lowercase Git SHA");
+      throw new TypeError("Navigation causal expected H8c target must be one lowercase Git SHA");
     }
     return Object.freeze({
       command: argv[0],

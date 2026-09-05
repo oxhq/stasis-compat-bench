@@ -7,6 +7,8 @@ import {
 import {
   navigationCausalContractAssetIdentities,
   navigationCausalContractIdentity,
+  navigationCausalInvalidV1Evidence,
+  navigationCausalV1ContractAssetIdentities,
   navigationCausalV4SelectionBinding,
 } from "./navigation-causal-contract.mjs";
 import {
@@ -17,6 +19,7 @@ import {
 } from "./navigation-causal-replication.mjs";
 import {
   verifyNavigationCausalAnonymousContractPreflight,
+  verifyNavigationCausalInvalidV1PreObservationEvidence,
   verifyNavigationCausalPublicContract,
   verifyNavigationCausalV4SelectionEvidence,
 } from "./navigation-causal-public-release.mjs";
@@ -27,9 +30,9 @@ import {
 } from "./navigation-causal-publication.mjs";
 
 export const navigationCausalAnonymousEvidenceVerificationSchema =
-  "stasis-v0.3.3-performance-navigation-causal-anonymous-evidence-verification-v1";
+  "stasis-v0.3.3-performance-navigation-causal-anonymous-evidence-verification-v2";
 export const navigationCausalAnonymousPreflightReleaseVerificationSchema =
-  "stasis-v0.3.3-performance-navigation-causal-anonymous-preflight-release-verification-v1";
+  "stasis-v0.3.3-performance-navigation-causal-anonymous-preflight-release-verification-v2";
 export const navigationCausalAnonymousFetchPolicy = deepFreeze({
   authentication: "none",
   credentials: "omit",
@@ -76,8 +79,7 @@ export function verifyNavigationCausalAnonymousEvidenceRelease({
   const created = instant(releaseRecord.created_at, "evidence release created_at");
   const published = instant(releaseRecord.published_at, "evidence release published_at");
   const terminal = instant(hosted?.producer?.completedAt, "hosted terminal time");
-  if (created.epoch <= terminal.epoch || created.epoch > published.epoch ||
-    published.epoch <= terminal.epoch) {
+  if (created.epoch > published.epoch || published.epoch <= terminal.epoch) {
     throw new TypeError("Navigation causal evidence was not published after the hosted run became terminal");
   }
   const releasedAssets = verifyReleasedAssets(releaseRecord.assets, assets);
@@ -131,7 +133,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     fetchImpl,
   );
   if (contractReleaseRecord.target_commitish !== target) {
-    throw new TypeError("Navigation causal contract release target differs from the expected H8b SHA");
+    throw new TypeError("Navigation causal contract release target differs from the expected H8c SHA");
   }
   const contractCommitRecord = await fetchAnonymousJson(
     `${harnessApi}/commits/${target}`,
@@ -183,6 +185,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
       fetchImpl,
     },
   );
+  const invalidV1 = await fetchInvalidV1Authority({ fetchImpl });
   const absence = {
     sourceRef: {
       status: await fetchAnonymousStatus(
@@ -197,6 +200,22 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
         `${sourceApi}/commits/${navigationCausalWorkflowSourceIdentity.revision}`,
         422,
         "S5 source commit absence",
+        fetchImpl,
+      ),
+    },
+    invalidV1EvidenceRelease: {
+      status: await fetchAnonymousStatus(
+        `${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalInvalidV1Evidence.gate.v1EvidenceTag)}`,
+        404,
+        "invalid V1 navigation causal evidence release absence",
+        fetchImpl,
+      ),
+    },
+    invalidV1EvidenceTagRef: {
+      status: await fetchAnonymousStatus(
+        `${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalInvalidV1Evidence.gate.v1EvidenceTag)}`,
+        404,
+        "invalid V1 navigation causal evidence tag absence",
         fetchImpl,
       ),
     },
@@ -219,7 +238,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     workflowRuns: { status: 200 },
   };
   const workflowRunsListing = await fetchAnonymousJson(
-    `${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&event=push&per_page=100`,
+    `${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&per_page=100`,
     "S5 workflow runs absence",
     fetchImpl,
   );
@@ -229,6 +248,7 @@ export async function verifyAnonymousNavigationCausalContractPreflight(
     contractTagRefRecord,
     contractAssets,
     latestReleaseRecord,
+    invalidV1,
     absence,
     workflowRunsListing,
     v4ReleaseRecord,
@@ -382,6 +402,35 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
     contractTagRefRecord,
     contractAssets,
   });
+  const invalidV1 = await fetchInvalidV1Authority({ fetchImpl });
+  const [invalidV1EvidenceReleaseStatus, invalidV1EvidenceTagStatus] = await Promise.all([
+    fetchAnonymousStatus(
+      `${apiRoot}/releases/tags/${encodeURIComponent(navigationCausalInvalidV1Evidence.gate.v1EvidenceTag)}`,
+      404,
+      "invalid V1 navigation causal evidence release final absence",
+      fetchImpl,
+    ),
+    fetchAnonymousStatus(
+      `${apiRoot}/git/ref/tags/${encodeURIComponent(navigationCausalInvalidV1Evidence.gate.v1EvidenceTag)}`,
+      404,
+      "invalid V1 navigation causal evidence tag final absence",
+      fetchImpl,
+    ),
+  ]);
+  assertReleaseIsNotLatest(
+    invalidV1.contractReleaseRecord,
+    latestReleaseRecord,
+    "invalid V1 contract",
+  );
+  assertReleaseIsNotLatest(
+    invalidV1.preflightReleaseRecord,
+    latestReleaseRecord,
+    "invalid V1 preflight receipt",
+  );
+  if (Date.parse(contractReleaseRecord.published_at) <=
+    Date.parse(invalidV1.disposition.preflight.publishedAt)) {
+    throw new TypeError("Navigation causal V2 contract was not published after invalid V1 preflight evidence");
+  }
   const liveV4Release = await fetchAnonymousJson(
     `${apiRoot}/releases/tags/${encodeURIComponent(navigationCausalV4SelectionBinding.source.tag)}`,
     "navigation causal live V4 evidence release",
@@ -417,10 +466,12 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
       },
     );
   }
+  verifyRetainedInvalidV1Assets(assets, invalidV1);
   const retainedContract = parseJson(assets["contract-release.json"], "retained contract release");
   const retainedCommit = parseJson(assets["contract-commit.json"], "retained contract commit");
   if (retainedContract.id !== publicContract.releaseId ||
     retainedContract.target_commitish !== publicContract.targetCommitSha ||
+    retainedContract.created_at !== contractReleaseRecord.created_at ||
     retainedContract.published_at !== contractReleaseRecord.published_at ||
     retainedContract.url !== contractReleaseRecord.url ||
     retainedCommit.sha !== publicContract.targetCommitSha ||
@@ -435,7 +486,7 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
   });
   const preflightReceiptRelease = await fetchPreflightReceiptReleaseAuthority({
     target,
-    expectedReceiptBytes: assets["anonymous-contract-preflight.json"],
+    expectedReceiptBytes: assets["anonymous-contract-preflight-v2.json"],
     contractReleaseRecord,
     latestReleaseRecord,
     mustBePublishedBefore: liveHostedAuthority.workflowRunCreatedAt,
@@ -448,7 +499,131 @@ export async function verifyAnonymousNavigationCausalPublicRelease(
     v4TagRefRecord,
     assets,
   });
-  return deepFreeze({ ...verified, preflightReceiptRelease, liveHostedAuthority });
+  return deepFreeze({
+    ...verified,
+    invalidV1Disposition: {
+      ...invalidV1.disposition,
+      finalEvidenceAbsence: {
+        releaseStatus: invalidV1EvidenceReleaseStatus,
+        tagRefStatus: invalidV1EvidenceTagStatus,
+      },
+    },
+    preflightReceiptRelease,
+    liveHostedAuthority,
+  });
+}
+
+function verifyRetainedInvalidV1Assets(assets, live) {
+  const records = [
+    ["invalid-v1-contract-release.json", live.contractReleaseRecord],
+    ["invalid-v1-contract-commit.json", live.contractCommitRecord],
+    ["invalid-v1-contract-tag-ref.json", live.contractTagRefRecord],
+    ["invalid-v1-preflight-release.json", live.preflightReleaseRecord],
+    ["invalid-v1-preflight-tag-ref.json", live.preflightTagRefRecord],
+  ];
+  for (const [name, expected] of records) {
+    const retained = parseJson(assets[name], `retained ${name}`);
+    if (!isDeepStrictEqual(
+      stableInvalidV1AuthorityRecord(retained, name),
+      stableInvalidV1AuthorityRecord(expected, name),
+    )) {
+      throw new TypeError(`Navigation causal retained invalid V1 authority changed: ${name}`);
+    }
+  }
+  if (!assets["invalid-v1-anonymous-contract-preflight.json"]
+    .equals(live.preflightReceiptBytes)) {
+    throw new TypeError("Navigation causal retained invalid V1 preflight receipt bytes changed");
+  }
+}
+
+function stableInvalidV1AuthorityRecord(value, name) {
+  const projected = structuredClone(value);
+  if (name === "invalid-v1-contract-release.json" ||
+    name === "invalid-v1-preflight-release.json") {
+    if (!Array.isArray(projected.assets)) {
+      throw new TypeError(`Navigation causal retained invalid V1 release assets are invalid: ${name}`);
+    }
+    const names = new Set();
+    for (const asset of projected.assets) {
+      if (asset === null || typeof asset !== "object" || Array.isArray(asset) ||
+        typeof asset.name !== "string" || names.has(asset.name) ||
+        !Number.isSafeInteger(asset.download_count) || asset.download_count < 0) {
+        throw new TypeError(
+          `Navigation causal retained invalid V1 download count is invalid: ${name}`,
+        );
+      }
+      names.add(asset.name);
+      asset.download_count = 0;
+    }
+    projected.assets.sort((left, right) => left.name.localeCompare(right.name));
+  }
+  return projected;
+}
+
+async function fetchInvalidV1Authority({ fetchImpl }) {
+  const expected = navigationCausalInvalidV1Evidence;
+  const apiRoot =
+    `https://api.github.com/repos/${navigationCausalContractIdentity.repository}`;
+  const [contractReleaseRecord, contractCommitRecord, contractTagRefRecord,
+    preflightReleaseRecord, preflightTagRefRecord] = await Promise.all([
+    fetchAnonymousJson(
+      `${apiRoot}/releases/tags/${encodeURIComponent(expected.contract.tag)}`,
+      "invalid V1 navigation causal contract release",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${apiRoot}/commits/${expected.contract.targetCommitSha}`,
+      "invalid V1 navigation causal contract commit",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${apiRoot}/git/ref/tags/${encodeURIComponent(expected.contract.tag)}`,
+      "invalid V1 navigation causal contract tag",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${apiRoot}/releases/tags/${encodeURIComponent(expected.preflight.tag)}`,
+      "invalid V1 navigation causal preflight release",
+      fetchImpl,
+    ),
+    fetchAnonymousJson(
+      `${apiRoot}/git/ref/tags/${encodeURIComponent(expected.preflight.tag)}`,
+      "invalid V1 navigation causal preflight tag",
+      fetchImpl,
+    ),
+  ]);
+  const contractAssets = {};
+  for (const [name, identity] of Object.entries(navigationCausalV1ContractAssetIdentities)) {
+    contractAssets[name] = await fetchAnonymousBytes(
+      exactReleaseAssetUrl(expected.contract.tag, name),
+      {
+        expectedBytes: identity.bytes,
+        label: `invalid V1 navigation causal contract asset ${name}`,
+        maximumBytes: identity.bytes,
+        fetchImpl,
+      },
+    );
+  }
+  const preflightReceiptBytes = await fetchAnonymousBytes(
+    exactReleaseAssetUrl(expected.preflight.tag, expected.preflight.asset.name),
+    {
+      expectedBytes: expected.preflight.asset.bytes,
+      label: "invalid V1 navigation causal preflight receipt",
+      maximumBytes: expected.preflight.asset.bytes,
+      fetchImpl,
+    },
+  );
+  const records = {
+    contractReleaseRecord,
+    contractCommitRecord,
+    contractTagRefRecord,
+    contractAssets,
+    preflightReleaseRecord,
+    preflightTagRefRecord,
+    preflightReceiptBytes,
+  };
+  const disposition = verifyNavigationCausalInvalidV1PreObservationEvidence(records);
+  return { ...records, disposition };
 }
 
 async function fetchPreflightReceiptReleaseAuthority({
@@ -500,8 +675,7 @@ async function fetchPreflightReceiptReleaseAuthority({
   }
   const created = instant(releaseRecord.created_at, "preflight receipt release created_at");
   const published = instant(releaseRecord.published_at, "preflight receipt release published_at");
-  if (created.epoch <= contractPublished.epoch || created.epoch > published.epoch ||
-    published.epoch <= contractPublished.epoch) {
+  if (created.epoch > published.epoch || published.epoch <= contractPublished.epoch) {
     throw new TypeError("Navigation causal preflight receipt release was not published after its contract");
   }
   if (mustBePublishedBefore !== undefined &&
@@ -569,10 +743,7 @@ async function verifyLiveHostedAuthority({
     "retained workflow artifacts",
   );
   const runId = positiveInteger(retainedRun.id, "retained workflow run ID");
-  const workflowId = positiveInteger(
-    retainedRun.workflow_id,
-    "retained workflow ID",
-  );
+  positiveInteger(retainedRun.workflow_id, "retained workflow ID");
   const sourceApi =
     `https://api.github.com/repos/${navigationCausalWorkflowSourceIdentity.repository}`;
   const [sourceBranchRefRecord, workflowSourceCommitRecord, runRecord,
@@ -593,8 +764,8 @@ async function verifyLiveHostedAuthority({
       fetchImpl,
     ),
     fetchAnonymousJson(
-      `${sourceApi}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&event=push&per_page=100`,
-      "navigation causal live workflow runs listing",
+      `${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&per_page=100`,
+      "navigation causal live branch-wide workflow runs listing",
       fetchImpl,
     ),
     fetchAnonymousJson(
@@ -802,7 +973,7 @@ async function fetchOne(url, { accept, fetchImpl, label, redirectCount }) {
     headers: {
       accept,
       "accept-encoding": "identity",
-      "user-agent": "stasis-navigation-causal-anonymous-verifier-v1",
+      "user-agent": "stasis-navigation-causal-anonymous-verifier-v2",
     },
   });
   if (response === null || typeof response !== "object" ||

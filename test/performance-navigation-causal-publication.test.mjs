@@ -20,6 +20,7 @@ import {
   buildNavigationCausalPublication,
   navigationCausalPublicationAssetNames,
   navigationCausalPublicationSchema,
+  verifyNavigationCausalGitHubAuthorityPrivacy,
   verifyNavigationCausalPublication,
 } from "../src/performance/navigation-causal-publication.mjs";
 import {
@@ -36,6 +37,7 @@ import {
 } from "../src/performance/navigation-causal-replication.mjs";
 import { navigationCausalHostFixtureRaw } from "./fixtures/navigation-causal-host-fixture.mjs";
 import { navigationCausalHostedFixtureInput } from "./fixtures/navigation-causal-hosted-fixture.mjs";
+import { navigationCausalInvalidV1Fixture } from "./fixtures/navigation-causal-invalid-v1-fixture.mjs";
 
 test("publication retains exact hosted inputs, host files, receipts, privacy scan, and checksums", async () => {
   const fixture = await publicationFixture();
@@ -49,14 +51,321 @@ test("publication retains exact hosted inputs, host files, receipts, privacy sca
     v4TagRefRecord: fixture.v4TagRefRecord,
   });
   assert.equal(verified.status, "verified");
-  assert.equal(verified.assetCount, 21);
+  assert.equal(verified.assetCount, 27);
   assert.equal(verified.validMeasurement, true);
   const scan = JSON.parse(built.assets["privacy-scan.json"]);
   assert.equal(scan.scope.controlledDocumentHtmlOmissionCount, 44);
   assert.equal(scan.scope.uniqueControlledDocumentHtmlCount, 1);
+  assert.equal(scan.scope.githubUriTemplateProjectionCount, 38);
+  assert.equal(scan.scope.githubReleaseAssetStateProjectionCount, 5);
+  assert.equal(scan.scope.githubPublicSourcePatchCount, 1);
+  assert.equal(scan.scope.githubReviewedSourcePatchLiteralProjectionCount, 2);
   assert.equal(scan.verification.credentialsRetained, false);
   const sums = built.assets["SHA256SUMS.txt"].toString("utf8").trim().split("\n");
-  assert.equal(sums.length, 20);
+  assert.equal(sums.length, 26);
+});
+
+test("full GitHub authority privacy projection is exact and source-patch aware", async (t) => {
+  const cases = [
+    ["wrong user template suffix", (value) => {
+      value.author.following_url = value.author.following_url.replace(
+        "{/other_user}",
+        "{/other_user}{/secret}",
+      );
+    }],
+    ["wrong user template base", (value) => {
+      value.author.following_url = value.author.following_url.replace(
+        "/users/garaekz/",
+        "/users/another/",
+      );
+    }],
+    ["wrong reviewed contract commit", (value) => {
+      value.sha = "f".repeat(40);
+      value.url = `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${value.sha}`;
+    }],
+    ["different reviewed patch file", (value) => {
+      [value.files[22], value.files[23]] = [value.files[23], value.files[22]];
+    }],
+    ["extra reviewed literal occurrence", (value) => {
+      const prefix = ["authorization:", "Bearer"].join(" ");
+      value.files[23].patch += `\n+${prefix} TOPSECRET123`;
+    }],
+    ["changed reviewed literal context", (value) => {
+      value.files[23].patch = value.files[23].patch.replace(
+        "+  run.documentHtml",
+        "+  other.documentHtml",
+      );
+    }],
+    ["changed reviewed literal", (value) => {
+      value.files[23].patch = value.files[23].patch.replace(
+        "TOPSECRET123",
+        "TOPSECRET124",
+      );
+    }],
+    ["credential elsewhere in patch", (value) => {
+      const token = ["github", "pat", "realisticcredentialvalue1234567890"].join("_");
+      value.files[23].patch += `\n+const leaked = "${token}";`;
+    }],
+  ];
+  for (const [name, mutate] of cases) await t.test(name, async () => {
+    const fixture = await publicationFixture();
+    const record = JSON.parse(fixture.inputs["invalid-v1-contract-commit.json"]);
+    mutate(record);
+    fixture.inputs["invalid-v1-contract-commit.json"] =
+      Buffer.from(`${JSON.stringify(record)}\n`, "utf8");
+    assert.throws(() => buildNavigationCausalPublication(fixture));
+  });
+  await t.test("release state drift", async () => {
+    const fixture = await publicationFixture();
+    const record = JSON.parse(fixture.inputs["invalid-v1-contract-release.json"]);
+    record.assets[0].state = "open";
+    fixture.inputs["invalid-v1-contract-release.json"] =
+      Buffer.from(`${JSON.stringify(record)}\n`, "utf8");
+    assert.throws(() => buildNavigationCausalPublication(fixture));
+  });
+});
+
+test("future full-shaped H8c and S5 commit records receive the same patch privacy gate", () => {
+  const user = githubUserFixture();
+  for (const [name, repository] of [
+    ["contract-commit.json", "oxhq/stasis-compat-bench"],
+    ["workflow-source-commit.json", "oxhq/stasis"],
+  ]) {
+    const sha = "a".repeat(40);
+    const receipt = verifyNavigationCausalGitHubAuthorityPrivacy({
+      sha,
+      url: `https://api.github.com/repos/${repository}/commits/${sha}`,
+      author: structuredClone(user),
+      committer: structuredClone(user),
+      files: [{
+        filename: "src/future.mjs",
+        status: "added",
+        sha: "b".repeat(40),
+        patch: '+import value from "./public-source.mjs";',
+      }],
+    }, name);
+    assert.equal(receipt.uriTemplateProjectionCount, 8);
+    assert.equal(receipt.sourcePatchCount, 1);
+  }
+  const sha = "c".repeat(40);
+  const credential = ["authorization:", "Bearer", "futuresecret123"].join(" ");
+  assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+    sha,
+    url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+    author: structuredClone(user),
+    committer: structuredClone(user),
+    files: [{
+      filename: "src/future.mjs",
+      status: "added",
+      sha: "d".repeat(40),
+      patch: `+const leaked = "${credential}";`,
+    }],
+  }, "contract-commit.json"), /credential-like text/u);
+  const encodedCredential = Buffer.from(
+    ["authorization:", "Bearer", "encodedfuturesecret123"].join(" "),
+    "utf8",
+  ).toString("base64");
+  assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+    sha,
+    url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+    author: structuredClone(user),
+    committer: structuredClone(user),
+    files: [{
+      filename: "src/future.mjs",
+      status: "added",
+      sha: "e".repeat(40),
+      patch: `+const encoded = "${encodedCredential}";`,
+    }],
+  }, "contract-commit.json"), /credential-like text/u);
+  const nestedCredential = ["authorization:", "Bearer", "nestedfuturesecret123"].join(" ");
+  const doubleEncodedCredential = Buffer.from(
+    Buffer.from(nestedCredential, "utf8").toString("base64"),
+    "utf8",
+  ).toString("base64");
+  const percentAndDoubleEncodedCredential = encodeURIComponent(doubleEncodedCredential);
+  const splitOffset = Math.floor(doubleEncodedCredential.length / 2);
+  const escapedOffset = 11;
+  const escapedHex = doubleEncodedCredential.charCodeAt(escapedOffset)
+    .toString(16).padStart(2, "0");
+  const projectionMutations = [
+    doubleEncodedCredential,
+    percentAndDoubleEncodedCredential,
+    `${doubleEncodedCredential.slice(0, escapedOffset)}%${escapedHex}${doubleEncodedCredential.slice(escapedOffset + 1)}`,
+    `${doubleEncodedCredential.slice(0, escapedOffset)}\\x${escapedHex}${doubleEncodedCredential.slice(escapedOffset + 1)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}\n${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}" + "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}" /*public*/ + /*public*/ "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}" "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}" + // public\n+  "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}" // public\n+  + "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}" // public\n+  "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}" # public\n+  "${doubleEncodedCredential.slice(splitOffset)}`,
+    ...["L", "u8", "u", "U", "b", "r", "br", "rb"].map((prefix) =>
+      `${doubleEncodedCredential.slice(0, splitOffset)}" ${prefix}"${doubleEncodedCredential.slice(splitOffset)}`),
+    `${doubleEncodedCredential.slice(0, splitOffset)}" +\n+  "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}"\n+  + "${doubleEncodedCredential.slice(splitOffset)}`,
+    `${doubleEncodedCredential.slice(0, splitOffset)}")\n+  + ("${doubleEncodedCredential.slice(splitOffset)}`,
+    ...[1, 2, 3].map((width) =>
+      doubleEncodedCredential.replace(/=+$/u, "")
+        .match(new RegExp(`.{1,${width}}`, "gu"))
+        .join('" + "')),
+  ];
+  for (let index = 0; index < projectionMutations.length; index += 1) {
+    const encoded = projectionMutations[index];
+    assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+      sha,
+      url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+      author: structuredClone(user),
+      committer: structuredClone(user),
+      files: [{
+        filename: "src/future.mjs",
+        status: "added",
+        sha: "f".repeat(40),
+        patch: `+const nested = "${encoded}";`,
+      }],
+    }, "contract-commit.json"), /credential-like text/u,
+    `projection mutation ${index} must be rejected`);
+  }
+  const [authorizationLiteral, bearerLiteral, secretLiteral] = [
+    "authorization:",
+    " Bearer ",
+    "futuresecret123",
+  ].map((part) => JSON.stringify(part));
+  for (const leaked of [
+    [authorizationLiteral, " + ", bearerLiteral, " + ", secretLiteral].join(""),
+    [
+      authorizationLiteral,
+      " /*public*/ + /*public*/ ",
+      bearerLiteral,
+      " + ",
+      secretLiteral,
+    ].join(""),
+    [authorizationLiteral, " ", bearerLiteral, " ", secretLiteral].join(""),
+    [authorizationLiteral, " + // public\n+  ", bearerLiteral, " + ", secretLiteral].join(""),
+    [authorizationLiteral, " // public\n+  ", bearerLiteral, " ", secretLiteral].join(""),
+    [authorizationLiteral, " # public\n+  ", bearerLiteral, " ", secretLiteral].join(""),
+  ]) {
+    assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+      sha,
+      url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+      author: structuredClone(user),
+      committer: structuredClone(user),
+      files: [{
+        filename: "src/future.mjs",
+        status: "added",
+        sha: "3".repeat(40),
+        patch: `+const leaked = ${leaked};`,
+      }],
+    }, "contract-commit.json"), /credential-like text/u);
+  }
+  for (const marker of ["+", "-"]) {
+    for (const indentation of ["", "  ", "\t"]) {
+      assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+        sha,
+        url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+        author: structuredClone(user),
+        committer: structuredClone(user),
+        files: [{
+          filename: "src/future.mjs",
+          status: "modified",
+          sha: "9".repeat(40),
+          patch: [
+            "@@ -1,2 +1,2 @@",
+            `${marker}${doubleEncodedCredential.slice(0, splitOffset)}`,
+            `${marker}${indentation}${doubleEncodedCredential.slice(splitOffset)}`,
+          ].join("\n"),
+        }],
+      }, "contract-commit.json"), /credential-like text/u);
+    }
+  }
+  const whitespaceEncodedCredential = Buffer.from(
+    ["authorization:", "Bearer", "whitespacefuturesecret123x"].join(" "),
+    "utf8",
+  ).toString("base64");
+  assert.equal(whitespaceEncodedCredential.endsWith("="), false);
+  const whitespaceSplitOffset = Math.floor(whitespaceEncodedCredential.length / 2);
+  for (const indentation of ["  ", "\t"]) {
+    for (const [encoded, offset] of [
+      [whitespaceEncodedCredential, whitespaceSplitOffset],
+      [doubleEncodedCredential, splitOffset],
+    ]) {
+      assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+        sha,
+        url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+        author: structuredClone(user),
+        committer: structuredClone(user),
+        files: [{
+          filename: "src/future.mjs",
+          status: "added",
+          sha: "7".repeat(40),
+          patch: [
+            "@@ -0,0 +1,4 @@",
+            "+start",
+            `+${indentation}${encoded.slice(0, offset)}`,
+            `+${indentation}${encoded.slice(offset)}`,
+            "+data:",
+          ].join("\n"),
+        }],
+      }, "contract-commit.json"), /credential-like text/u);
+    }
+  }
+  for (const source of [
+    `const nested = "${doubleEncodedCredential.slice(0, splitOffset)}"\n  + "${doubleEncodedCredential.slice(splitOffset)}";`,
+    `const nested = ("${doubleEncodedCredential.slice(0, splitOffset)}")\n  + ("${doubleEncodedCredential.slice(splitOffset)}");`,
+    `const nested = "${doubleEncodedCredential.slice(0, splitOffset)}\\\n  ${doubleEncodedCredential.slice(splitOffset)}";`,
+    `const nested = "${doubleEncodedCredential.slice(0, splitOffset)}\\\n\t${doubleEncodedCredential.slice(splitOffset)}";`,
+  ]) {
+    const addedLines = source.split("\n").map((line) => `+${line}`);
+    assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+      sha,
+      url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+      author: structuredClone(user),
+      committer: structuredClone(user),
+      files: [{
+        filename: "src/future.mjs",
+        status: "added",
+        sha: "8".repeat(40),
+        patch: [
+          `@@ -0,0 +1,${addedLines.length} @@`,
+          ...addedLines,
+        ].join("\n"),
+      }],
+    }, "contract-commit.json"), /credential-like text/u);
+  }
+  for (const sensitive of [
+    ["password", "12345678"].join("="),
+    ["/home", "garae", "x"].join("/"),
+  ]) {
+    const encoded = Buffer.from(sensitive, "utf8").toString("base64");
+    assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+      sha,
+      url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+      author: structuredClone(user),
+      committer: structuredClone(user),
+      files: [{
+        filename: "src/future.mjs",
+        status: "added",
+        sha: "6".repeat(40),
+        patch: `+const shortEncoded = "${encoded}";`,
+      }],
+    }, "contract-commit.json"));
+  }
+  let excessiveLayers = nestedCredential;
+  for (let index = 0; index < 9; index += 1) {
+    excessiveLayers = Buffer.from(excessiveLayers, "utf8").toString("base64");
+  }
+  assert.throws(() => verifyNavigationCausalGitHubAuthorityPrivacy({
+    sha,
+    url: `https://api.github.com/repos/oxhq/stasis-compat-bench/commits/${sha}`,
+    author: structuredClone(user),
+    committer: structuredClone(user),
+    files: [{
+      filename: "src/future.mjs",
+      status: "added",
+      sha: "2".repeat(40),
+      patch: `+const tooDeep = "${excessiveLayers}";`,
+    }],
+  }, "contract-commit.json"), /exceeds 8 decode layers/u);
 });
 
 test("a valid threshold miss remains publishable without a replicated-effect claim", async () => {
@@ -200,8 +509,8 @@ test("anonymous evidence release rejects mutable, indirect, late, reused-ID, and
   const cases = [
     ["mutable", (value) => { value.releaseRecord.immutable = false; }],
     ["annotated tag", (value) => { value.evidenceTagRefRecord.object.type = "tag"; }],
-    ["created before terminal", (value) => { value.releaseRecord.created_at = "2026-09-04T19:04:59Z"; }],
-    ["not after terminal", (value) => { value.releaseRecord.published_at = "2026-09-04T19:05:00Z"; }],
+    ["created after publication", (value) => { value.releaseRecord.created_at = "2026-09-04T21:08:01Z"; }],
+    ["not after terminal", (value) => { value.releaseRecord.published_at = "2026-09-04T21:07:00Z"; }],
     ["reused asset ID", (value) => { value.releaseRecord.assets[1].id = value.releaseRecord.assets[0].id; }],
     ["changed downloaded byte", (value) => { value.assets["privacy-scan.json"][10] ^= 1; }],
   ];
@@ -226,11 +535,14 @@ test("credential-free live preflight fetches the contract, V4 anchor, and exact 
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4TagRefRecord)],
     [`${sourceApi}/git/ref/heads/${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}`, statusRoute(404)],
     [`${sourceApi}/commits/${navigationCausalWorkflowSourceIdentity.revision}`, statusRoute(422)],
+    [`${harnessApi}/releases/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(404)],
+    [`${harnessApi}/git/ref/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(404)],
     [`${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalContractIdentity.evidenceTag)}`, statusRoute(404)],
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalContractIdentity.evidenceTag)}`, statusRoute(404)],
-    [`${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&event=push&per_page=100`, jsonRoute({ total_count: 0, workflow_runs: [] })],
+    [`${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&per_page=100`, jsonRoute({ total_count: 0, workflow_runs: [] })],
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${fixture.v4Release.tag_name}/crawl-phase-localization-evidence.json`, bytesRoute(fixture.inputs["v4-localization-evidence.json"])],
   ]);
+  addInvalidV1Routes(routes, fixture.invalidV1);
   for (const [name, bytes] of Object.entries(fixture.contractAssets)) {
     routes.set(
       `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.tag}/${name}`,
@@ -252,7 +564,7 @@ test("credential-free pre-S5 gate binds the immutable receipt release and rechec
   const receipt = await verifyAnonymousNavigationCausalPreflightRelease(
     {
       expectedContractTargetSha: fixture.hosted.contractCommitRecord.sha,
-      expectedReceiptBytes: built.assets["anonymous-contract-preflight.json"],
+      expectedReceiptBytes: built.assets["anonymous-contract-preflight-v2.json"],
     },
     { fetchImpl: routedAnonymousFetch(routes) },
   );
@@ -270,8 +582,11 @@ test("pre-S5 receipt release gate rejects latest, chronology, tag, bytes, and ob
     ["receipt release is latest", (live) => {
       live.latestRelease.id = live.preflightRelease.id;
     }],
-    ["receipt predates contract", (live) => {
-      live.preflightRelease.created_at = "2026-09-04T18:54:59Z";
+    ["receipt publication predates contract", (live) => {
+      live.preflightRelease.published_at = "2026-09-04T21:00:00Z";
+    }],
+    ["receipt created after its own publication", (live) => {
+      live.preflightRelease.created_at = "2026-09-04T21:01:01Z";
     }],
     ["annotated receipt tag", (live) => {
       live.preflightTagRef.object.type = "tag";
@@ -282,13 +597,19 @@ test("pre-S5 receipt release gate rejects latest, chronology, tag, bytes, and ob
     ["source appeared", (live) => {
       live.sourceRefStatus = 200;
     }],
+    ["manual dispatch appeared", (live) => {
+      live.workflowRunsListing = {
+        total_count: 1,
+        workflow_runs: [{ id: 99_100_001, event: "workflow_dispatch" }],
+      };
+    }],
   ];
   for (const [name, mutate] of cases) await t.test(name, async () => {
     const { routes } = preS5ReceiptRoutes(fixture, built, mutate);
     await assert.rejects(() => verifyAnonymousNavigationCausalPreflightRelease(
       {
         expectedContractTargetSha: fixture.hosted.contractCommitRecord.sha,
-        expectedReceiptBytes: built.assets["anonymous-contract-preflight.json"],
+        expectedReceiptBytes: built.assets["anonymous-contract-preflight-v2.json"],
       },
       { fetchImpl: routedAnonymousFetch(routes) },
     ));
@@ -324,6 +645,22 @@ test("credential-free live evidence verification refetches contract and hosted A
   );
 });
 
+test("live V1 full-record replay tolerates only validated download-count movement", async () => {
+  const fixture = await publicationFixture();
+  const built = buildNavigationCausalPublication(fixture);
+  const publicInput = publicReleaseFixture(built.assets, fixture.v4TagRefRecord);
+  const target = fixture.hosted.contractCommitRecord.sha;
+  const { routes } = liveEvidenceRoutes(fixture, built, publicInput, (live) => {
+    live.invalidV1.contractReleaseRecord.assets[0].download_count += 7;
+    live.invalidV1.preflightReleaseRecord.assets[0].download_count += 3;
+  });
+  const receipt = await verifyAnonymousNavigationCausalPublicRelease(
+    { expectedReleaseTargetSha: target },
+    { fetchImpl: routedAnonymousFetch(routes) },
+  );
+  assert.equal(receipt.status, "passed");
+});
+
 test("live evidence verification is intentionally bounded to nonexpired Actions metadata", async () => {
   const fixture = await publicationFixture();
   const built = buildNavigationCausalPublication(fixture);
@@ -352,6 +689,22 @@ test("live evidence verification rejects source, run, job, artifact, and contrac
       live.hosted.workflowRunsListing.total_count = 2;
       live.hosted.workflowRunsListing.workflow_runs.push(extra);
     }],
+    ["unrelated workflow run on the source branch", (live) => {
+      const extra = structuredClone(live.hosted.workflowRunsListing.workflow_runs[0]);
+      extra.id += 2;
+      extra.workflow_id += 1;
+      extra.path = ".github/workflows/unrelated.yml";
+      extra.name = "Unrelated source-branch workflow";
+      live.hosted.workflowRunsListing.total_count = 2;
+      live.hosted.workflowRunsListing.workflow_runs.push(extra);
+    }],
+    ["manual dispatch run on the source branch", (live) => {
+      const extra = structuredClone(live.hosted.workflowRunsListing.workflow_runs[0]);
+      extra.id += 3;
+      extra.event = "workflow_dispatch";
+      live.hosted.workflowRunsListing.total_count = 2;
+      live.hosted.workflowRunsListing.workflow_runs.push(extra);
+    }],
     ["rerun attempt", (live) => {
       live.hosted.runRecord.run_attempt = 2;
     }],
@@ -365,11 +718,25 @@ test("live evidence verification rejects source, run, job, artifact, and contrac
       live.hosted.workflowSourceCommitRecord.commit.tree.sha = "d".repeat(40);
     }],
     ["contract published_at drift", (live) => {
-      live.hosted.contractReleaseRecord.published_at = "2026-09-04T18:54:59Z";
+      live.hosted.contractReleaseRecord.published_at = "2026-09-04T20:59:59Z";
+    }],
+    ["invalid V1 authority drift", (live) => {
+      live.invalidV1.preflightReleaseRecord.published_at = "2026-09-04T20:41:04Z";
+    }],
+    ["invalid V1 download count type drift", (live) => {
+      live.invalidV1.contractReleaseRecord.assets[0].download_count = -1;
+    }],
+    ["invalid V1 receipt drift", (live) => {
+      live.invalidV1.preflightReceiptBytes[100] ^= 1;
+    }],
+    ["unauthorized V1 evidence release appeared", (live) => {
+      live.invalidV1EvidenceReleaseStatus = 200;
+    }],
+    ["unauthorized V1 evidence tag appeared", (live) => {
+      live.invalidV1EvidenceTagStatus = 200;
     }],
     ["preflight receipt published after run creation", (live) => {
-      live.preflightRelease.created_at = "2026-09-04T19:00:00Z";
-      live.preflightRelease.published_at = "2026-09-04T19:00:01Z";
+      live.preflightRelease.published_at = "2026-09-04T21:02:00Z";
     }],
     ["evidence release is latest", (live) => {
       live.latestRelease.id = publicInput.releaseRecord.id;
@@ -439,7 +806,7 @@ async function publicationFixture({
   }
   const v4Binding = JSON.parse(await import("node:fs/promises").then(({ readFile }) =>
     readFile(new URL(
-      "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v1.json",
+    "../protocol/stasis-v0.3.3-performance-navigation-causal-v4-selection-binding-v2.json",
       import.meta.url,
     ))));
   const v4Release = {
@@ -470,16 +837,20 @@ async function publicationFixture({
     "fixtures/crawl-phase-localization-evidence-v4-public.json",
     import.meta.url,
   ));
+  const invalidV1 = await navigationCausalInvalidV1Fixture();
   const anonymousPreflight = verifyNavigationCausalAnonymousContractPreflight({
     contractReleaseRecord: hosted.contractReleaseRecord,
     contractCommitRecord: hosted.contractCommitRecord,
     contractTagRefRecord,
     contractAssets,
     latestReleaseRecord: { id: 382000000 },
+    invalidV1,
     absence: {
       sourceRef: { status: 404 },
       sourceCommit: { status: 422 },
       workflowRuns: { status: 200 },
+      invalidV1EvidenceRelease: { status: 404 },
+      invalidV1EvidenceTagRef: { status: 404 },
       evidenceRelease: { status: 404 },
       evidenceTagRef: { status: 404 },
     },
@@ -489,7 +860,12 @@ async function publicationFixture({
     v4LocalizationBytes,
   });
   const inputRecords = {
-    "anonymous-contract-preflight.json": anonymousPreflight,
+    "anonymous-contract-preflight-v2.json": anonymousPreflight,
+    "invalid-v1-contract-release.json": invalidV1.contractReleaseRecord,
+    "invalid-v1-contract-commit.json": invalidV1.contractCommitRecord,
+    "invalid-v1-contract-tag-ref.json": invalidV1.contractTagRefRecord,
+    "invalid-v1-preflight-release.json": invalidV1.preflightReleaseRecord,
+    "invalid-v1-preflight-tag-ref.json": invalidV1.preflightTagRefRecord,
     "contract-release.json": hosted.contractReleaseRecord,
     "contract-commit.json": hosted.contractCommitRecord,
     "workflow-run.json": hosted.runRecord,
@@ -507,15 +883,18 @@ async function publicationFixture({
         name,
         Buffer.from(`${JSON.stringify(value)}\n`, "utf8"),
       ])),
-      "anonymous-contract-preflight.json": canonicalNavigationCausalJsonBytes(
+      "anonymous-contract-preflight-v2.json": canonicalNavigationCausalJsonBytes(
         anonymousPreflight,
       ),
+      "invalid-v1-anonymous-contract-preflight.json":
+        Buffer.from(invalidV1.preflightReceiptBytes),
       "v4-localization-evidence.json": v4LocalizationBytes,
     },
     v4TagRefRecord,
     v4Release,
     contractTagRefRecord,
     contractAssets,
+    invalidV1,
     hosted,
   };
 }
@@ -547,8 +926,8 @@ function publicReleaseFixture(assets, v4TagRefRecord) {
     immutable: true,
     draft: false,
     prerelease: false,
-    created_at: "2026-09-04T19:05:30Z",
-    published_at: "2026-09-04T19:06:00Z",
+    created_at: "2026-09-04T20:50:00Z",
+    published_at: "2026-09-04T21:08:00Z",
     url: "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/382960000",
     assets: navigationCausalPublicationAssetNames.map((name, index) => ({
       id: 544900000 + index,
@@ -576,7 +955,7 @@ function publicReleaseFixture(assets, v4TagRefRecord) {
 }
 
 function preS5ReceiptRoutes(fixture, built, mutate = undefined) {
-  const receiptBytes = built.assets["anonymous-contract-preflight.json"];
+  const receiptBytes = built.assets["anonymous-contract-preflight-v2.json"];
   const target = fixture.hosted.contractCommitRecord.sha;
   const live = {
     latestRelease: { id: 382000000 },
@@ -586,6 +965,7 @@ function preS5ReceiptRoutes(fixture, built, mutate = undefined) {
       object: { type: "commit", sha: target },
     },
     preflightRelease: fixturePreflightRelease(target, receiptBytes),
+    workflowRunsListing: { total_count: 0, workflow_runs: [] },
   };
   mutate?.(live);
   const harnessApi = "https://api.github.com/repos/oxhq/stasis-compat-bench";
@@ -601,12 +981,15 @@ function preS5ReceiptRoutes(fixture, built, mutate = undefined) {
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalContractIdentity.preflightTag)}`, jsonRoute(live.preflightTagRef)],
     [`${sourceApi}/git/ref/heads/${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}`, statusRoute(live.sourceRefStatus)],
     [`${sourceApi}/commits/${navigationCausalWorkflowSourceIdentity.revision}`, statusRoute(422)],
+    [`${harnessApi}/releases/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(404)],
+    [`${harnessApi}/git/ref/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(404)],
     [`${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalContractIdentity.evidenceTag)}`, statusRoute(404)],
     [`${harnessApi}/git/ref/tags/${encodeURIComponent(navigationCausalContractIdentity.evidenceTag)}`, statusRoute(404)],
-    [`${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&event=push&per_page=100`, jsonRoute({ total_count: 0, workflow_runs: [] })],
+    [`${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&per_page=100`, jsonRoute(live.workflowRunsListing)],
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${fixture.v4Release.tag_name}/crawl-phase-localization-evidence.json`, bytesRoute(fixture.inputs["v4-localization-evidence.json"])],
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.preflightTag}/${navigationCausalContractIdentity.preflightAsset}`, bytesRoute(receiptBytes)],
   ]);
+  addInvalidV1Routes(routes, fixture.invalidV1);
   for (const [name, bytes] of Object.entries(fixture.contractAssets)) {
     routes.set(
       `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.tag}/${name}`,
@@ -624,8 +1007,8 @@ function fixturePreflightRelease(target, receiptBytes) {
     immutable: true,
     draft: false,
     prerelease: false,
-    created_at: "2026-09-04T18:55:30Z",
-    published_at: "2026-09-04T18:56:00Z",
+    created_at: "2026-09-04T20:50:00Z",
+    published_at: "2026-09-04T21:01:00Z",
     url: "https://api.github.com/repos/oxhq/stasis-compat-bench/releases/382955000",
     assets: [{
       id: 544850000,
@@ -640,10 +1023,22 @@ function fixturePreflightRelease(target, receiptBytes) {
 }
 
 function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
-  const receiptBytes = built.assets["anonymous-contract-preflight.json"];
+  const receiptBytes = built.assets["anonymous-contract-preflight-v2.json"];
   const target = fixture.hosted.contractCommitRecord.sha;
   const live = {
     latestRelease: { id: 382000000 },
+    invalidV1: {
+      ...fixture.invalidV1,
+      contractReleaseRecord: structuredClone(fixture.invalidV1.contractReleaseRecord),
+      contractCommitRecord: structuredClone(fixture.invalidV1.contractCommitRecord),
+      contractTagRefRecord: structuredClone(fixture.invalidV1.contractTagRefRecord),
+      preflightReleaseRecord: structuredClone(fixture.invalidV1.preflightReleaseRecord),
+      preflightTagRefRecord: structuredClone(fixture.invalidV1.preflightTagRefRecord),
+      contractAssets: cloneAssets(fixture.invalidV1.contractAssets),
+      preflightReceiptBytes: Buffer.from(fixture.invalidV1.preflightReceiptBytes),
+    },
+    invalidV1EvidenceReleaseStatus: 404,
+    invalidV1EvidenceTagStatus: 404,
     sourceBranchRef: {
       ref: navigationCausalWorkflowSourceIdentity.ref,
       object: {
@@ -658,7 +1053,6 @@ function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
   const harnessApi = "https://api.github.com/repos/oxhq/stasis-compat-bench";
   const sourceApi = "https://api.github.com/repos/oxhq/stasis";
   const runId = fixture.hosted.runRecord.id;
-  const workflowId = fixture.hosted.runRecord.workflow_id;
   const routes = new Map([
     [`${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalContractIdentity.evidenceTag)}`, jsonRoute(publicInput.releaseRecord)],
     [`${harnessApi}/releases/latest`, jsonRoute(live.latestRelease)],
@@ -673,15 +1067,18 @@ function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
     [`${harnessApi}/releases/tags/${encodeURIComponent(navigationCausalContractIdentity.tag)}`, jsonRoute(live.hosted.contractReleaseRecord)],
     [`${harnessApi}/commits/${target}`, jsonRoute(live.hosted.contractCommitRecord)],
     [`${harnessApi}/releases/tags/${encodeURIComponent(fixture.v4Release.tag_name)}`, jsonRoute(fixture.v4Release)],
+    [`${harnessApi}/releases/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(live.invalidV1EvidenceReleaseStatus)],
+    [`${harnessApi}/git/ref/tags/${encodeURIComponent("stasis-v0.3.3-performance-navigation-causal-evidence-v1")}`, statusRoute(live.invalidV1EvidenceTagStatus)],
     [`${sourceApi}/git/ref/heads/${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}`, jsonRoute(live.sourceBranchRef)],
     [`${sourceApi}/commits/${navigationCausalWorkflowSourceIdentity.revision}`, jsonRoute(live.hosted.workflowSourceCommitRecord)],
     [`${sourceApi}/actions/runs/${runId}`, jsonRoute(live.hosted.runRecord)],
-    [`${sourceApi}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&event=push&per_page=100`, jsonRoute(live.hosted.workflowRunsListing)],
+    [`${sourceApi}/actions/runs?branch=${encodeURIComponent(navigationCausalWorkflowSourceIdentity.branch)}&per_page=100`, jsonRoute(live.hosted.workflowRunsListing)],
     [`${sourceApi}/actions/runs/${runId}/jobs?filter=all&per_page=100`, jsonRoute(live.hosted.jobsListing)],
     [`${sourceApi}/actions/runs/${runId}/artifacts?per_page=100`, jsonRoute(live.hosted.artifactsListing)],
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${fixture.v4Release.tag_name}/crawl-phase-localization-evidence.json`, bytesRoute(fixture.inputs["v4-localization-evidence.json"])],
     [`https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.preflightTag}/${navigationCausalContractIdentity.preflightAsset}`, bytesRoute(receiptBytes)],
   ]);
+  addInvalidV1Routes(routes, live.invalidV1);
   for (const [name, bytes] of Object.entries(fixture.contractAssets)) {
     routes.set(
       `https://github.com/oxhq/stasis-compat-bench/releases/download/${navigationCausalContractIdentity.tag}/${name}`,
@@ -695,6 +1092,40 @@ function liveEvidenceRoutes(fixture, built, publicInput, mutate = undefined) {
     );
   }
   return { live, routes };
+}
+
+function addInvalidV1Routes(routes, invalidV1) {
+  const harnessApi = "https://api.github.com/repos/oxhq/stasis-compat-bench";
+  routes.set(
+    `${harnessApi}/releases/tags/${encodeURIComponent(invalidV1.contractReleaseRecord.tag_name)}`,
+    jsonRoute(invalidV1.contractReleaseRecord),
+  );
+  routes.set(
+    `${harnessApi}/commits/${invalidV1.contractCommitRecord.sha}`,
+    jsonRoute(invalidV1.contractCommitRecord),
+  );
+  routes.set(
+    `${harnessApi}/git/ref/tags/${encodeURIComponent(invalidV1.contractReleaseRecord.tag_name)}`,
+    jsonRoute(invalidV1.contractTagRefRecord),
+  );
+  routes.set(
+    `${harnessApi}/releases/tags/${encodeURIComponent(invalidV1.preflightReleaseRecord.tag_name)}`,
+    jsonRoute(invalidV1.preflightReleaseRecord),
+  );
+  routes.set(
+    `${harnessApi}/git/ref/tags/${encodeURIComponent(invalidV1.preflightReleaseRecord.tag_name)}`,
+    jsonRoute(invalidV1.preflightTagRefRecord),
+  );
+  for (const [name, bytes] of Object.entries(invalidV1.contractAssets)) {
+    routes.set(
+      `https://github.com/oxhq/stasis-compat-bench/releases/download/${invalidV1.contractReleaseRecord.tag_name}/${name}`,
+      bytesRoute(bytes),
+    );
+  }
+  routes.set(
+    invalidV1.preflightReleaseRecord.assets[0].browser_download_url,
+    bytesRoute(invalidV1.preflightReceiptBytes),
+  );
 }
 
 function sha256(bytes) {
@@ -718,6 +1149,20 @@ function bytesRoute(bytes) {
 
 function statusRoute(status) {
   return { status, bytes: Buffer.alloc(0) };
+}
+
+function githubUserFixture() {
+  const login = "garaekz";
+  const base = `https://api.github.com/users/${login}`;
+  return {
+    login,
+    id: 14_919_842,
+    url: base,
+    following_url: `${base}/following{/other_user}`,
+    gists_url: `${base}/gists{/gist_id}`,
+    starred_url: `${base}/starred{/owner}{/repo}`,
+    events_url: `${base}/events{/privacy}`,
+  };
 }
 
 function routedAnonymousFetch(routes) {

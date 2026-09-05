@@ -167,7 +167,11 @@ function verifyContract(release, commit, run) {
       throw new TypeError(`Navigation causal contract release asset changed: ${asset.name}`);
     }
   }
+  const created = instant(release.created_at, "contract created_at");
   const published = instant(release.published_at, "contract published_at");
+  if (created.epoch > published.epoch) {
+    throw new TypeError("Navigation causal contract was created after it was published");
+  }
   if (published.epoch >= run.createdEpoch) {
     throw new TypeError("Navigation causal contract was not published before the run");
   }
@@ -179,6 +183,7 @@ function verifyContract(release, commit, run) {
     targetCommitSha: commit.sha,
     targetTreeSha: commit.commit.tree.sha,
     soleParentSha: navigationCausalContractIdentity.soleParentSha,
+    createdAt: created.text,
     publishedAt: published.text,
     immutable: true,
     assetCount: assets.length,

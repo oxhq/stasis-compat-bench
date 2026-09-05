@@ -45,6 +45,31 @@ const sensitiveHeaderNamePattern = /(?:api(?:key|token)|auth|authorization|cooki
 const maximumDecodeLayers = 8;
 const maximumEmbeddedBase64Candidates = 32;
 const maximumEmbeddedBase64TokenLength = 16_384;
+const maximumPublicSourcePatchBytes = 1_048_576;
+const maximumPublicSourcePatchLines = 100_000;
+const maximumPublicSourcePatchLineBytes = 16_384;
+const maximumPublicSourceEncodedCandidates = 20_000;
+const publicSourceCredentialPatterns = Object.freeze([
+  /\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})\b/iu,
+  /\bnpm_[A-Za-z0-9]{20,}\b/u,
+  /\bAKIA[0-9A-Z]{16}\b/u,
+  /\bAIza[0-9A-Za-z_-]{35}\b/u,
+  /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/u,
+  /\b(?:sk|rk)_live_[A-Za-z0-9]{16,}\b/u,
+  /\b(?:authorization|proxy-authorization)\s*[:=]\s*(?:bearer|basic)\s+[A-Za-z0-9._~+/=-]{4,}/iu,
+  /\b(?:password|api[-_. ]?key|access[-_. ]?token|refresh[-_. ]?token|secret)\s*[:=]\s*["']?[A-Za-z0-9._~+/=-]{8,}/iu,
+  /\b(?:cookie|set-cookie)\s*[:=]\s*["']?[^\s"']{8,}/iu,
+  /(?:^|\s)_authToken\s*=\s*["']?[^$\s"'{}<>]{8,}/imu,
+  /[?&](?:code|token|secret|password|api[-_. ]?key|access[-_. ]?token|refresh[-_. ]?token)=[^\s&#"']{4,}/iu,
+  /\b[a-z][a-z0-9+.-]*:\/\/[^\s/@:]+:[^\s/@]+@/iu,
+  /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----\s+[A-Za-z0-9+/=]{16,}/iu,
+  /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/u,
+]);
+const publicSourcePrivateTaskPathPatterns = Object.freeze([
+  /\bE:[\\/]+stasis(?:[\\/]|\b)/iu,
+  /\bC:[\\/]+Users[\\/]+garae(?:[\\/]|\b)/iu,
+  /\/(?:Users|home)\/garae(?:\/|\b)/iu,
+]);
 const frozenRwaRouteNarratives = new Set([
   "record POST /login and navigation diagnostics",
   "record POST /login status and navigation diagnostics",
@@ -90,6 +115,338 @@ export function assertPostSupportArtifactHtmlPrivacy(value) {
     .replace(/\/(?=\s*>)/gu, "");
   assertSafeString(withoutMarkupSlashes, ["controlledPublicDocumentHtml"]);
   return value;
+}
+
+export function assertPostSupportPublicSourcePatchPrivacy(value) {
+  if (typeof value !== "string" || value.length === 0 || value.includes("\0") ||
+    Buffer.byteLength(value, "utf8") > maximumPublicSourcePatchBytes) {
+    throw new TypeError("Post-support public source patch is outside its byte bound");
+  }
+  assertPublicSourceSensitiveProjections(value, ["publicGitHubSourcePatch"]);
+  for (const decoded of decodedPublicSourceBase64Candidates(value)) {
+    assertPublicSourceSensitiveProjections(
+      decoded,
+      ["publicGitHubSourcePatch", "decodedBase64"],
+    );
+  }
+  const lines = value.split("\n");
+  if (lines.length > maximumPublicSourcePatchLines) {
+    throw new TypeError("Post-support public source patch exceeds its line bound");
+  }
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (Buffer.byteLength(line, "utf8") > maximumPublicSourcePatchLineBytes) {
+      throw new TypeError(`Post-support public source patch line exceeds its byte bound at ${index}`);
+    }
+  }
+  return value;
+}
+
+function assertPublicSourceSensitiveProjections(value, location) {
+  for (const projection of publicSourceTextProjections(value)) {
+    assertPublicSourceSensitiveText(projection, location);
+    for (const reconstructed of publicSourceAdjacentLiteralCandidates(projection)) {
+      for (const reconstructedProjection of publicSourceTextProjections(reconstructed)) {
+        assertPublicSourceSensitiveText(
+          reconstructedProjection,
+          [...location, "adjacentLiterals"],
+        );
+      }
+    }
+  }
+}
+
+function decodedPublicSourceBase64Candidates(value) {
+  const results = [];
+  const pending = [{ depth: 0, value }];
+  const seenEncoded = new Set();
+  const seenDecoded = new Set([value]);
+  for (let pendingIndex = 0; pendingIndex < pending.length; pendingIndex += 1) {
+    const current = pending[pendingIndex];
+    for (const projection of publicSourceTextProjections(current.value)) {
+      const candidates = projection.match(
+        /(?<![A-Za-z0-9+/_-])[A-Za-z0-9+/_-]{8,16384}={0,2}(?![A-Za-z0-9+/_=-])/gu,
+      ) ?? [];
+      candidates.push(...publicSourceAdjacentBase64Candidates(projection));
+      candidates.push(...publicSourceAdjacentLiteralCandidates(projection));
+      candidates.push(...publicSourceWhitespaceJoinedBase64Candidates(projection));
+      for (const candidate of candidates) {
+        if (seenEncoded.has(candidate)) continue;
+        seenEncoded.add(candidate);
+        if (seenEncoded.size > maximumPublicSourceEncodedCandidates) {
+          throw new TypeError("Post-support public source patch encoded-candidate bound exceeded");
+        }
+        const canonical = candidate.replaceAll("-", "+").replaceAll("_", "/");
+        const unpadded = canonical.replace(/=+$/u, "");
+        const padded = unpadded + "=".repeat((4 - unpadded.length % 4) % 4);
+        const bytes = Buffer.from(padded, "base64");
+        if (bytes.length < 8 ||
+          bytes.toString("base64").replace(/=+$/u, "") !== unpadded) continue;
+        const decoded = bytes.toString("utf8");
+        if (!Buffer.from(decoded, "utf8").equals(bytes) ||
+          !/^[\x09\x0a\x0d\x20-\x7e\p{L}\p{N}\p{P}\p{S}]+$/u.test(decoded) ||
+          seenDecoded.has(decoded)) continue;
+        if (current.depth >= maximumDecodeLayers) {
+          throw new TypeError(
+            `Post-support public source patch exceeds ${maximumDecodeLayers} decode layers`,
+          );
+        }
+        seenDecoded.add(decoded);
+        results.push(decoded);
+        pending.push({ depth: current.depth + 1, value: decoded });
+      }
+    }
+  }
+  return results;
+}
+
+function publicSourceAdjacentBase64Candidates(value) {
+  const literals = [...value.matchAll(/(["'`])([A-Za-z0-9+/_-]{1,16384}={0,2})\1/gu)]
+    .map((match) => ({
+      end: match.index + match[0].length,
+      start: match.index,
+      value: match[2],
+    }));
+  const candidates = [];
+  let attempts = 0;
+  for (let start = 0; start < literals.length; start += 1) {
+    let joined = literals[start].value;
+    for (let end = start + 1; end < literals.length; end += 1) {
+      const separator = value.slice(literals[end - 1].end, literals[end].start);
+      if (!isPublicSourceStringConcatenationSeparator(separator)) break;
+      joined += literals[end].value;
+      attempts += 1;
+      if (attempts > maximumPublicSourceEncodedCandidates) {
+        throw new TypeError("Post-support public source patch segmented-candidate bound exceeded");
+      }
+      if (joined.length > maximumEmbeddedBase64TokenLength) {
+        throw new TypeError("Post-support public source patch segmented candidate is oversized");
+      }
+      if (joined.length >= 8) candidates.push(joined);
+    }
+  }
+  return candidates;
+}
+
+function publicSourceAdjacentLiteralCandidates(value) {
+  const literals = publicSourceQuotedLiterals(value);
+  const candidates = [];
+  let attempts = 0;
+  for (let start = 0; start < literals.length; start += 1) {
+    let joined = literals[start].value;
+    for (let end = start + 1; end < literals.length; end += 1) {
+      const separator = value.slice(literals[end - 1].end, literals[end].start);
+      if (!isPublicSourceStringConcatenationSeparator(separator)) break;
+      joined += literals[end].value;
+      attempts += 1;
+      if (attempts > maximumPublicSourceEncodedCandidates) {
+        throw new TypeError("Post-support public source patch adjacent-literal bound exceeded");
+      }
+      if (joined.length > maximumEmbeddedBase64TokenLength) {
+        throw new TypeError("Post-support public source patch adjacent literal is oversized");
+      }
+      candidates.push(joined);
+    }
+  }
+  return candidates;
+}
+
+function publicSourceQuotedLiterals(value) {
+  const literals = [];
+  for (let start = 0; start < value.length; start += 1) {
+    const quote = value[start];
+    if (quote !== "\"" && quote !== "'" && quote !== "`") continue;
+    let content = "";
+    let end = start + 1;
+    for (; end < value.length; end += 1) {
+      const character = value[end];
+      if (character === "\\") {
+        if (end + 1 >= value.length) break;
+        content += character + value[end + 1];
+        end += 1;
+        continue;
+      }
+      if (character === quote) {
+        literals.push({
+          end: end + 1,
+          start: publicSourceLiteralTokenStart(value, start, quote),
+          value: content,
+        });
+        start = end;
+        break;
+      }
+      if (quote !== "`" && (character === "\r" || character === "\n")) break;
+      content += character;
+      if (content.length > maximumEmbeddedBase64TokenLength) {
+        throw new TypeError("Post-support public source patch quoted literal is oversized");
+      }
+    }
+  }
+  return literals;
+}
+
+function publicSourceLiteralTokenStart(value, quoteStart, quote) {
+  if (quote === "`") return quoteStart;
+  const prefix = value.slice(Math.max(0, quoteStart - 2), quoteStart)
+    .match(/(?:u8|br|rb|fr|rf|[lubrf])$/iu)?.[0];
+  if (prefix === undefined) return quoteStart;
+  const tokenStart = quoteStart - prefix.length;
+  return tokenStart === 0 || !/[A-Za-z0-9_$]/u.test(value[tokenStart - 1])
+    ? tokenStart
+    : quoteStart;
+}
+
+function publicSourceWhitespaceJoinedBase64Candidates(value) {
+  const candidates = [];
+  let attempts = 0;
+  const matches = value.matchAll(
+    /(?<![A-Za-z0-9+/_-])((?:[A-Za-z0-9+/_-]+={0,2}[ \t\r\n\f\v]+)+[A-Za-z0-9+/_-]+={0,2})(?![A-Za-z0-9+/_=-])/gu,
+  );
+  for (const match of matches) {
+    const tokens = match[1].split(/[ \t\r\n\f\v]+/gu);
+    for (let start = 0; start < tokens.length - 1; start += 1) {
+      let joined = tokens[start];
+      for (let end = start + 1; end < tokens.length; end += 1) {
+        joined += tokens[end];
+        attempts += 1;
+        if (attempts > maximumPublicSourceEncodedCandidates) {
+          throw new TypeError(
+            "Post-support public source patch whitespace-joined candidate bound exceeded",
+          );
+        }
+        if (joined.length > maximumEmbeddedBase64TokenLength) break;
+        if (joined.length >= 8) candidates.push(joined);
+      }
+    }
+  }
+  return candidates;
+}
+
+function isPublicSourceStringConcatenationSeparator(value) {
+  const withoutComments = removePublicSourceComments(value);
+  if (withoutComments === null) return false;
+  return /^[ \t\r\n\f\v]*$/u.test(withoutComments) ||
+    /^[ \t\r\n\f\v)]*\+[ \t\r\n\f\v(]*$/u.test(withoutComments) ||
+    /^[ \t\f\v)]*\+[ \t\f\v]*\r?\n\+[ \t\f\v(]*$/u.test(withoutComments) ||
+    /^[ \t\f\v)]*\r?\n\+[ \t\f\v)]*\+[ \t\r\n\f\v(]*$/u.test(withoutComments);
+}
+
+function removePublicSourceComments(value) {
+  let output = "";
+  for (let offset = 0; offset < value.length; offset += 1) {
+    if (value.startsWith("/*", offset)) {
+      const closing = value.indexOf("*/", offset + 2);
+      if (closing < 0) return null;
+      offset = closing + 1;
+      continue;
+    }
+    if (value.startsWith("//", offset) || value[offset] === "#") {
+      while (offset < value.length && value[offset] !== "\r" && value[offset] !== "\n") {
+        offset += 1;
+      }
+      if (offset >= value.length) return null;
+      output += value[offset];
+      continue;
+    }
+    if (value.startsWith("*/", offset)) return null;
+    output += value[offset];
+  }
+  return output;
+}
+
+function publicSourceTextProjections(value) {
+  const results = [];
+  const seen = new Set();
+  const add = (candidate) => {
+    const normalized = candidate.normalize("NFKC").replace(/\p{Cf}/gu, "");
+    if (seen.has(normalized)) return;
+    if (results.length >= 64) {
+      throw new TypeError("Post-support public source patch projection bound exceeded");
+    }
+    seen.add(normalized);
+    results.push(normalized);
+  };
+  add(value);
+  for (const diffView of projectUnifiedDiffViews(value)) add(diffView);
+  for (let index = 0; index < results.length; index += 1) {
+    const candidate = results[index];
+    add(candidate.replace(/\\\r?\n/gu, ""));
+    add(candidate.replace(/[\r\n\u2028\u2029]/gu, ""));
+    add(candidate.replace(/%([0-9a-f]{2})/giu, (_match, digits) =>
+      String.fromCharCode(Number.parseInt(digits, 16))));
+    add(candidate
+      .replace(/\\n/gu, "\n")
+      .replace(/\\r/gu, "\r")
+      .replace(/\\t/gu, "\t")
+      .replace(/\\f/gu, "\f")
+      .replace(/\\v/gu, "\v")
+      .replace(/\\x([0-9a-f]{2})/giu, (_match, digits) =>
+        String.fromCharCode(Number.parseInt(digits, 16)))
+      .replace(/\\u([0-9a-f]{4})/giu, (_match, digits) =>
+        String.fromCharCode(Number.parseInt(digits, 16))));
+  }
+  return results;
+}
+
+function projectUnifiedDiffViews(value) {
+  const lines = value.split("\n");
+  const oldView = [];
+  const newView = [];
+  const hunkBoundary = ";/*STASIS_DIFF_HUNK_BOUNDARY*/;";
+  let hunkCount = 0;
+  let inHunk = false;
+  let oldContentCount = 0;
+  let newContentCount = 0;
+  for (const line of lines) {
+    if (/^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@(?: .*?)?\r?$/u.test(line)) {
+      if (hunkCount > 0) {
+        oldView.push(hunkBoundary);
+        newView.push(hunkBoundary);
+      }
+      hunkCount += 1;
+      inHunk = true;
+      continue;
+    }
+    if (!inHunk) continue;
+    if (/^\\ No newline at end of file\r?$/u.test(line)) continue;
+    if (line.startsWith(" ")) {
+      const content = line.slice(1);
+      oldView.push(content);
+      newView.push(content);
+      oldContentCount += 1;
+      newContentCount += 1;
+      continue;
+    }
+    if (line.startsWith("+")) {
+      newView.push(line.slice(1));
+      newContentCount += 1;
+      continue;
+    }
+    if (line.startsWith("-")) {
+      oldView.push(line.slice(1));
+      oldContentCount += 1;
+      continue;
+    }
+    inHunk = false;
+  }
+  if (hunkCount === 0) return [];
+  return [
+    ...(oldContentCount > 0 ? [oldView.join("\n")] : []),
+    ...(newContentCount > 0 ? [newView.join("\n")] : []),
+  ];
+}
+
+function assertPublicSourceSensitiveText(value, location) {
+  if (publicSourceCredentialPatterns.some((pattern) => pattern.test(value))) {
+    throw new TypeError(
+      `Post-support public source patch contains credential-like text at ${format(location)}`,
+    );
+  }
+  if (publicSourcePrivateTaskPathPatterns.some((pattern) => pattern.test(value))) {
+    throw new TypeError(
+      `Post-support public source patch contains a private task path at ${format(location)}`,
+    );
+  }
 }
 
 function privacySnapshot(value, location, seen) {

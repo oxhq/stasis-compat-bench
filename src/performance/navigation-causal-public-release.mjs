@@ -5,14 +5,17 @@ import {
   assertNavigationCausalContractAssets,
   navigationCausalContractAssetIdentities,
   navigationCausalContractIdentity,
+  navigationCausalInvalidV1Evidence,
+  navigationCausalV1ContractAssetIdentities,
   navigationCausalV4SelectionBinding,
 } from "./navigation-causal-contract.mjs";
 import {
+  navigationCausalHarnessIdentity,
   navigationCausalWorkflowSourceIdentity,
 } from "./navigation-causal-replication.mjs";
 
 export const navigationCausalAnonymousContractPreflightSchema =
-  "stasis-v0.3.3-performance-navigation-causal-anonymous-contract-preflight-v1";
+  "stasis-v0.3.3-performance-navigation-causal-anonymous-contract-preflight-v2";
 
 export const navigationCausalV4EvidenceAssets = deepFreeze({
   "actions-diagnostic-bundle.zip": [24504, "8b7459bed0699d561a1a0e1af8502f02a5865bd0b0558fb5718fd7ad735f0ff4"],
@@ -39,18 +42,161 @@ export const navigationCausalV4EvidenceAssets = deepFreeze({
   "workflow-source-commit.json": [71272, "5c4e3c8c7b9a72a3a2b928abd96d9c7fbbcd45175b0ea0a0c819f3cee33c9fbb"],
 });
 
+export const navigationCausalExpectedV1Receipt = deepFreeze({
+  schema: "stasis-v0.3.3-performance-navigation-causal-anonymous-contract-preflight-v1",
+  status: "passed",
+  credentialsUsed: false,
+  retries: false,
+  redirectPolicy: "manual_https_github_owned_hosts_only",
+  contract: {
+    releaseId: 383003193,
+    tag: "stasis-v0.3.3-performance-navigation-causal-contract-v1",
+    targetCommitSha: "8f84642fb2c2af9e439a7fcb5da89ada1d42bb67",
+    targetTreeSha: "a73d8a07a8c6e81032ff14640e63de4e4fc905ac",
+    lightweightTagDirectToTarget: true,
+    soleParentSha: navigationCausalHarnessIdentity.revision,
+    publishedAt: "2026-09-04T20:40:00Z",
+    assetCount: 4,
+  },
+  sourceAbsence: {
+    repository: navigationCausalWorkflowSourceIdentity.repository,
+    branch: navigationCausalWorkflowSourceIdentity.branch,
+    ref: navigationCausalWorkflowSourceIdentity.ref,
+    commitSha: navigationCausalWorkflowSourceIdentity.revision,
+    evidenceTag: "stasis-v0.3.3-performance-navigation-causal-evidence-v1",
+    httpStatuses: {
+      sourceRef: 404,
+      sourceCommit: 422,
+      workflowRuns: 200,
+      evidenceRelease: 404,
+      evidenceTagRef: 404,
+    },
+    workflowRunCount: 0,
+    verified: true,
+  },
+  v4: {
+    releaseId: 382939276,
+    tag: "stasis-v0.3.3-performance-crawl-phase-diagnostic-evidence-v4",
+    targetCommitSha: "de1c9a000cba734c549f2fcee182e92c0565dff5",
+    localizationAssetId: 544735276,
+    localizationAssetSha256:
+      "fdc8cd495f8cd6116763ddbbc84ec896123bde828d6fb17bcb508b1bc772f34f",
+    selectedJsonPointer: "/observations/stasis/phases/poolRuns/9",
+    selectedOrdinal: 10,
+    timingImportedIntoCausalStatistics: false,
+  },
+  oneShotRules: {
+    oneS5CreationPush: true,
+    contractReleaseLatest: false,
+    rerun: false,
+    replacementRun: false,
+    generalizedSpeedClaimAuthorized: false,
+    implementationWorkAuthorized: false,
+    decisionState: "STAY_0_4_UNASSIGNED",
+  },
+});
+
+export function verifyNavigationCausalInvalidV1PreObservationEvidence({
+  contractReleaseRecord,
+  contractCommitRecord,
+  contractTagRefRecord,
+  contractAssets = undefined,
+  preflightReleaseRecord,
+  preflightTagRefRecord,
+  preflightReceiptBytes,
+} = {}) {
+  const expected = navigationCausalInvalidV1Evidence;
+  verifyInvalidV1Release(
+    contractReleaseRecord,
+    expected.contract,
+    navigationCausalV1ContractAssetIdentities,
+    "contract",
+  );
+  if (contractCommitRecord?.sha !== expected.contract.targetCommitSha ||
+    contractCommitRecord?.commit?.tree?.sha !== expected.contract.targetTreeSha ||
+    !Array.isArray(contractCommitRecord.parents) || contractCommitRecord.parents.length !== 1 ||
+    contractCommitRecord.parents[0]?.sha !== expected.contract.soleParentSha ||
+    !Array.isArray(contractCommitRecord.files)) {
+    throw new TypeError("Navigation causal invalid V1 contract commit identity changed");
+  }
+  for (const [name, identity] of Object.entries(navigationCausalV1ContractAssetIdentities)) {
+    const file = contractCommitRecord.files.find(({ filename }) => filename === `protocol/${name}`);
+    if (file?.status !== "added" || file.sha !== identity.blob) {
+      throw new TypeError(`Navigation causal invalid V1 contract Git blob changed: ${name}`);
+    }
+  }
+  verifyLightweightTag(
+    contractTagRefRecord,
+    expected.contract.tag,
+    expected.contract.targetCommitSha,
+  );
+  if (contractAssets !== undefined) {
+    const names = Object.keys(navigationCausalV1ContractAssetIdentities).sort();
+    if (contractAssets === null || typeof contractAssets !== "object" ||
+      Array.isArray(contractAssets) || !isDeepStrictEqual(Object.keys(contractAssets).sort(), names)) {
+      throw new TypeError("Navigation causal invalid V1 contract asset bytes are incomplete");
+    }
+    for (const name of names) {
+      const bytes = contractAssets[name];
+      const identity = navigationCausalV1ContractAssetIdentities[name];
+      if (!Buffer.isBuffer(bytes) || bytes.length !== identity.bytes ||
+        sha256(bytes) !== identity.sha256) {
+        throw new TypeError(`Navigation causal invalid V1 contract asset bytes changed: ${name}`);
+      }
+    }
+  }
+  verifyInvalidV1Release(
+    preflightReleaseRecord,
+    expected.preflight,
+    { [expected.preflight.asset.name]: expected.preflight.asset },
+    "preflight receipt",
+  );
+  verifyLightweightTag(
+    preflightTagRefRecord,
+    expected.preflight.tag,
+    expected.preflight.targetCommitSha,
+  );
+  if (!Buffer.isBuffer(preflightReceiptBytes) ||
+    preflightReceiptBytes.length !== expected.preflight.asset.bytes ||
+    sha256(preflightReceiptBytes) !== expected.preflight.asset.sha256) {
+    throw new TypeError("Navigation causal invalid V1 preflight receipt bytes changed");
+  }
+  let receipt;
+  try {
+    receipt = JSON.parse(preflightReceiptBytes.toString("utf8"));
+  } catch (error) {
+    throw new TypeError("Navigation causal invalid V1 preflight receipt is not JSON", { cause: error });
+  }
+  if (!Buffer.from(`${JSON.stringify(receipt, null, 2)}\n`, "utf8").equals(preflightReceiptBytes) ||
+    !isDeepStrictEqual(receipt, navigationCausalExpectedV1Receipt)) {
+    throw new TypeError("Navigation causal invalid V1 preflight receipt does not replay exactly");
+  }
+  const contractPublished = Date.parse(expected.contract.publishedAt);
+  const preflightCreated = Date.parse(expected.preflight.createdAt);
+  const preflightPublished = Date.parse(expected.preflight.publishedAt);
+  if (preflightCreated > contractPublished || preflightPublished <= contractPublished ||
+    expected.gate.error !==
+      "Navigation causal preflight receipt release was not published after its contract") {
+    throw new TypeError("Navigation causal invalid V1 gate failure is not reproducible");
+  }
+  return expected;
+}
+
 export function verifyNavigationCausalAnonymousContractPreflight({
   contractReleaseRecord,
   contractCommitRecord,
   contractTagRefRecord,
   contractAssets,
   latestReleaseRecord,
+  invalidV1,
   absence,
   workflowRunsListing,
   v4ReleaseRecord,
   v4TagRefRecord,
   v4LocalizationBytes,
 } = {}) {
+  const invalidV1PreObservation =
+    verifyNavigationCausalInvalidV1PreObservationEvidence(invalidV1);
   const contract = verifyContractPublication(
     contractReleaseRecord,
     contractCommitRecord,
@@ -58,12 +204,26 @@ export function verifyNavigationCausalAnonymousContractPreflight({
     contractAssets,
   );
   assertReleaseIsNotLatest(contractReleaseRecord, latestReleaseRecord, "contract");
+  assertReleaseIsNotLatest(invalidV1.contractReleaseRecord, latestReleaseRecord, "V1 contract");
+  assertReleaseIsNotLatest(
+    invalidV1.preflightReleaseRecord,
+    latestReleaseRecord,
+    "V1 preflight receipt",
+  );
+  if (Date.parse(contract.publishedAt) <=
+    Date.parse(invalidV1PreObservation.preflight.publishedAt)) {
+    throw new TypeError("Navigation causal V2 contract was not published after invalid V1 preflight evidence");
+  }
   verifyPreObservationAbsence({
     absence,
     workflowRunsListing,
   });
   const v4 = verifyV4Selection(v4ReleaseRecord, v4TagRefRecord, v4LocalizationBytes);
-  return deepFreeze(createAnonymousContractPreflightReceipt({ contract, v4 }));
+  return deepFreeze(createAnonymousContractPreflightReceipt({
+    contract,
+    invalidV1PreObservation,
+    v4,
+  }));
 }
 
 export function assertNavigationCausalAnonymousContractPreflightReceipt(
@@ -77,6 +237,17 @@ export function assertNavigationCausalAnonymousContractPreflightReceipt(
   if (contractCommitRecord?.sha !== contractTarget) {
     throw new TypeError("Retained preflight contract records disagree");
   }
+  const contractCreatedAt = canonicalInstant(
+    contractReleaseRecord?.created_at,
+    "retained preflight contract created_at",
+  );
+  const contractPublishedAt = canonicalInstant(
+    contractReleaseRecord?.published_at,
+    "retained preflight contract published_at",
+  );
+  if (Date.parse(contractCreatedAt) > Date.parse(contractPublishedAt)) {
+    throw new TypeError("Retained preflight contract was created after it was published");
+  }
   const expected = createAnonymousContractPreflightReceipt({
     contract: {
       releaseId: positiveInteger(contractReleaseRecord.id, "retained preflight contract release ID"),
@@ -88,12 +259,11 @@ export function assertNavigationCausalAnonymousContractPreflightReceipt(
       ),
       lightweightTagDirectToTarget: true,
       soleParentSha: navigationCausalContractIdentity.soleParentSha,
-      publishedAt: canonicalInstant(
-        contractReleaseRecord?.published_at,
-        "retained preflight contract published_at",
-      ),
+      createdAt: contractCreatedAt,
+      publishedAt: contractPublishedAt,
       assetCount: Object.keys(navigationCausalContractAssetIdentities).length,
     },
+    invalidV1PreObservation: navigationCausalInvalidV1Evidence,
     v4: expectedV4Receipt(v4ReleaseRecord),
   });
   if (!isDeepStrictEqual(value, expected)) {
@@ -102,7 +272,7 @@ export function assertNavigationCausalAnonymousContractPreflightReceipt(
   return value;
 }
 
-function createAnonymousContractPreflightReceipt({ contract, v4 }) {
+function createAnonymousContractPreflightReceipt({ contract, invalidV1PreObservation, v4 }) {
   return {
     schema: navigationCausalAnonymousContractPreflightSchema,
     status: "passed",
@@ -110,25 +280,36 @@ function createAnonymousContractPreflightReceipt({ contract, v4 }) {
     retries: false,
     redirectPolicy: "manual_https_github_owned_hosts_only",
     contract,
+    invalidV1PreObservation,
     sourceAbsence: {
       repository: navigationCausalWorkflowSourceIdentity.repository,
       branch: navigationCausalWorkflowSourceIdentity.branch,
       ref: navigationCausalWorkflowSourceIdentity.ref,
       commitSha: navigationCausalWorkflowSourceIdentity.revision,
+      invalidV1EvidenceTag: navigationCausalInvalidV1Evidence.gate.v1EvidenceTag,
       evidenceTag: navigationCausalContractIdentity.evidenceTag,
       httpStatuses: {
         sourceRef: 404,
         sourceCommit: 422,
         workflowRuns: 200,
+        invalidV1EvidenceRelease: 404,
+        invalidV1EvidenceTagRef: 404,
         evidenceRelease: 404,
         evidenceTagRef: 404,
       },
       workflowRunCount: 0,
       verified: true,
     },
+    chronology: {
+      ownCreatedAtNotAfterPublishedAt: true,
+      crossReleaseOrderingField: "published_at",
+      createdAtOrderedAcrossSameTargetReleases: false,
+      publishedOrder: "invalid_v1_contract < invalid_v1_preflight < v2_contract < v2_preflight < run",
+    },
     v4,
     oneShotRules: {
       oneS5CreationPush: true,
+      invalidV1EvidencePublicationAuthorized: false,
       contractReleaseLatest: false,
       rerun: false,
       replacementRun: false,
@@ -171,6 +352,11 @@ function verifyContractPublication(release, commit, tagRef, assets) {
     tagRef?.object?.type !== "commit" || tagRef.object.sha !== commit.sha) {
     throw new TypeError("Navigation causal public contract identity is invalid");
   }
+  const createdAt = canonicalInstant(release.created_at, "contract created_at");
+  const publishedAt = canonicalInstant(release.published_at, "contract published_at");
+  if (Date.parse(createdAt) > Date.parse(publishedAt)) {
+    throw new TypeError("Navigation causal contract was created after it was published");
+  }
   assertNavigationCausalContractAssets(assets);
   const expected = Object.keys(navigationCausalContractAssetIdentities).sort();
   if (!Array.isArray(release.assets) || release.assets.length !== expected.length ||
@@ -188,7 +374,7 @@ function verifyContractPublication(release, commit, tagRef, assets) {
     const path = `protocol/${name}`;
     const file = commit.files.find((entry) => entry.filename === path);
     if (file?.status !== "added" || file.sha !== gitBlobSha(bytes)) {
-      throw new TypeError(`Navigation causal contract asset is not its H8b Git blob: ${name}`);
+      throw new TypeError(`Navigation causal contract asset is not its H8c Git blob: ${name}`);
     }
   }
   return {
@@ -198,7 +384,8 @@ function verifyContractPublication(release, commit, tagRef, assets) {
     targetTreeSha: requireGitSha(commit.commit?.tree?.sha, "contract tree SHA"),
     lightweightTagDirectToTarget: true,
     soleParentSha: navigationCausalContractIdentity.soleParentSha,
-    publishedAt: canonicalInstant(release.published_at, "contract published_at"),
+    createdAt,
+    publishedAt,
     assetCount: expected.length,
   };
 }
@@ -224,6 +411,8 @@ function verifyPreObservationAbsence(value) {
   const expectedStatuses = {
     sourceRef: 404,
     sourceCommit: 422,
+    invalidV1EvidenceRelease: 404,
+    invalidV1EvidenceTagRef: 404,
     evidenceRelease: 404,
     evidenceTagRef: 404,
     workflowRuns: 200,
@@ -236,6 +425,44 @@ function verifyPreObservationAbsence(value) {
     value.workflowRunsListing.workflow_runs.length !== 0) {
     throw new TypeError("Navigation causal pre-observation source or evidence is not absent");
   }
+}
+
+function verifyInvalidV1Release(release, expected, identities, label) {
+  if (release?.id !== expected.releaseId || release.tag_name !== expected.tag ||
+    release.target_commitish !== expected.targetCommitSha || release.immutable !== true ||
+    release.draft !== false || release.prerelease !== false ||
+    release.url !==
+      `https://api.github.com/repos/${navigationCausalContractIdentity.repository}/releases/${expected.releaseId}` ||
+    release.created_at !== expected.createdAt || release.published_at !== expected.publishedAt ||
+    Date.parse(release.created_at) > Date.parse(release.published_at) ||
+    !Array.isArray(release.assets) ||
+    release.assets.length !== Object.keys(identities).length) {
+    throw new TypeError(`Navigation causal invalid V1 ${label} release identity changed`);
+  }
+  const seenNames = new Set();
+  const seenIds = new Set();
+  for (const asset of release.assets) {
+    const identity = identities[asset.name];
+    if (identity === undefined || seenNames.has(asset.name) || seenIds.has(asset.id) ||
+      asset.id !== identity.id || asset.state !== "uploaded" ||
+      asset.size !== identity.bytes || asset.digest !== `sha256:${identity.sha256}` ||
+      asset.browser_download_url !== exactV1ReleaseAssetUrl(expected.tag, asset.name)) {
+      throw new TypeError(`Navigation causal invalid V1 ${label} release assets changed`);
+    }
+    seenNames.add(asset.name);
+    seenIds.add(asset.id);
+  }
+}
+
+function verifyLightweightTag(value, tag, target) {
+  if (value?.ref !== `refs/tags/${tag}` || value?.object?.type !== "commit" ||
+    value.object.sha !== target) {
+    throw new TypeError(`Navigation causal invalid V1 tag is not direct: ${tag}`);
+  }
+}
+
+function exactV1ReleaseAssetUrl(tag, name) {
+  return `https://github.com/${navigationCausalContractIdentity.repository}/releases/download/${tag}/${name}`;
 }
 
 function expectedV4Receipt(release) {
