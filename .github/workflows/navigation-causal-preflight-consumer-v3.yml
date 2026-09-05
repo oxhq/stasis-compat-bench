@@ -1,0 +1,74 @@
+name: Navigation causal V3 anonymous preflight consumer
+
+on:
+  push:
+    branches:
+      - codex/stasis-v033-navigation-causal-preflight-consumer-v3
+
+permissions:
+  contents: read
+
+jobs:
+  anonymous-preflight:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the immutable public verifier
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: 4041c0cab409999332a1023c1741f602bb8d7917
+          persist-credentials: false
+      - name: Set up exact Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 22.20.0
+          architecture: x64
+          check-latest: false
+      - name: Install only the frozen verifier dependencies
+        shell: bash
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+          NPM_CONFIG_FETCH_RETRIES: "0"
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = '4041c0cab409999332a1023c1741f602bb8d7917'
+          test "$(node --version)" = 'v22.20.0'
+          npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+      - name: Download and verify the published preflight anonymously
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" = '1'
+          receipt="$RUNNER_TEMP/anonymous-contract-preflight-v3.json"
+          cli_output="$RUNNER_TEMP/verify-preflight-public-v3-output.json"
+          env -u GH_TOKEN -u GITHUB_TOKEN curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            --retry 0 \
+            --proto '=https' \
+            --proto-redir '=https' \
+            --tlsv1.2 \
+            --output "$receipt" \
+            'https://github.com/oxhq/stasis-compat-bench/releases/download/stasis-v0.3.3-performance-navigation-causal-preflight-v3/anonymous-contract-preflight-v3.json'
+          test -f "$receipt"
+          test ! -L "$receipt"
+          test "$(sha256sum "$receipt" | cut -d ' ' -f 1)" = \
+            '7edbe18057d077dce7f9e5989341e4dcd62b57147851312d133c142c41d95139'
+          env -u GH_TOKEN -u GITHUB_TOKEN node \
+            src/performance/navigation-causal-publication-cli.mjs \
+            verify-preflight-public \
+            4041c0cab409999332a1023c1741f602bb8d7917 \
+            "$receipt" | tee "$cli_output"
+          test -s "$cli_output"
+      - name: Retain the exact anonymous preflight consumer evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: navigation-causal-v3-anonymous-preflight-consumer-evidence
+          path: |
+            ${{ runner.temp }}/anonymous-contract-preflight-v3.json
+            ${{ runner.temp }}/verify-preflight-public-v3-output.json
+          if-no-files-found: error
+          retention-days: 30
